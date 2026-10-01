@@ -1,0 +1,62 @@
+[gd_scene load_steps=5 format=3 uid="uid://b8x7r1y4q2c10"]
+
+[ext_resource type="Script" path="res://scripts/core.gd" id="1_core"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_core"]
+radius = 95.0
+
+[sub_resource type="Curve" id="Curve_burst_scale"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Gradient" id="Gradient_burst_color"]
+offsets = PackedFloat32Array(0, 0.7, 1)
+colors = PackedColorArray(0.4, 0.95, 1, 1, 0, 0.85, 1, 0.8, 0, 0.5, 1, 0)
+
+[node name="ReactorCore" type="Area2D"]
+script = ExtResource("1_core")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_core")
+
+[node name="Visuals" type="Node2D" parent="."]
+
+[node name="OuterRing" type="Node2D" parent="Visuals"]
+
+[node name="PlasmaCore" type="Node2D" parent="Visuals"]
+
+[node name="ClickBurstParticles" type="CPUParticles2D" parent="."]
+emitting = false
+amount = 24
+lifetime = 0.45
+one_shot = true
+explosiveness = 0.95
+emission_shape = 1
+emission_sphere_radius = 20.0
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 140.0
+initial_velocity_max = 260.0
+damping_min = 90.0
+damping_max = 140.0
+scale_amount_min = 3.5
+scale_amount_max = 6.0
+scale_amount_curve = SubResource("Curve_burst_scale")
+color_ramp = SubResource("Gradient_burst_color")
+
+[node name="AmbientAuraParticles" type="CPUParticles2D" parent="."]
+amount = 12
+lifetime = 1.2
+emission_shape = 1
+emission_sphere_radius = 50.0
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 10.0
+initial_velocity_max = 25.0
+scale_amount_min = 2.0
+scale_amount_max = 4.0
+scale_amount_curve = SubResource("Curve_burst_scale")
+color = Color(0, 0.9, 1, 0.35)
+
+[node name="FloatTextSpawn" type="Marker2D" parent="."]
+position = Vector2(0, -60)

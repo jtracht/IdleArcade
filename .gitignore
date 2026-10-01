@@ -1,0 +1,18 @@
+# Godot 4+ specific ignores
+.godot/
+!res://.godot/
+build/
+*.translation
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Keystores (Wait, export_presets might contain passwords, but GitHub action needs it. Keystore should be ignored if generated locally, but GitHub actions uses dynamic keystores. Wait, the agents generated the keystore locally. Let's ignore .apk and .zip)
+*.apk
+*.aab
+*.zip
+*.keystore
+
+# Exclude Nakama data volume if it gets created here
+data/

@@ -1,0 +1,214 @@
+[gd_scene load_steps=6 format=3 uid="uid://d3y8w1p6k4m20"]
+
+[ext_resource type="Script" path="res://scripts/hud.gd" id="1_hud"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_energy_panel"]
+bg_color = Color(0.0627451, 0.0901961, 0.14902, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.8, 1, 0.35)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_frenzy_bg"]
+bg_color = Color(0.109804, 0.14902, 0.219608, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_frenzy_fill"]
+bg_color = Color(1, 0.6, 0, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shop_panel"]
+bg_color = Color(0.0588235, 0.0823529, 0.129412, 0.94)
+border_width_top = 2
+border_color = Color(0, 0.85, 1, 0.5)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 16.0
+content_margin_top = 12.0
+content_margin_right = 16.0
+content_margin_bottom = 12.0
+
+[node name="HUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_hud")
+
+[node name="TopContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 24.0
+offset_top = 28.0
+offset_right = -24.0
+offset_bottom = 300.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="TopVBox" type="VBoxContainer" parent="TopContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+mouse_filter = 2
+
+[node name="HeaderHBox" type="HBoxContainer" parent="TopContainer/TopVBox"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="GameTitleLabel" type="Label" parent="TopContainer/TopVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "IDLE ARCADE // REACTOR CORE"
+
+[node name="Spacer" type="Control" parent="TopContainer/TopVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="StatusIndicator" type="Label" parent="TopContainer/TopVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.46, 1, 0.01, 1)
+theme_override_font_sizes/font_size = 12
+text = "● ONLINE"
+
+[node name="EnergyDisplayPanel" type="PanelContainer" parent="TopContainer/TopVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_energy_panel")
+
+[node name="EnergyVBox" type="VBoxContainer" parent="TopContainer/TopVBox/EnergyDisplayPanel"]
+layout_mode = 2
+alignment = 1
+
+[node name="EnergyLabel" type="Label" parent="TopContainer/TopVBox/EnergyDisplayPanel/EnergyVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 46
+text = "⚡ 0"
+horizontal_alignment = 1
+
+[node name="RPSLabel" type="Label" parent="TopContainer/TopVBox/EnergyDisplayPanel/EnergyVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "+0.0 / sec"
+horizontal_alignment = 1
+
+[node name="FrenzyContainer" type="MarginContainer" parent="TopContainer/TopVBox"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="FrenzyVBox" type="VBoxContainer" parent="TopContainer/TopVBox/FrenzyContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+mouse_filter = 2
+
+[node name="FrenzyHeaderHBox" type="HBoxContainer" parent="TopContainer/TopVBox/FrenzyContainer/FrenzyVBox"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="FrenzyTitleLabel" type="Label" parent="TopContainer/TopVBox/FrenzyContainer/FrenzyVBox/FrenzyHeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.82, 1)
+theme_override_font_sizes/font_size = 14
+text = "OVERDRIVE COMBO"
+
+[node name="FrenzySpacer" type="Control" parent="TopContainer/TopVBox/FrenzyContainer/FrenzyVBox/FrenzyHeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="FrenzyMultiplierLabel" type="Label" parent="TopContainer/TopVBox/FrenzyContainer/FrenzyVBox/FrenzyHeaderHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 15
+text = "1.0x"
+
+[node name="FrenzyProgressBar" type="ProgressBar" parent="TopContainer/TopVBox/FrenzyContainer/FrenzyVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_frenzy_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_frenzy_fill")
+show_percentage = false
+
+[node name="BottomContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 0.58
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="ShopPanel" type="PanelContainer" parent="BottomContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_shop_panel")
+
+[node name="ShopVBox" type="VBoxContainer" parent="BottomContainer/ShopPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ShopHeaderHBox" type="HBoxContainer" parent="BottomContainer/ShopPanel/ShopVBox"]
+layout_mode = 2
+
+[node name="ShopIcon" type="Label" parent="BottomContainer/ShopPanel/ShopVBox/ShopHeaderHBox"]
+layout_mode = 2
+text = "⚙"
+
+[node name="ShopTitleLabel" type="Label" parent="BottomContainer/ShopPanel/ShopVBox/ShopHeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 17
+text = "UPGRADES & GENERATORS"
+
+[node name="ShopSpacer" type="Control" parent="BottomContainer/ShopPanel/ShopVBox/ShopHeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ShopSubtitleLabel" type="Label" parent="BottomContainer/ShopPanel/ShopVBox/ShopHeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.47, 0.56, 0.65, 1)
+theme_override_font_sizes/font_size = 12
+text = "EXPAND PRODUCTION"
+
+[node name="HSeparator" type="HSeparator" parent="BottomContainer/ShopPanel/ShopVBox"]
+layout_mode = 2
+
+[node name="UpgradeScroll" type="ScrollContainer" parent="BottomContainer/ShopPanel/ShopVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="UpgradeList" type="VBoxContainer" parent="BottomContainer/ShopPanel/ShopVBox/UpgradeScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
