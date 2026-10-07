@@ -10,14 +10,24 @@ signal rps_changed(rate_per_sec: float)
 signal frenzy_updated(multiplier: float, fill_percentage: float)
 signal upgrade_purchased(upgrade_id: String, new_level: int, current_cost: float)
 
+# Milestone P2-M3 Signals
+signal bonus_users_changed(total_bonus_users: int, added_amount: int)
+signal core_tapped(total_clicks: int)
+signal spark_collected(total_sparks: int)
+
 # --- State Variables ---
 var energy: float = 0.0
 var total_energy_earned: float = 0.0
 var total_clicks: int = 0
 var sparks_collected: int = 0
+var bonus_users: int = 0
 
 var base_click_power: float = 1.0
 var base_passive_rps: float = 0.0
+
+var total_passive_rps: float:
+	get:
+		return get_effective_passive_rps()
 
 var frenzy_meter: float = 0.0  # Range: 0.0 to 100.0
 var is_frenzy_active: bool = false
@@ -133,6 +143,7 @@ func reset_state() -> void:
 	total_energy_earned = 0.0
 	total_clicks = 0
 	sparks_collected = 0
+	bonus_users = 0
 	base_click_power = 1.0
 	base_passive_rps = 0.0
 	frenzy_meter = 0.0
@@ -148,9 +159,10 @@ func _process(delta: float) -> void:
 	var safe_delta: float = maxf(0.0, delta)
 	var clamped_delta: float = minf(0.1, safe_delta)
 	
-	# Passive accumulation using clamped frame delta
-	if base_passive_rps > 0.0:
-		var passive_gain: float = base_passive_rps * frenzy_multiplier * clamped_delta
+	# Passive accumulation using clamped frame delta and bonus users multiplier
+	var effective_rps: float = get_effective_passive_rps()
+	if effective_rps > 0.0:
+		var passive_gain: float = effective_rps * frenzy_multiplier * clamped_delta
 		energy += passive_gain
 		total_energy_earned += passive_gain
 		energy_changed.emit(energy, passive_gain)
@@ -175,6 +187,7 @@ func tap_core() -> float:
 	energy += earned
 	total_energy_earned += earned
 	total_clicks += 1
+	core_tapped.emit(total_clicks)
 	
 	if not is_frenzy_active:
 		frenzy_meter = minf(100.0, frenzy_meter + 4.0)
@@ -200,6 +213,7 @@ func collect_spark() -> float:
 	energy += earned
 	total_energy_earned += earned
 	sparks_collected += 1
+	spark_collected.emit(sparks_collected)
 	energy_changed.emit(energy, earned)
 	return earned
 
@@ -223,7 +237,7 @@ func buy_upgrade(upgrade_id: String) -> bool:
 	upgrade_purchased.emit(upgrade_id, int(up["level"]), next_cost)
 	energy_changed.emit(energy, -cost)
 	if up.get("type") == "idle":
-		rps_changed.emit(base_passive_rps)
+		rps_changed.emit(get_effective_passive_rps())
 	if upgrade_id == "overdrive_tuning" and is_frenzy_active:
 		frenzy_updated.emit(frenzy_multiplier, (frenzy_duration_remaining / 6.0) * 100.0)
 		
@@ -260,6 +274,27 @@ func get_upgrade_data(upgrade_id: String) -> Dictionary:
 		return up
 	return {}
 
+## Computes current bonus user passive multiplier (1.0 + 1% per bonus user).
+func get_bonus_multiplier() -> float:
+	return 1.0 + (float(bonus_users) * 0.01)
+
+## Returns passive RPS boosted by bonus users multiplier.
+func get_effective_passive_rps() -> float:
+	return base_passive_rps * get_bonus_multiplier()
+
+## Awards bonus users from daily quests or milestone rewards.
+func award_bonus_users(amount: int) -> void:
+	if amount <= 0:
+		return
+	bonus_users += amount
+	energy += float(amount)
+	total_energy_earned += float(amount)
+	recalculate_stats()
+	energy_changed.emit(energy, float(amount))
+	rps_changed.emit(get_effective_passive_rps())
+	bonus_users_changed.emit(bonus_users, amount)
+	save_to_disk()
+
 ## Serializes state to user://savegame.json.
 func save_to_disk() -> void:
 	var save_data: Dictionary = {
@@ -269,6 +304,7 @@ func save_to_disk() -> void:
 		"total_energy_earned": total_energy_earned,
 		"total_clicks": total_clicks,
 		"sparks_collected": sparks_collected,
+		"bonus_users": bonus_users,
 		"passive_rps": base_passive_rps,
 		"base_passive_rps": base_passive_rps,
 		"base_click_power": base_click_power,
@@ -319,6 +355,7 @@ func load_from_disk() -> bool:
 	
 	total_clicks = maxi(0, int(data.get("total_clicks", 0)))
 	sparks_collected = maxi(0, int(data.get("sparks_collected", 0)))
+	bonus_users = maxi(0, int(data.get("bonus_users", 0)))
 	
 	var saved_upgrades = data.get("upgrades", {})
 	if saved_upgrades is Dictionary:
@@ -349,7 +386,8 @@ func load_from_disk() -> bool:
 	if is_nan(elapsed) or is_inf(elapsed) or elapsed < 0.0:
 		elapsed = 0.0
 	var effective_elapsed: float = minf(elapsed, 28800.0)
-	var offline_gain: float = base_passive_rps * effective_elapsed * 0.5
+	var effective_rps: float = get_effective_passive_rps()
+	var offline_gain: float = effective_rps * effective_elapsed * 0.5
 	if is_nan(offline_gain) or is_inf(offline_gain) or offline_gain < 0.0:
 		offline_gain = 0.0
 	
@@ -358,7 +396,7 @@ func load_from_disk() -> bool:
 		total_energy_earned += offline_gain
 		
 	energy_changed.emit(energy, offline_gain)
-	rps_changed.emit(base_passive_rps)
+	rps_changed.emit(get_effective_passive_rps())
 	frenzy_updated.emit(frenzy_multiplier, 0.0)
 	return true
 

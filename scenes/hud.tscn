@@ -87,10 +87,43 @@ size_flags_horizontal = 3
 mouse_filter = 2
 
 [node name="StatusIndicator" type="Label" parent="TopContainer/TopVBox/HeaderHBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.46, 1, 0.01, 1)
 theme_override_font_sizes/font_size = 12
 text = "● ONLINE"
+
+[node name="OnlineActionBar" type="HBoxContainer" parent="TopContainer/TopVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AuthButton" type="Button" parent="TopContainer/TopVBox/OnlineActionBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "👤 Account"
+
+[node name="LeaderboardButton" type="Button" parent="TopContainer/TopVBox/OnlineActionBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🏆 Rank"
+
+[node name="GuildButton" type="Button" parent="TopContainer/TopVBox/OnlineActionBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🏢 Guild"
+
+[node name="QuestButton" type="Button" parent="TopContainer/TopVBox/OnlineActionBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "📜 Quests"
 
 [node name="EnergyDisplayPanel" type="PanelContainer" parent="TopContainer/TopVBox"]
 layout_mode = 2
@@ -212,3 +245,14 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
+
+[node name="ModalContainer" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+

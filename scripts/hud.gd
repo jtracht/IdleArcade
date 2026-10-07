@@ -10,6 +10,20 @@ extends Control
 @onready var frenzy_progress_bar: ProgressBar = %FrenzyProgressBar
 @onready var upgrade_list: VBoxContainer = %UpgradeList
 
+const AUTH_MODAL_SCENE: PackedScene = preload("res://scenes/ui/auth_modal.tscn")
+const LEADERBOARD_MODAL_SCENE: PackedScene = preload("res://scenes/ui/leaderboard_modal.tscn")
+const GUILD_MODAL_SCENE: PackedScene = preload("res://scenes/ui/guild_modal.tscn")
+const QUEST_MODAL_SCENE: PackedScene = preload("res://scenes/ui/quest_modal.tscn")
+
+@onready var status_indicator: Label = %StatusIndicator
+@onready var auth_button: Button = %AuthButton
+@onready var leaderboard_button: Button = %LeaderboardButton
+@onready var guild_button: Button = %GuildButton
+@onready var quest_button: Button = %QuestButton
+@onready var modal_container: Control = %ModalContainer
+
+var _active_modal: Control = null
+
 const UPGRADE_DEFINITIONS: Array[Dictionary] = [
 	{
 		"id": "click_booster",
@@ -99,6 +113,8 @@ var _upgrade_cards: Dictionary = {}
 func _ready() -> void:
 	_build_upgrade_cards()
 	_connect_game_state_signals()
+	_bind_action_bar_buttons()
+	_connect_nakama_signals()
 	_refresh_all_ui()
 
 func _connect_game_state_signals() -> void:
@@ -247,3 +263,83 @@ func _refresh_affordability(total_energy: float) -> void:
 func _refresh_all_upgrade_buttons() -> void:
 	var total_energy: float = GameState.energy if GameState != null else 0.0
 	_refresh_affordability(total_energy)
+
+func _bind_action_bar_buttons() -> void:
+	if auth_button != null:
+		auth_button.pressed.connect(func(): open_modal(AUTH_MODAL_SCENE))
+	if leaderboard_button != null:
+		leaderboard_button.pressed.connect(func(): open_modal(LEADERBOARD_MODAL_SCENE))
+	if guild_button != null:
+		guild_button.pressed.connect(func(): open_modal(GUILD_MODAL_SCENE))
+	if quest_button != null:
+		quest_button.pressed.connect(func(): open_modal(QUEST_MODAL_SCENE))
+
+func open_modal(modal_scene: PackedScene) -> Control:
+	if _active_modal != null and is_instance_valid(_active_modal):
+		if _active_modal.get_parent() != null:
+			_active_modal.get_parent().remove_child(_active_modal)
+		_active_modal.queue_free()
+		_active_modal = null
+
+	var modal_inst: Control = modal_scene.instantiate()
+	if modal_container != null:
+		modal_container.add_child(modal_inst)
+	else:
+		add_child(modal_inst)
+
+	_active_modal = modal_inst
+
+	if modal_inst.has_signal("closed"):
+		modal_inst.closed.connect(func():
+			if _active_modal == modal_inst:
+				_active_modal = null
+		)
+	if modal_inst.has_method("open"):
+		modal_inst.open()
+
+	return modal_inst
+
+func _get_nakama_manager() -> Node:
+	if has_node("/root/NakamaManager"):
+		return get_node("/root/NakamaManager")
+	return null
+
+func _connect_nakama_signals() -> void:
+	var nm = _get_nakama_manager()
+	if nm != null:
+		if nm.has_signal("connection_status_changed") and not nm.connection_status_changed.is_connected(_on_connection_status_changed):
+			nm.connection_status_changed.connect(_on_connection_status_changed)
+		if nm.has_signal("authenticated") and not nm.authenticated.is_connected(_on_authenticated):
+			nm.authenticated.connect(_on_authenticated)
+		if nm.has_signal("logged_out") and not nm.logged_out.is_connected(_on_logged_out):
+			nm.logged_out.connect(_on_logged_out)
+
+		var online: bool = nm.is_online if "is_online" in nm else false
+		_update_connection_status(online, "ONLINE" if online else "OFFLINE")
+		if nm.has_method("is_authenticated") and nm.is_authenticated():
+			_on_authenticated(nm.session if "session" in nm else null)
+	else:
+		_update_connection_status(false, "OFFLINE")
+
+func _on_connection_status_changed(is_online: bool, status_text: String) -> void:
+	_update_connection_status(is_online, status_text)
+
+func _update_connection_status(is_online: bool, _status_text: String) -> void:
+	if status_indicator == null:
+		return
+	if is_online:
+		status_indicator.text = "● ONLINE"
+		status_indicator.add_theme_color_override("font_color", Color(0.46, 1.0, 0.01))
+	else:
+		status_indicator.text = "○ OFFLINE"
+		status_indicator.add_theme_color_override("font_color", Color(0.7, 0.75, 0.82))
+
+func _on_authenticated(session) -> void:
+	if auth_button != null and session != null:
+		var uname: String = session.username if "username" in session else ""
+		auth_button.text = "🔑 " + (uname if not uname.is_empty() else "Account")
+
+func _on_logged_out() -> void:
+	if auth_button != null:
+		auth_button.text = "👤 Account"
+

@@ -1,0 +1,370 @@
+[gd_scene load_steps=5 format=3 uid="uid://e4n8t7y3m0d04"]
+
+[ext_resource type="Script" path="res://scenes/ui/quest_modal.gd" id="1_quest"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_card"]
+bg_color = Color(0.0666667, 0.0901961, 0.141176, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.85, 1, 0.65)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bonus_card"]
+bg_color = Color(0.0392157, 0.0588235, 0.0980392, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_quest_card"]
+bg_color = Color(0.0470588, 0.0705882, 0.117647, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+
+[node name="QuestModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_quest")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.04, 0.08, 0.78)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ModalCard" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(660, 880)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "📜"
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "DAILY QUESTS & CHALLENGES"
+
+[node name="Spacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CloseButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+text = "✕"
+
+[node name="HSeparator1" type="HSeparator" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="SubHeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="DateLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/SubHeaderHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.82, 1)
+theme_override_font_sizes/font_size = 13
+text = "Cycle: 2026-10-06 (UTC)"
+
+[node name="SubSpacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/SubHeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="RefreshQuestsButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/SubHeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 34)
+layout_mode = 2
+text = "🔄 Refresh"
+
+[node name="BonusPanel" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bonus_card")
+
+[node name="BonusVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/BonusPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="BonusHeader" type="Label" parent="CenterContainer/ModalCard/CardVBox/BonusPanel/BonusVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "PERMANENT MULTIPLIER BOOST"
+
+[node name="TotalBonusLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/BonusPanel/BonusVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 15
+text = "👥 Bonus Users: +0  (+0% Passive RPS Boost)"
+
+[node name="BonusDesc" type="Label" parent="CenterContainer/ModalCard/CardVBox/BonusPanel/BonusVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "Each bonus user permanently boosts passive production by +1%."
+
+[node name="HSeparator2" type="HSeparator" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="QuestsScroll" type="ScrollContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="QuestsListVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="QuestCard_Tap" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_quest_card")
+
+[node name="CardVBox_Tap" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Tap"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TitleHBox_Tap" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Tap/CardVBox_Tap"]
+layout_mode = 2
+
+[node name="Title_Tap" type="Label" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Tap/CardVBox_Tap/TitleHBox_Tap"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "⚡ Reactor Tapper"
+
+[node name="Spacer_Tap" type="Control" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Tap/CardVBox_Tap/TitleHBox_Tap"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="Reward_Tap" type="Label" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Tap/CardVBox_Tap/TitleHBox_Tap"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "+25 Bonus Users"
+
+[node name="Desc_Tap" type="Label" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Tap/CardVBox_Tap"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.82, 1)
+theme_override_font_sizes/font_size = 12
+text = "Tap the startup core 50 times"
+
+[node name="ProgressHBox_Tap" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Tap/CardVBox_Tap"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TapProgressBar" type="ProgressBar" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Tap/CardVBox_Tap/ProgressHBox_Tap"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 50.0
+show_percentage = false
+
+[node name="TapProgressLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Tap/CardVBox_Tap/ProgressHBox_Tap"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "0 / 50"
+horizontal_alignment = 2
+
+[node name="ClaimButton_Tap" type="Button" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Tap/CardVBox_Tap"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+disabled = true
+text = "In Progress (0/50)"
+
+[node name="QuestCard_Upgrade" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_quest_card")
+
+[node name="CardVBox_Upgrade" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Upgrade"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TitleHBox_Upgrade" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Upgrade/CardVBox_Upgrade"]
+layout_mode = 2
+
+[node name="Title_Upgrade" type="Label" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Upgrade/CardVBox_Upgrade/TitleHBox_Upgrade"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "⚙ Industrial Expansion"
+
+[node name="Spacer_Upgrade" type="Control" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Upgrade/CardVBox_Upgrade/TitleHBox_Upgrade"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="Reward_Upgrade" type="Label" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Upgrade/CardVBox_Upgrade/TitleHBox_Upgrade"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "+50 Bonus Users"
+
+[node name="Desc_Upgrade" type="Label" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Upgrade/CardVBox_Upgrade"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.82, 1)
+theme_override_font_sizes/font_size = 12
+text = "Purchase 3 generator upgrades"
+
+[node name="ProgressHBox_Upgrade" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Upgrade/CardVBox_Upgrade"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="UpgradeProgressBar" type="ProgressBar" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Upgrade/CardVBox_Upgrade/ProgressHBox_Upgrade"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 3.0
+show_percentage = false
+
+[node name="UpgradeProgressLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Upgrade/CardVBox_Upgrade/ProgressHBox_Upgrade"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "0 / 3"
+horizontal_alignment = 2
+
+[node name="ClaimButton_Upgrade" type="Button" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Upgrade/CardVBox_Upgrade"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+disabled = true
+text = "In Progress (0/3)"
+
+[node name="QuestCard_Spark" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_quest_card")
+
+[node name="CardVBox_Spark" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Spark"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TitleHBox_Spark" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Spark/CardVBox_Spark"]
+layout_mode = 2
+
+[node name="Title_Spark" type="Label" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Spark/CardVBox_Spark/TitleHBox_Spark"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "✨ Energy Surge"
+
+[node name="Spacer_Spark" type="Control" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Spark/CardVBox_Spark/TitleHBox_Spark"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="Reward_Spark" type="Label" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Spark/CardVBox_Spark/TitleHBox_Spark"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "+100 Bonus Users"
+
+[node name="Desc_Spark" type="Label" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Spark/CardVBox_Spark"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.82, 1)
+theme_override_font_sizes/font_size = 12
+text = "Catch 3 drifting bonus sparks"
+
+[node name="ProgressHBox_Spark" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Spark/CardVBox_Spark"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SparkProgressBar" type="ProgressBar" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Spark/CardVBox_Spark/ProgressHBox_Spark"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 3.0
+show_percentage = false
+
+[node name="SparkProgressLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Spark/CardVBox_Spark/ProgressHBox_Spark"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "0 / 3"
+horizontal_alignment = 2
+
+[node name="ClaimButton_Spark" type="Button" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Spark/CardVBox_Spark"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+disabled = true
+text = "In Progress (0/3)"
+
+[node name="LoadingIndicator" type="Label" parent="CenterContainer/ModalCard/CardVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+text = "Loading..."
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 1, 0.35, 1)
+text = ""
+horizontal_alignment = 1

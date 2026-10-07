@@ -1,0 +1,270 @@
+[gd_scene load_steps=4 format=3 uid="uid://d3m7s6x2n9c03"]
+
+[ext_resource type="Script" path="res://scenes/ui/guild_modal.gd" id="1_guild"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_card"]
+bg_color = Color(0.0666667, 0.0901961, 0.141176, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.85, 1, 0.65)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_info_panel"]
+bg_color = Color(0.0392157, 0.0588235, 0.0980392, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+
+[node name="GuildModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_guild")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.04, 0.08, 0.78)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ModalCard" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(660, 880)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "🏢"
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "ENTERPRISE NETWORKS (GUILDS)"
+
+[node name="Spacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CloseButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+text = "✕"
+
+[node name="HSeparator1" type="HSeparator" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="NoGuildView" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="CreateTitle" type="Label" parent="CenterContainer/ModalCard/CardVBox/NoGuildView"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "FOUND A NEW NETWORK"
+
+[node name="GuildNameInput" type="LineEdit" parent="CenterContainer/ModalCard/CardVBox/NoGuildView"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Network Name (e.g. Unicorn Ventures)"
+
+[node name="GuildDescInput" type="LineEdit" parent="CenterContainer/ModalCard/CardVBox/NoGuildView"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Network Mission & Description"
+
+[node name="CreateOptionsHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/NoGuildView"]
+layout_mode = 2
+
+[node name="OpenCheckBox" type="CheckBox" parent="CenterContainer/ModalCard/CardVBox/NoGuildView/CreateOptionsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Public Network (Direct Join)"
+
+[node name="CreateSpacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/NoGuildView/CreateOptionsHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CreateButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/NoGuildView/CreateOptionsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 38)
+layout_mode = 2
+text = "➕ Create Network"
+
+[node name="HSeparator2" type="HSeparator" parent="CenterContainer/ModalCard/CardVBox/NoGuildView"]
+layout_mode = 2
+
+[node name="BrowseTitle" type="Label" parent="CenterContainer/ModalCard/CardVBox/NoGuildView"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "BROWSE PUBLIC NETWORKS"
+
+[node name="SearchHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/NoGuildView"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SearchInput" type="LineEdit" parent="CenterContainer/ModalCard/CardVBox/NoGuildView/SearchHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Search networks by name..."
+
+[node name="SearchButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/NoGuildView/SearchHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 36)
+layout_mode = 2
+text = "🔍 Search"
+
+[node name="GuildScroll" type="ScrollContainer" parent="CenterContainer/ModalCard/CardVBox/NoGuildView"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="GuildList" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/NoGuildView/GuildScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="InGuildView" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="GuildInfoPanel" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/InGuildView"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_info_panel")
+
+[node name="GuildInfoVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/InGuildView/GuildInfoPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="GuildNameLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/InGuildView/GuildInfoPanel/GuildInfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "My Syndicate"
+
+[node name="GuildDescLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/InGuildView/GuildInfoPanel/GuildInfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.82, 1)
+theme_override_font_sizes/font_size = 13
+text = "Network description..."
+
+[node name="GuildMemberCountLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/InGuildView/GuildInfoPanel/GuildInfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "Members: 1 / 50"
+
+[node name="MembersHeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/InGuildView"]
+layout_mode = 2
+
+[node name="MembersTitle" type="Label" parent="CenterContainer/ModalCard/CardVBox/InGuildView/MembersHeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "NETWORK MEMBERS"
+
+[node name="MembersSpacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/InGuildView/MembersHeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="RefreshMembersButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/InGuildView/MembersHeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 34)
+layout_mode = 2
+text = "🔄 Refresh Roster"
+
+[node name="MembersScroll" type="ScrollContainer" parent="CenterContainer/ModalCard/CardVBox/InGuildView"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="MemberList" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/InGuildView/MembersScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="GuildActionsHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/InGuildView"]
+layout_mode = 2
+
+[node name="LeaveButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/InGuildView/GuildActionsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.35, 1)
+text = "🚪 Leave Network"
+
+[node name="LoadingIndicator" type="Label" parent="CenterContainer/ModalCard/CardVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+text = "Communicating with network..."
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 1, 0.35, 1)
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 2

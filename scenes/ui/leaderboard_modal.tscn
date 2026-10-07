@@ -1,0 +1,226 @@
+[gd_scene load_steps=5 format=3 uid="uid://c2k9r5y3p8b02"]
+
+[ext_resource type="Script" path="res://scenes/ui/leaderboard_modal.gd" id="1_lb"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_card"]
+bg_color = Color(0.0666667, 0.0901961, 0.141176, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.85, 1, 0.65)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_player_panel"]
+bg_color = Color(0.0392157, 0.0588235, 0.0980392, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_header_panel"]
+bg_color = Color(0.05, 0.07, 0.11, 0.9)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+
+[node name="LeaderboardModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_lb")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.04, 0.08, 0.78)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ModalCard" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(660, 880)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "🏆"
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "SCOREBOARDS & RANKINGS"
+
+[node name="Spacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CloseButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+text = "✕"
+
+[node name="HSeparator1" type="HSeparator" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="TabHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="GlobalTab" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🌍 Global"
+
+[node name="LocalTab" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "📍 Country (DE)"
+
+[node name="GuildTab" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🏢 Network"
+
+[node name="PlayerStatusPanel" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_player_panel")
+
+[node name="PlayerStatusHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/PlayerStatusPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MyScoreLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/PlayerStatusPanel/PlayerStatusHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "My Lifetime Users: 0 👥"
+
+[node name="SubmitScoreButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/PlayerStatusPanel/PlayerStatusHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 36)
+layout_mode = 2
+text = "⚡ Submit Score"
+
+[node name="RefreshButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/PlayerStatusPanel/PlayerStatusHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(90, 36)
+layout_mode = 2
+text = "🔄 Refresh"
+
+[node name="TableHeaderPanel" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_header_panel")
+
+[node name="TableHeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TableHeaderPanel"]
+layout_mode = 2
+
+[node name="ColRank" type="Label" parent="CenterContainer/ModalCard/CardVBox/TableHeaderPanel/TableHeaderHBox"]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "RANK"
+
+[node name="ColPlayer" type="Label" parent="CenterContainer/ModalCard/CardVBox/TableHeaderPanel/TableHeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "STARTUP FOUNDER"
+
+[node name="ColScore" type="Label" parent="CenterContainer/ModalCard/CardVBox/TableHeaderPanel/TableHeaderHBox"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "LIFETIME USERS"
+horizontal_alignment = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="LeaderboardList" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="LoadingIndicator" type="Label" parent="CenterContainer/ModalCard/CardVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+text = "Fetching scoreboard data..."
+horizontal_alignment = 1
+
+[node name="EmptyStateLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.82, 1)
+text = "No scores recorded yet."
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 1, 0.35, 1)
+text = ""
+horizontal_alignment = 1

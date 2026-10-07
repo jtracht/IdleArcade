@@ -1,0 +1,289 @@
+[gd_scene load_steps=5 format=3 uid="uid://b1m8q4y2p7a01"]
+
+[ext_resource type="Script" path="res://scenes/ui/auth_modal.gd" id="1_auth"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_card"]
+bg_color = Color(0.0666667, 0.0901961, 0.141176, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.85, 1, 0.65)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_info_panel"]
+bg_color = Color(0.0392157, 0.0588235, 0.0980392, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+
+[node name="AuthModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_auth")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.04, 0.08, 0.78)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ModalCard" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(640, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "🔑"
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "ACCOUNT & AUTHENTICATION"
+
+[node name="Spacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CloseButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+text = "✕"
+
+[node name="HSeparator1" type="HSeparator" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="SessionInfoPanel" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_info_panel")
+
+[node name="SessionVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/SessionInfoPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="StatusHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/SessionInfoPanel/SessionVBox"]
+layout_mode = 2
+
+[node name="StatusTitle" type="Label" parent="CenterContainer/ModalCard/CardVBox/SessionInfoPanel/SessionVBox/StatusHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.82, 1)
+theme_override_font_sizes/font_size = 13
+text = "Status:"
+
+[node name="StatusValueLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/SessionInfoPanel/SessionVBox/StatusHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.46, 1, 0.01, 1)
+theme_override_font_sizes/font_size = 13
+text = "● Connected (Device-ID)"
+
+[node name="StatusLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/SessionInfoPanel/SessionVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 1, 0.35, 1)
+theme_override_font_sizes/font_size = 12
+autowrap_mode = 2
+
+[node name="UserHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/SessionInfoPanel/SessionVBox"]
+layout_mode = 2
+
+[node name="UserIdTitle" type="Label" parent="CenterContainer/ModalCard/CardVBox/SessionInfoPanel/SessionVBox/UserHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.82, 1)
+theme_override_font_sizes/font_size = 12
+text = "User ID:"
+
+[node name="UserIdLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/SessionInfoPanel/SessionVBox/UserHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+text = "None"
+clip_text = true
+
+[node name="UsernameHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/SessionInfoPanel/SessionVBox"]
+layout_mode = 2
+
+[node name="UsernameTitle" type="Label" parent="CenterContainer/ModalCard/CardVBox/SessionInfoPanel/SessionVBox/UsernameHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.82, 1)
+theme_override_font_sizes/font_size = 13
+text = "Username:"
+
+[node name="UsernameLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/SessionInfoPanel/SessionVBox/UsernameHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "Guest"
+
+[node name="DeviceIdHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/SessionInfoPanel/SessionVBox"]
+layout_mode = 2
+
+[node name="DeviceIdTitle" type="Label" parent="CenterContainer/ModalCard/CardVBox/SessionInfoPanel/SessionVBox/DeviceIdHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.82, 1)
+theme_override_font_sizes/font_size = 11
+text = "Device ID:"
+
+[node name="DeviceIdLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/SessionInfoPanel/SessionVBox/DeviceIdHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 11
+text = "..."
+clip_text = true
+
+[node name="HSeparator2" type="HSeparator" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="CredentialsTitle" type="Label" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "EMAIL / PASSWORD SIGN-IN"
+
+[node name="CredentialsVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="EmailHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/CredentialsVBox"]
+layout_mode = 2
+
+[node name="EmailLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/CredentialsVBox/EmailHBox"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "Email:"
+
+[node name="EmailInput" type="LineEdit" parent="CenterContainer/ModalCard/CardVBox/CredentialsVBox/EmailHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "founder@startup.com"
+
+[node name="PasswordHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/CredentialsVBox"]
+layout_mode = 2
+
+[node name="PasswordLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/CredentialsVBox/PasswordHBox"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "Password:"
+
+[node name="PasswordInput" type="LineEdit" parent="CenterContainer/ModalCard/CardVBox/CredentialsVBox/PasswordHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "At least 8 chars"
+secret = true
+
+[node name="UsernameHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/CredentialsVBox"]
+layout_mode = 2
+
+[node name="UsernameLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/CredentialsVBox/UsernameHBox"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "Username:"
+
+[node name="UsernameInput" type="LineEdit" parent="CenterContainer/ModalCard/CardVBox/CredentialsVBox/UsernameHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Optional name (Registration)"
+
+[node name="AuthButtonsHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LoginButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/AuthButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Login (Email)"
+
+[node name="RegisterButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/AuthButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Register Account"
+
+[node name="HSeparator3" type="HSeparator" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="AltActionsVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DeviceLoginButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/AltActionsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "⚡ Quick Login (Device-ID)"
+
+[node name="GoogleButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/AltActionsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "🌐 Sign in with Google [OAuth Stub]"
+
+[node name="LogoutButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/AltActionsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.35, 1)
+text = "🚪 Logout Session"
+
+[node name="LoadingIndicator" type="Label" parent="CenterContainer/ModalCard/CardVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+text = "Authenticating..."
+horizontal_alignment = 1
