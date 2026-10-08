@@ -16,3 +16,7 @@ Thumbs.db
 
 # Exclude Nakama data volume if it gets created here
 data/
+
+# Python cache
+__pycache__/
+*.pyc

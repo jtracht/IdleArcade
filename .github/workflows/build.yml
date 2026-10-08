@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
+      - '[0-9]*'
   workflow_dispatch:
 
 permissions:
@@ -22,7 +25,9 @@ jobs:
       - name: Relocate Godot Export Templates
         run: |
           mkdir -v -p ~/.local/share/godot/export_templates
-          cp -r /root/.local/share/godot/export_templates/* ~/.local/share/godot/export_templates/
+          if [ "$HOME" != "/root" ]; then
+            cp -r /root/.local/share/godot/export_templates/* ~/.local/share/godot/export_templates/ || true
+          fi
 
       - name: Build Web Export
         run: |
@@ -31,7 +36,7 @@ jobs:
 
       - name: Create Web Distribution ZIP
         run: |
-          cd build/web && zip -r ../../../web-build.zip .
+          cd build/web && zip -r ../../web-build.zip .
 
       - name: Upload Web Directory Artifact
         uses: actions/upload-artifact@v4
@@ -68,15 +73,17 @@ jobs:
       - name: Relocate Godot Export Templates & Config
         run: |
           mkdir -v -p ~/.local/share/godot/export_templates
-          cp -r /root/.local/share/godot/export_templates/* ~/.local/share/godot/export_templates/
-          mkdir -v -p ~/.config/godot
-          cp -r /root/.config/godot/* ~/.config/godot/ || true
+          if [ "$HOME" != "/root" ]; then
+            cp -r /root/.local/share/godot/export_templates/* ~/.local/share/godot/export_templates/ || true
+            mkdir -v -p ~/.config/godot
+            cp -r /root/.config/godot/* ~/.config/godot/ || true
+          fi
 
       - name: Build Android APK Export
         run: |
           mkdir -v -p build/android
           godot --headless --export-release "Android" build/android/IdleArcade.apk
-          cp build/android/IdleArcade.apk ../IdleArcade.apk
+          cp build/android/IdleArcade.apk ./IdleArcade.apk
 
       - name: Upload Android APK Artifact
         uses: actions/upload-artifact@v4
@@ -86,6 +93,7 @@ jobs:
 
   release:
     name: Create GitHub Release
+    if: startsWith(github.ref, 'refs/tags/')
     needs: [export-web, export-android]
     runs-on: ubuntu-latest
     permissions:
@@ -93,6 +101,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Download Web Directory Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: build/web
 
       - name: Download Web ZIP Artifact
         uses: actions/download-artifact@v4
@@ -108,12 +122,19 @@ jobs:
 
       - name: Publish Automated Release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
         with:
-          tag_name: release-${{ github.sha }}
-          name: Release ${{ github.sha }}
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
           files: |
-            dist/web-build.zip
             dist/IdleArcade.apk
+            dist/web-build.zip
+
+      - name: Deploy Web Export to release branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: release
+          publish_dir: ./build/web
+          commit_message: "Deploy web build ${{ github.ref_name }}"
