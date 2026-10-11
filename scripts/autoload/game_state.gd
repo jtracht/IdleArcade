@@ -15,12 +15,24 @@ signal bonus_users_changed(total_bonus_users: int, added_amount: int)
 signal core_tapped(total_clicks: int)
 signal spark_collected(total_sparks: int)
 
+# Milestone P4-M2 & Phase 4 Signals
+signal avatar_stat_updated(stat_name: String, new_value: float)
+signal collectible_picked_up(item_type: String, total_collected: int)
+signal zone_unlocked(zone_id: String)
+
 # --- State Variables ---
 var energy: float = 0.0
 var total_energy_earned: float = 0.0
 var total_clicks: int = 0
 var sparks_collected: int = 0
 var bonus_users: int = 0
+
+# Phase 4 (3D Open World & Meta-Progression) State Variables
+var avatar_speed_level: int = 0
+var idle_level: int = 1
+var pickup_radius_level: int = 0
+var collectibles_collected: int = 0
+var unlocked_zones: Array[String] = []
 
 var base_click_power: float = 1.0
 var base_passive_rps: float = 0.0
@@ -128,6 +140,36 @@ const DEFAULT_UPGRADES: Dictionary = {
 		"type": "frenzy",
 		"power_gain": 0.5,
 		"current_cost": 100.0
+	},
+	"avatar_speed": {
+		"name": "Agile Sneakers",
+		"description": "+15% Avatar Run Speed",
+		"level": 0,
+		"base_cost": 50.0,
+		"cost_mult": 1.25,
+		"type": "avatar_stat",
+		"power_gain": 0.15,
+		"current_cost": 50.0
+	},
+	"clearance_level": {
+		"name": "Executive Badge",
+		"description": "Unlocks campus security zones",
+		"level": 0,
+		"base_cost": 250.0,
+		"cost_mult": 1.75,
+		"type": "meta",
+		"power_gain": 1.0,
+		"current_cost": 250.0
+	},
+	"pickup_radius": {
+		"name": "Magnetic Charm",
+		"description": "+25% 3D Item Pickup Radius",
+		"level": 0,
+		"base_cost": 75.0,
+		"cost_mult": 1.25,
+		"type": "avatar_stat",
+		"power_gain": 0.25,
+		"current_cost": 75.0
 	}
 }
 
@@ -150,6 +192,12 @@ func reset_state() -> void:
 	is_frenzy_active = false
 	frenzy_multiplier = 1.0
 	frenzy_duration_remaining = 0.0
+	
+	avatar_speed_level = 0
+	idle_level = 1
+	pickup_radius_level = 0
+	collectibles_collected = 0
+	unlocked_zones.clear()
 	
 	upgrades.clear()
 	for up_id in DEFAULT_UPGRADES:
@@ -240,6 +288,12 @@ func buy_upgrade(upgrade_id: String) -> bool:
 		rps_changed.emit(get_effective_passive_rps())
 	if upgrade_id == "overdrive_tuning" and is_frenzy_active:
 		frenzy_updated.emit(frenzy_multiplier, (frenzy_duration_remaining / 6.0) * 100.0)
+	if upgrade_id == "avatar_speed":
+		avatar_stat_updated.emit("avatar_speed", get_effective_avatar_speed())
+	elif upgrade_id == "pickup_radius":
+		avatar_stat_updated.emit("pickup_radius", get_effective_pickup_radius())
+	elif upgrade_id == "clearance_level":
+		avatar_stat_updated.emit("idle_level", float(idle_level))
 		
 	return true
 
@@ -264,6 +318,12 @@ func recalculate_stats() -> void:
 	if is_frenzy_active:
 		var tuning_level: int = int(upgrades.get("overdrive_tuning", {}).get("level", 0))
 		frenzy_multiplier = 3.0 + (0.5 * tuning_level)
+		
+	# Phase 4 stats derived from upgrades
+	avatar_speed_level = int(upgrades.get("avatar_speed", {}).get("level", 0))
+	pickup_radius_level = int(upgrades.get("pickup_radius", {}).get("level", 0))
+	var clearance: int = int(upgrades.get("clearance_level", {}).get("level", 0))
+	idle_level = 1 + clearance
 
 ## Returns upgrade state dictionary (level, current_cost, name, description, etc.).
 func get_upgrade_data(upgrade_id: String) -> Dictionary:
@@ -295,6 +355,45 @@ func award_bonus_users(amount: int) -> void:
 	bonus_users_changed.emit(bonus_users, amount)
 	save_to_disk()
 
+# ==============================================================================
+# Phase 4 3D Meta-Progression & Interaction Methods
+# ==============================================================================
+
+## Computes effective avatar movement speed multiplier (1.0 + avatar_speed_level * 0.15).
+func get_effective_avatar_speed() -> float:
+	return 1.0 + float(avatar_speed_level) * 0.15
+
+## Returns current idle progression / security clearance level (baseline 1).
+func get_idle_level() -> int:
+	return idle_level
+
+## Computes effective 3D item pickup radius multiplier (1.0 + pickup_radius_level * 0.25).
+func get_effective_pickup_radius() -> float:
+	return 1.0 + float(pickup_radius_level) * 0.25
+
+## Registers collection of a 3D physical item (briefcase/power-up) and awards energy.
+func collect_3d_item(item_type: String, reward_amount: float = 50.0) -> void:
+	var reward: float = maxf(0.0, reward_amount)
+	energy += reward
+	total_energy_earned += reward
+	collectibles_collected += 1
+	energy_changed.emit(energy, reward)
+	collectible_picked_up.emit(item_type, collectibles_collected)
+
+## Unlocks a 3D campus zone barrier if not already unlocked.
+func unlock_zone(zone_id: String) -> bool:
+	if zone_id.is_empty():
+		return false
+	if is_zone_unlocked(zone_id):
+		return true
+	unlocked_zones.append(zone_id)
+	zone_unlocked.emit(zone_id)
+	return true
+
+## Returns true if the specified zone barrier has been unlocked.
+func is_zone_unlocked(zone_id: String) -> bool:
+	return unlocked_zones.has(zone_id)
+
 ## Serializes state to user://savegame.json.
 func save_to_disk() -> void:
 	var save_data: Dictionary = {
@@ -308,6 +407,11 @@ func save_to_disk() -> void:
 		"passive_rps": base_passive_rps,
 		"base_passive_rps": base_passive_rps,
 		"base_click_power": base_click_power,
+		"avatar_speed_level": avatar_speed_level,
+		"idle_level": idle_level,
+		"pickup_radius_level": pickup_radius_level,
+		"collectibles_collected": collectibles_collected,
+		"unlocked_zones": unlocked_zones.duplicate(),
 		"upgrades": {}
 	}
 	
@@ -357,6 +461,18 @@ func load_from_disk() -> bool:
 	sparks_collected = maxi(0, int(data.get("sparks_collected", 0)))
 	bonus_users = maxi(0, int(data.get("bonus_users", 0)))
 	
+	avatar_speed_level = maxi(0, int(data.get("avatar_speed_level", 0)))
+	idle_level = maxi(1, int(data.get("idle_level", 1)))
+	pickup_radius_level = maxi(0, int(data.get("pickup_radius_level", 0)))
+	collectibles_collected = maxi(0, int(data.get("collectibles_collected", 0)))
+	
+	unlocked_zones.clear()
+	var raw_zones = data.get("unlocked_zones", [])
+	if raw_zones is Array:
+		for z in raw_zones:
+			if z is String and not z.is_empty():
+				unlocked_zones.append(z)
+	
 	var saved_upgrades = data.get("upgrades", {})
 	if saved_upgrades is Dictionary:
 		for up_id in saved_upgrades:
@@ -373,6 +489,13 @@ func load_from_disk() -> bool:
 				upgrades[up_id]["current_cost"] = next_cost
 				
 	recalculate_stats()
+	# Defensive fallback: if explicit top-level avatar stats were provided in save data (e.g., custom saves)
+	if data.has("avatar_speed_level"):
+		avatar_speed_level = maxi(avatar_speed_level, maxi(0, int(data.get("avatar_speed_level", 0))))
+	if data.has("idle_level"):
+		idle_level = maxi(idle_level, maxi(1, int(data.get("idle_level", 1))))
+	if data.has("pickup_radius_level"):
+		pickup_radius_level = maxi(pickup_radius_level, maxi(0, int(data.get("pickup_radius_level", 0))))
 	
 	# If save file explicitly specifies passive_rps, ensure it is honored
 	var explicit_rps: float = float(data.get("base_passive_rps", data.get("passive_rps", 0.0)))

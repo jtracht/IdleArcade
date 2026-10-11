@@ -105,6 +105,33 @@ const UPGRADE_DEFINITIONS: Array[Dictionary] = [
 		"power_gain": 0.5,
 		"type": "frenzy",
 		"description": "+0.5x Viraler Hype Multiplier"
+	},
+	{
+		"id": "avatar_speed",
+		"name": "Agile Sneakers",
+		"base_cost": 50.0,
+		"cost_mult": 1.25,
+		"power_gain": 0.15,
+		"type": "avatar_stat",
+		"description": "+15% Avatar Run Speed"
+	},
+	{
+		"id": "clearance_level",
+		"name": "Executive Badge",
+		"base_cost": 250.0,
+		"cost_mult": 1.75,
+		"power_gain": 1.0,
+		"type": "meta",
+		"description": "Unlocks campus security zones"
+	},
+	{
+		"id": "pickup_radius",
+		"name": "Magnetic Charm",
+		"base_cost": 75.0,
+		"cost_mult": 1.25,
+		"power_gain": 0.25,
+		"type": "avatar_stat",
+		"description": "+25% 3D Item Pickup Radius"
 	}
 ]
 
@@ -298,6 +325,19 @@ func open_modal(modal_scene: PackedScene) -> Control:
 		modal_inst.open()
 
 	return modal_inst
+
+func has_active_modal() -> bool:
+	return _active_modal != null and is_instance_valid(_active_modal)
+
+func dismiss_active_modal() -> bool:
+	if has_active_modal():
+		if _active_modal.has_method("close"):
+			_active_modal.close()
+		else:
+			_active_modal.queue_free()
+		_active_modal = null
+		return true
+	return false
 
 func _get_nakama_manager() -> Node:
 	if has_node("/root/NakamaManager"):

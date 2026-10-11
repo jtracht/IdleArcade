@@ -1,0 +1,322 @@
+[gd_scene load_steps=22 format=3 uid="uid://dm4main3d001scene"]
+
+[ext_resource type="Script" path="res://scripts/main_3d.gd" id="1_main3d"]
+[ext_resource type="PackedScene" uid="uid://c8avatar3d001scene" path="res://scenes/avatar_3d.tscn" id="2_avatar"]
+[ext_resource type="PackedScene" uid="uid://d3y8w1p6k4m20" path="res://scenes/hud.tscn" id="3_hud"]
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 1
+background_color = Color(0.0705882, 0.0862745, 0.12549, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.376471, 0.439216, 0.533333, 1)
+ambient_light_energy = 0.75
+tonemap_mode = 2
+
+[sub_resource type="StandardMaterial3D" id="Mat_LobbyFloor"]
+albedo_color = Color(0.18, 0.22, 0.28, 1)
+roughness = 0.65
+metallic = 0.05
+
+[sub_resource type="BoxMesh" id="Mesh_LobbyFloor"]
+material = SubResource("Mat_LobbyFloor")
+size = Vector3(20, 0.2, 20)
+
+[sub_resource type="BoxShape3D" id="Shape_LobbyFloor"]
+size = Vector3(20, 1, 20)
+
+[sub_resource type="StandardMaterial3D" id="Mat_OfficeFloor"]
+albedo_color = Color(0.24, 0.2, 0.18, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="Mesh_OfficeFloor"]
+material = SubResource("Mat_OfficeFloor")
+size = Vector3(18, 0.2, 20)
+
+[sub_resource type="BoxShape3D" id="Shape_OfficeFloor"]
+size = Vector3(18, 1, 20)
+
+[sub_resource type="StandardMaterial3D" id="Mat_ServerFloor"]
+albedo_color = Color(0.1, 0.12, 0.16, 1)
+roughness = 0.4
+metallic = 0.45
+
+[sub_resource type="BoxMesh" id="Mesh_ServerFloor"]
+material = SubResource("Mat_ServerFloor")
+size = Vector3(20, 0.2, 16)
+
+[sub_resource type="BoxShape3D" id="Shape_ServerFloor"]
+size = Vector3(20, 1, 16)
+
+[sub_resource type="StandardMaterial3D" id="Mat_LabFloor"]
+albedo_color = Color(0.32, 0.36, 0.44, 1)
+roughness = 0.5
+metallic = 0.1
+
+[sub_resource type="BoxMesh" id="Mesh_LabFloor"]
+material = SubResource("Mat_LabFloor")
+size = Vector3(18, 0.2, 20)
+
+[sub_resource type="BoxShape3D" id="Shape_LabFloor"]
+size = Vector3(18, 1, 20)
+
+[sub_resource type="StandardMaterial3D" id="Mat_CourtyardFloor"]
+albedo_color = Color(0.16, 0.34, 0.2, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="Mesh_CourtyardFloor"]
+material = SubResource("Mat_CourtyardFloor")
+size = Vector3(24, 0.2, 16)
+
+[sub_resource type="BoxShape3D" id="Shape_CourtyardFloor"]
+size = Vector3(24, 1, 16)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Wall"]
+albedo_color = Color(0.85, 0.88, 0.92, 1)
+roughness = 0.7
+metallic = 0.05
+
+[sub_resource type="BoxMesh" id="Mesh_NorthSouthWall"]
+material = SubResource("Mat_Wall")
+size = Vector3(60, 3, 1)
+
+[sub_resource type="BoxShape3D" id="Shape_NorthSouthWall"]
+size = Vector3(60, 3, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_EastWestWall"]
+material = SubResource("Mat_Wall")
+size = Vector3(1, 3, 54)
+
+[sub_resource type="BoxShape3D" id="Shape_EastWestWall"]
+size = Vector3(1, 3, 54)
+
+[node name="Main3D" type="Node3D"]
+script = ExtResource("1_main3d")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_main")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.707107, -0.499999, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.499999, 0.5, 15, 25, 15)
+light_color = Color(1, 0.960784, 0.878431, 1)
+light_energy = 1.2
+shadow_enabled = true
+shadow_bias = 0.05
+directional_shadow_mode = 0
+directional_shadow_max_distance = 60.0
+
+[node name="CameraRig" type="Node3D" parent="."]
+transform = Transform3D(0.707107, 0, 0.707107, -0.473012, 0.743145, 0.473012, -0.525483, -0.669131, 0.525483, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 18)
+fov = 40.0
+near = 0.5
+far = 150.0
+
+[node name="CampusLevel" type="Node3D" parent="."]
+
+[node name="Floors" type="Node3D" parent="CampusLevel"]
+
+[node name="LobbyFloor" type="StaticBody3D" parent="CampusLevel/Floors"]
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CampusLevel/Floors/LobbyFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("Mesh_LobbyFloor")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CampusLevel/Floors/LobbyFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("Shape_LobbyFloor")
+
+[node name="OfficeFloor" type="StaticBody3D" parent="CampusLevel/Floors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 0, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CampusLevel/Floors/OfficeFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("Mesh_OfficeFloor")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CampusLevel/Floors/OfficeFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("Shape_OfficeFloor")
+
+[node name="ServerFloor" type="StaticBody3D" parent="CampusLevel/Floors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -18)
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CampusLevel/Floors/ServerFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("Mesh_ServerFloor")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CampusLevel/Floors/ServerFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("Shape_ServerFloor")
+
+[node name="LabFloor" type="StaticBody3D" parent="CampusLevel/Floors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19, 0, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CampusLevel/Floors/LabFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("Mesh_LabFloor")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CampusLevel/Floors/LabFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("Shape_LabFloor")
+
+[node name="CourtyardFloor" type="StaticBody3D" parent="CampusLevel/Floors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 18)
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CampusLevel/Floors/CourtyardFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("Mesh_CourtyardFloor")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CampusLevel/Floors/CourtyardFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("Shape_CourtyardFloor")
+
+[node name="Boundaries" type="Node3D" parent="CampusLevel"]
+
+[node name="NorthWall" type="StaticBody3D" parent="CampusLevel/Boundaries"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -27)
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CampusLevel/Boundaries/NorthWall"]
+mesh = SubResource("Mesh_NorthSouthWall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CampusLevel/Boundaries/NorthWall"]
+shape = SubResource("Shape_NorthSouthWall")
+
+[node name="SouthWall" type="StaticBody3D" parent="CampusLevel/Boundaries"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 27)
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CampusLevel/Boundaries/SouthWall"]
+mesh = SubResource("Mesh_NorthSouthWall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CampusLevel/Boundaries/SouthWall"]
+shape = SubResource("Shape_NorthSouthWall")
+
+[node name="EastWall" type="StaticBody3D" parent="CampusLevel/Boundaries"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.5, 1.5, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CampusLevel/Boundaries/EastWall"]
+mesh = SubResource("Mesh_EastWestWall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CampusLevel/Boundaries/EastWall"]
+shape = SubResource("Shape_EastWestWall")
+
+[node name="WestWall" type="StaticBody3D" parent="CampusLevel/Boundaries"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28.5, 1.5, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CampusLevel/Boundaries/WestWall"]
+mesh = SubResource("Mesh_EastWestWall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CampusLevel/Boundaries/WestWall"]
+shape = SubResource("Shape_EastWestWall")
+
+[node name="Avatar3D" parent="." instance=ExtResource("2_avatar")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="QuickHUDLayer" type="CanvasLayer" parent="."]
+layer = 5
+
+[node name="QuickHUD" type="MarginContainer" parent="QuickHUDLayer"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 60.0
+grow_horizontal = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 10
+
+[node name="BarHBox" type="HBoxContainer" parent="QuickHUDLayer/QuickHUD"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="EnergyPill" type="PanelContainer" parent="QuickHUDLayer/QuickHUD/BarHBox"]
+layout_mode = 2
+
+[node name="PillHBox" type="HBoxContainer" parent="QuickHUDLayer/QuickHUD/BarHBox/EnergyPill"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Icon" type="Label" parent="QuickHUDLayer/QuickHUD/BarHBox/EnergyPill/PillHBox"]
+layout_mode = 2
+text = "👥"
+
+[node name="QuickEnergyLabel" type="Label" parent="QuickHUDLayer/QuickHUD/BarHBox/EnergyPill/PillHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0 Users"
+
+[node name="RPSPill" type="PanelContainer" parent="QuickHUDLayer/QuickHUD/BarHBox"]
+layout_mode = 2
+
+[node name="PillHBox" type="HBoxContainer" parent="QuickHUDLayer/QuickHUD/BarHBox/RPSPill"]
+layout_mode = 2
+
+[node name="QuickRPSLabel" type="Label" parent="QuickHUDLayer/QuickHUD/BarHBox/RPSPill/PillHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "+0/s"
+
+[node name="Spacer" type="Control" parent="QuickHUDLayer/QuickHUD/BarHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="ToggleOverlayButton" type="Button" parent="QuickHUDLayer/QuickHUD/BarHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "💻 Laptop [Tab]"
+
+[node name="HUDOverlayLayer" type="CanvasLayer" parent="."]
+layer = 10
+visible = false
+
+[node name="OverlayContainer" type="Control" parent="HUDOverlayLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DimBackdrop" type="ColorRect" parent="HUDOverlayLayer/OverlayContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.55)
+
+[node name="HUD" parent="HUDOverlayLayer/OverlayContainer" instance=ExtResource("3_hud")]
+layout_mode = 1
+
+[node name="CloseOverlayButton" type="Button" parent="HUDOverlayLayer/OverlayContainer"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+offset_left = -120.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 45.0
+grow_horizontal = 0
+text = "✖ Close [Esc]"
