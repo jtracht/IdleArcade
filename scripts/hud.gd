@@ -20,6 +20,7 @@ const QUEST_MODAL_SCENE: PackedScene = preload("res://scenes/ui/quest_modal.tscn
 @onready var leaderboard_button: Button = %LeaderboardButton
 @onready var guild_button: Button = %GuildButton
 @onready var quest_button: Button = %QuestButton
+@onready var campus_button: Button = get_node_or_null("%CampusButton")
 @onready var modal_container: Control = %ModalContainer
 
 var _active_modal: Control = null
@@ -300,6 +301,17 @@ func _bind_action_bar_buttons() -> void:
 		guild_button.pressed.connect(func(): open_modal(GUILD_MODAL_SCENE))
 	if quest_button != null:
 		quest_button.pressed.connect(func(): open_modal(QUEST_MODAL_SCENE))
+	if campus_button != null:
+		campus_button.pressed.connect(_on_campus_button_pressed)
+
+func _on_campus_button_pressed() -> void:
+	var main_3d = get_tree().root.find_child("Main3D", true, false)
+	if main_3d != null and main_3d.has_method("close_hud_overlay"):
+		main_3d.close_hud_overlay()
+	else:
+		if GameState != null and GameState.has_method("save_to_disk"):
+			GameState.save_to_disk()
+		get_tree().change_scene_to_file("res://scenes/main_3d.tscn")
 
 func open_modal(modal_scene: PackedScene) -> Control:
 	if _active_modal != null and is_instance_valid(_active_modal):

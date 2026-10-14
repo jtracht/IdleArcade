@@ -289,6 +289,11 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "💻 Laptop [Tab]"
 
+[node name="ExitTo2DButton" type="Button" parent="QuickHUDLayer/QuickHUD/BarHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "🕹️ 2D View"
+
 [node name="HUDOverlayLayer" type="CanvasLayer" parent="."]
 layer = 10
 visible = false

@@ -21,6 +21,7 @@ class_name Main3D
 @onready var quick_energy_label: Label = get_node_or_null("%QuickEnergyLabel")
 @onready var quick_rps_label: Label = get_node_or_null("%QuickRPSLabel")
 @onready var toggle_overlay_button: Button = get_node_or_null("%ToggleOverlayButton")
+@onready var exit_to_2d_button: Button = get_node_or_null("%ExitTo2DButton")
 @onready var close_overlay_button: Button = get_node_or_null("%CloseOverlayButton")
 @onready var hud_instance: Control = get_node_or_null("HUDOverlayLayer/OverlayContainer/HUD")
 @onready var dialogue_panel: Control = get_node_or_null("DialogueLayer/DialoguePanel")
@@ -122,6 +123,15 @@ func _setup_hud_overlay() -> void:
 		
 	if close_overlay_button != null:
 		close_overlay_button.pressed.connect(close_hud_overlay)
+		
+	if exit_to_2d_button != null:
+		exit_to_2d_button.pressed.connect(_on_exit_to_2d_pressed)
+
+func _on_exit_to_2d_pressed() -> void:
+	var gs = get_node_or_null("/root/GameState")
+	if gs != null and gs.has_method("save_to_disk"):
+		gs.save_to_disk()
+	get_tree().change_scene_to_file("res://scenes/main.tscn")
 
 func toggle_hud_overlay() -> void:
 	if is_hud_overlay_open():
