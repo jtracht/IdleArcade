@@ -23,6 +23,8 @@ class_name Main3D
 @onready var toggle_overlay_button: Button = get_node_or_null("%ToggleOverlayButton")
 @onready var close_overlay_button: Button = get_node_or_null("%CloseOverlayButton")
 @onready var hud_instance: Control = get_node_or_null("HUDOverlayLayer/OverlayContainer/HUD")
+@onready var dialogue_panel: Control = get_node_or_null("DialogueLayer/DialoguePanel")
+@onready var quest_tracker: Control = get_node_or_null("QuestLayer/QuestTracker")
 
 var _overlay_open: bool = false
 
@@ -51,7 +53,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			toggle_hud_overlay()
 			get_viewport().set_input_as_handled()
 		elif event.keycode == KEY_ESCAPE:
-			if is_hud_overlay_open():
+			if dialogue_panel != null and dialogue_panel.visible:
+				if dialogue_panel.has_method("close_dialogue"):
+					dialogue_panel.close_dialogue()
+				else:
+					dialogue_panel.visible = false
+				get_viewport().set_input_as_handled()
+			elif is_hud_overlay_open():
 				if hud_instance != null and hud_instance.has_method("has_active_modal") and hud_instance.has_active_modal():
 					hud_instance.dismiss_active_modal()
 				else:
@@ -122,6 +130,8 @@ func toggle_hud_overlay() -> void:
 		open_hud_overlay()
 
 func open_hud_overlay() -> void:
+	if dialogue_panel != null and dialogue_panel.visible and dialogue_panel.has_method("close_dialogue"):
+		dialogue_panel.close_dialogue()
 	_overlay_open = true
 	if hud_overlay_layer != null:
 		hud_overlay_layer.visible = true

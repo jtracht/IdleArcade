@@ -19,6 +19,8 @@ signal spark_collected(total_sparks: int)
 signal avatar_stat_updated(stat_name: String, new_value: float)
 signal collectible_picked_up(item_type: String, total_collected: int)
 signal zone_unlocked(zone_id: String)
+signal campus_quest_updated(quest_id: String, status: String, current_count: int, target_count: int)
+signal campus_quest_completed(quest_id: String, reward_energy: float, reward_bonus_users: int)
 
 # --- State Variables ---
 var energy: float = 0.0
@@ -33,6 +35,7 @@ var idle_level: int = 1
 var pickup_radius_level: int = 0
 var collectibles_collected: int = 0
 var unlocked_zones: Array[String] = []
+var campus_quests: Dictionary = {}
 
 var base_click_power: float = 1.0
 var base_passive_rps: float = 0.0
@@ -198,6 +201,7 @@ func reset_state() -> void:
 	pickup_radius_level = 0
 	collectibles_collected = 0
 	unlocked_zones.clear()
+	campus_quests.clear()
 	
 	upgrades.clear()
 	for up_id in DEFAULT_UPGRADES:
@@ -379,6 +383,14 @@ func collect_3d_item(item_type: String, reward_amount: float = 50.0) -> void:
 	collectibles_collected += 1
 	energy_changed.emit(energy, reward)
 	collectible_picked_up.emit(item_type, collectibles_collected)
+	
+	# Quest tracker auto-advancement
+	if item_type == "briefcase":
+		advance_campus_quest("quest_briefcases", 1)
+	elif item_type == "coffee":
+		advance_campus_quest("quest_coffee", 1)
+	elif item_type == "usb_drive":
+		advance_campus_quest("quest_usb", 1)
 
 ## Unlocks a 3D campus zone barrier if not already unlocked.
 func unlock_zone(zone_id: String) -> bool:
@@ -388,11 +400,69 @@ func unlock_zone(zone_id: String) -> bool:
 		return true
 	unlocked_zones.append(zone_id)
 	zone_unlocked.emit(zone_id)
+	
+	# Quest tracker auto-advancement for zone gates
+	if zone_id == "server_room":
+		advance_campus_quest("quest_server", 1)
+	elif zone_id == "lab_room":
+		advance_campus_quest("quest_lab", 1)
+		
 	return true
 
 ## Returns true if the specified zone barrier has been unlocked.
 func is_zone_unlocked(zone_id: String) -> bool:
 	return unlocked_zones.has(zone_id)
+
+# --- Campus Quest Management Interface ---
+
+## Returns quest status: "not_started", "active", "ready", "completed".
+func get_campus_quest_status(quest_id: String) -> String:
+	if not campus_quests.has(quest_id):
+		return "not_started"
+	return str(campus_quests[quest_id].get("status", "not_started"))
+
+## Starts an active campus quest with a target count.
+func start_campus_quest(quest_id: String, target_count: int = 1) -> void:
+	if campus_quests.has(quest_id) and campus_quests[quest_id].get("status") in ["active", "ready", "completed"]:
+		return
+	campus_quests[quest_id] = {
+		"status": "active",
+		"current_count": 0,
+		"target_count": maxi(1, target_count)
+	}
+	campus_quest_updated.emit(quest_id, "active", 0, maxi(1, target_count))
+
+## Increments quest progress counter towards completion.
+func advance_campus_quest(quest_id: String, amount: int = 1) -> void:
+	if not campus_quests.has(quest_id):
+		return
+	var q = campus_quests[quest_id]
+	if q.get("status") != "active":
+		return
+	q["current_count"] = mini(int(q.get("target_count", 1)), int(q.get("current_count", 0)) + amount)
+	if q["current_count"] >= int(q.get("target_count", 1)):
+		q["status"] = "ready"
+	campus_quest_updated.emit(quest_id, str(q["status"]), int(q["current_count"]), int(q["target_count"]))
+
+## Completes a quest in "ready" state and awards rewards.
+func complete_campus_quest(quest_id: String, reward_energy: float = 0.0, reward_bonus_users: int = 0) -> bool:
+	if not campus_quests.has(quest_id):
+		return false
+	var q = campus_quests[quest_id]
+	if q.get("status") != "ready":
+		return false
+	q["status"] = "completed"
+	if reward_energy > 0.0:
+		energy += reward_energy
+		total_energy_earned += reward_energy
+		energy_changed.emit(energy, reward_energy)
+	if reward_bonus_users > 0:
+		bonus_users += reward_bonus_users
+		bonus_users_changed.emit(bonus_users, reward_bonus_users)
+	campus_quest_completed.emit(quest_id, reward_energy, reward_bonus_users)
+	campus_quest_updated.emit(quest_id, "completed", int(q["current_count"]), int(q["target_count"]))
+	save_to_disk()
+	return true
 
 ## Serializes state to user://savegame.json.
 func save_to_disk() -> void:
@@ -412,6 +482,7 @@ func save_to_disk() -> void:
 		"pickup_radius_level": pickup_radius_level,
 		"collectibles_collected": collectibles_collected,
 		"unlocked_zones": unlocked_zones.duplicate(),
+		"campus_quests": campus_quests.duplicate(true),
 		"upgrades": {}
 	}
 	
@@ -472,6 +543,13 @@ func load_from_disk() -> bool:
 		for z in raw_zones:
 			if z is String and not z.is_empty():
 				unlocked_zones.append(z)
+				
+	campus_quests.clear()
+	var raw_quests = data.get("campus_quests", {})
+	if raw_quests is Dictionary:
+		for q_id in raw_quests:
+			if raw_quests[q_id] is Dictionary:
+				campus_quests[q_id] = raw_quests[q_id].duplicate(true)
 	
 	var saved_upgrades = data.get("upgrades", {})
 	if saved_upgrades is Dictionary:

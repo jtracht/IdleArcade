@@ -1,0 +1,66 @@
+[gd_scene load_steps=8 format=3 uid="uid://b8collectible3d01"]
+
+[ext_resource type="Script" path="res://scripts/collectible_3d.gd" id="1_collect"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_pickup"]
+radius = 1.2
+
+[sub_resource type="StandardMaterial3D" id="Material_gold"]
+albedo_color = Color(1, 0.82, 0.2, 1)
+metallic = 0.6
+roughness = 0.3
+emission_enabled = true
+emission = Color(0.9, 0.7, 0.1, 1)
+emission_energy_multiplier = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_item"]
+material = SubResource("Material_gold")
+size = Vector3(0.6, 0.4, 0.25)
+
+[sub_resource type="StandardMaterial3D" id="Material_aura"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 0.85, 0.3, 0.35)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_aura"]
+material = SubResource("Material_aura")
+top_radius = 0.5
+bottom_radius = 0.5
+height = 0.02
+
+[sub_resource type="StandardMaterial3D" id="Material_handle"]
+albedo_color = Color(0.2, 0.2, 0.2, 1)
+metallic = 0.8
+roughness = 0.2
+
+[sub_resource type="BoxMesh" id="BoxMesh_handle"]
+material = SubResource("Material_handle")
+size = Vector3(0.25, 0.1, 0.06)
+
+[node name="Collectible3D" type="Area3D" groups=["collectibles"]]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_collect")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("SphereShape3D_pickup")
+
+[node name="Visuals" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+[node name="ItemMesh" type="MeshInstance3D" parent="Visuals"]
+mesh = SubResource("BoxMesh_item")
+
+[node name="HandleMesh" type="MeshInstance3D" parent="Visuals/ItemMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, 0)
+mesh = SubResource("BoxMesh_handle")
+
+[node name="GlowAura" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.4, 0)
+mesh = SubResource("CylinderMesh_aura")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="Visuals"]
+light_color = Color(1, 0.85, 0.4, 1)
+light_energy = 0.5
+omni_range = 2.5

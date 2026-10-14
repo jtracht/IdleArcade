@@ -1,8 +1,13 @@
-[gd_scene load_steps=22 format=3 uid="uid://dm4main3d001scene"]
+[gd_scene load_steps=27 format=3 uid="uid://dm4main3d001scene"]
 
 [ext_resource type="Script" path="res://scripts/main_3d.gd" id="1_main3d"]
 [ext_resource type="PackedScene" uid="uid://c8avatar3d001scene" path="res://scenes/avatar_3d.tscn" id="2_avatar"]
 [ext_resource type="PackedScene" uid="uid://d3y8w1p6k4m20" path="res://scenes/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" uid="uid://dm4npc3d01scene" path="res://scenes/npc_3d.tscn" id="4_npc"]
+[ext_resource type="PackedScene" uid="uid://b8collectible3d01" path="res://scenes/collectible_3d.tscn" id="5_collectible"]
+[ext_resource type="PackedScene" uid="uid://d2zonegate3d01" path="res://scenes/zone_gate_3d.tscn" id="6_gate"]
+[ext_resource type="PackedScene" uid="uid://b8questtracker01" path="res://scenes/quest_tracker.tscn" id="7_tracker"]
+[ext_resource type="PackedScene" uid="uid://dm4dialogue01scene" path="res://scenes/dialogue_panel.tscn" id="8_dialogue"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -320,3 +325,100 @@ offset_right = -10.0
 offset_bottom = 45.0
 grow_horizontal = 0
 text = "✖ Close [Esc]"
+
+[node name="NPCs" type="Node3D" parent="."]
+
+[node name="NPC_Alex" parent="NPCs" instance=ExtResource("4_npc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 3)
+
+[node name="NPC_Bob" parent="NPCs" instance=ExtResource("4_npc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -20)
+npc_id = "architect_bob"
+npc_name = "Bob"
+npc_title = "Chief Architect"
+dialogue_text = "The server infrastructure is humming! We need higher clearance to run massive ML workloads. Check out the USB telemetry modules."
+quest_id = "quest_server"
+quest_title = "Server Clearance"
+quest_desc = "Unlock the Server Room and meet Chief Architect Bob."
+quest_target = 1
+quest_reward_energy = 300.0
+quest_reward_bonus = 30
+visual_color = Color(0.2, 0.6, 1, 1)
+
+[node name="NPC_Lisa" parent="NPCs" instance=ExtResource("4_npc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0, 0)
+npc_id = "scientist_lisa"
+npc_name = "Dr. Lisa"
+npc_title = "Chief Scientist"
+dialogue_text = "Welcome to R&D! Our proprietary quantum algorithms require level 3 clearance. Collect tech drives to boost our venture valuation."
+quest_id = "quest_lab"
+quest_title = "R&D Breakthrough"
+quest_desc = "Unlock the R&D Lab and meet Dr. Lisa."
+quest_target = 1
+quest_reward_energy = 500.0
+quest_reward_bonus = 50
+visual_color = Color(0.8, 0.3, 0.9, 1)
+
+[node name="ZoneGates" type="Node3D" parent="."]
+
+[node name="Gate_ServerRoom" parent="ZoneGates" instance=ExtResource("6_gate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -10)
+zone_id = "server_room"
+zone_name = "Server Room"
+required_level = 2
+unlock_cost = 100.0
+
+[node name="Gate_LabRoom" parent="ZoneGates" instance=ExtResource("6_gate")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -10, 0, 0)
+zone_id = "lab_room"
+zone_name = "R&D Lab"
+required_level = 3
+unlock_cost = 250.0
+
+[node name="Collectibles" type="Node3D" parent="."]
+
+[node name="Collectible_Briefcase1" parent="Collectibles" instance=ExtResource("5_collectible")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -4)
+item_type = "briefcase"
+reward_amount = 50.0
+
+[node name="Collectible_Briefcase2" parent="Collectibles" instance=ExtResource("5_collectible")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 5)
+item_type = "briefcase"
+reward_amount = 50.0
+
+[node name="Collectible_Briefcase3" parent="Collectibles" instance=ExtResource("5_collectible")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 20)
+item_type = "briefcase"
+reward_amount = 50.0
+
+[node name="Collectible_CoffeeCourtyard" parent="Collectibles" instance=ExtResource("5_collectible")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 18)
+item_type = "coffee"
+reward_amount = 25.0
+
+[node name="Collectible_CoffeeOffice" parent="Collectibles" instance=ExtResource("5_collectible")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0, 4)
+item_type = "coffee"
+reward_amount = 25.0
+
+[node name="Collectible_USBServer" parent="Collectibles" instance=ExtResource("5_collectible")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -18)
+item_type = "usb_drive"
+reward_amount = 75.0
+
+[node name="Collectible_USBLab" parent="Collectibles" instance=ExtResource("5_collectible")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19, 0, -4)
+item_type = "usb_drive"
+reward_amount = 75.0
+
+[node name="QuestLayer" type="CanvasLayer" parent="."]
+layer = 6
+
+[node name="QuestTracker" parent="QuestLayer" instance=ExtResource("7_tracker")]
+
+[node name="DialogueLayer" type="CanvasLayer" parent="."]
+layer = 8
+
+[node name="DialoguePanel" parent="DialogueLayer" instance=ExtResource("8_dialogue")]
+visible = false
