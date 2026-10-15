@@ -150,9 +150,22 @@ func _find_avatar() -> Node3D:
 		return players[0] as Node3D
 	return tree.root.find_child("Avatar3D", true, false) as Node3D
 
-## API for headless verification
+## API for headless verification & external target setting
 func get_distance() -> float:
 	return _distance
 
 func get_target_name() -> String:
 	return _target_name
+
+func set_target_position(pos: Vector3, target_name: String = "") -> void:
+	_target_node = null
+	_target_position = pos
+	if not target_name.is_empty():
+		_target_name = target_name
+
+func set_target_node(node: Node3D, target_name: String = "") -> void:
+	_target_node = node
+	if not target_name.is_empty():
+		_target_name = target_name
+	if is_instance_valid(node) and node.is_inside_tree():
+		_target_position = node.global_position

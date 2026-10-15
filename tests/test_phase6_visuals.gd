@@ -39,7 +39,7 @@ func _run_tests() -> void:
 	_assert_check(avatar.footstep_particles != null, "1.3 Avatar has FootstepDust CPUParticles3D node")
 	_assert_check(avatar.enable_procedural_animation == true, "1.4 Procedural animation enabled by default")
 	
-	var initial_visual_y: float = avatar.visuals.position.y
+	var base_visual_y: float = avatar.get_base_visual_y()
 	avatar.set_input_direction(Vector3.FORWARD)
 	
 	# Simulate 15 movement frames
@@ -47,11 +47,11 @@ func _run_tests() -> void:
 		avatar._physics_process(1.0 / 60.0)
 		
 	_assert_check(avatar.footstep_particles.emitting == true, "1.5 Footstep particles emit during active locomotion")
-	_assert_check(avatar.visuals.position.y != initial_visual_y, "1.6 Visuals position.y bobs dynamically during locomotion")
+	_assert_check(avatar.visuals.position.y != base_visual_y, "1.6 Visuals position.y bobs dynamically during locomotion")
 	
 	avatar.stop_movement()
 	_assert_check(avatar.footstep_particles.emitting == false, "1.7 Footstep particles cease on stop_movement()")
-	_assert_check(is_equal_approx(avatar.visuals.position.y, initial_visual_y), "1.8 Visuals position.y restores to base on stop_movement()")
+	_assert_check(is_equal_approx(avatar.visuals.position.y, base_visual_y), "1.8 Visuals position.y restores to base on stop_movement()")
 	
 	# --------------------------------------------------------------------------
 	# 2. NPC3D Living Emotes & Quest Marker Bounce
@@ -146,8 +146,7 @@ func _run_tests() -> void:
 	
 	# Place avatar at (0, 0, 0) and target at (10, 0, 0)
 	avatar.global_position = Vector3(0.0, 0.0, 0.0)
-	waypoint._target_position = Vector3(10.0, 0.0, 0.0)
-	waypoint._target_name = "Tech Lab"
+	waypoint.set_target_position(Vector3(10.0, 0.0, 0.0), "Tech Lab")
 	waypoint._process(0.1)
 	
 	var dist = waypoint.get_distance()

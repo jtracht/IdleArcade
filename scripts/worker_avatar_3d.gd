@@ -80,7 +80,10 @@ func _ready() -> void:
 	_reset_state_timer()
 	
 	if home_desk_position == Vector3.ZERO:
-		home_desk_position = global_position
+		if is_inside_tree():
+			home_desk_position = global_position
+		else:
+			home_desk_position = position
 		
 	if interaction_area != null:
 		interaction_area.collision_layer = 0

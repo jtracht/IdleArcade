@@ -275,3 +275,7 @@ func is_moving() -> bool:
 func get_facing_direction() -> Vector3:
 	var yaw: float = visuals.rotation.y if visuals != null else 0.0
 	return Vector3(sin(yaw), 0.0, cos(yaw))
+
+## Returns base visual y offset (for procedural locomotion restoration)
+func get_base_visual_y() -> float:
+	return _base_visual_y
