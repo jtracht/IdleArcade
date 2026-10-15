@@ -1,0 +1,480 @@
+class_name TouchControls
+extends Control
+
+## Master Controller for Mobile Touch Controls in IdleArcade (Milestone P5-M2).
+## Manages the on-screen action button, laptop thumb overlay toggle, proximity
+## detection, button visual state machine, tactile feedback, and strict 3-tier input isolation.
+
+# ------------------------------------------------------------------------------
+# Signals
+# ------------------------------------------------------------------------------
+
+## Emitted when the primary action button is pressed.
+signal action_triggered(interactable: Node3D)
+
+## Emitted when the laptop thumb button is pressed.
+signal overlay_toggle_requested()
+
+## Emitted when an interactable entity enters proximity range.
+signal interactable_registered(interactable: Node3D, label_text: String)
+
+## Emitted when an interactable entity exits proximity range.
+signal interactable_unregistered(interactable: Node3D)
+
+## Emitted when the actively targeted interactable changes.
+signal interactable_changed(interactable: Node3D)
+
+## Emitted when controls visibility or fade state alters.
+signal controls_visibility_changed(is_visible: bool)
+
+# ------------------------------------------------------------------------------
+# Configuration
+# ------------------------------------------------------------------------------
+
+@export_group("Visual Styling")
+## Opacity of ActionButton when no interactable is in proximity.
+@export var dormant_opacity: float = 0.35
+
+## Opacity of ActionButton when an interactable is in proximity.
+@export var active_opacity: float = 1.0
+
+## Default label displayed on ActionButton when dormant.
+@export var default_action_label: String = "[E] Action"
+
+@export_group("Animation & Feedback")
+## Duration in seconds for fading controls in/out when modals open.
+@export var modal_fade_duration: float = 0.20
+
+## Scale factor applied to buttons when pressed for spring feedback.
+@export var button_spring_scale: float = 0.92
+
+# ------------------------------------------------------------------------------
+# Node References
+# ------------------------------------------------------------------------------
+
+@onready var virtual_joystick: VirtualJoystick = get_node_or_null("VirtualJoystick") as VirtualJoystick
+@onready var action_button: Button = get_node_or_null("%ActionButton") if has_node("%ActionButton") else get_node_or_null("ActionButton")
+@onready var laptop_button: Button = get_node_or_null("%LaptopThumbButton") if has_node("%LaptopThumbButton") else get_node_or_null("LaptopThumbButton")
+
+# ------------------------------------------------------------------------------
+# Internal State
+# ------------------------------------------------------------------------------
+
+## Currently targeted interactable entity in range.
+var active_interactable: Node3D = null
+
+## Stack of currently overlapping interactable entities.
+var active_interactables: Array[Node3D] = []
+
+## Alias for active_interactables for blueprint compatibility.
+var registered_interactables: Array[Node3D]:
+	get:
+		return active_interactables
+	set(val):
+		active_interactables = val
+
+## Track modal fade state.
+var is_faded_out: bool = false
+
+var _fade_tween: Tween = null
+var _action_tween: Tween = null
+var _laptop_tween: Tween = null
+
+var _normal_action_style: StyleBoxFlat = null
+var _cached_npc_style: StyleBoxFlat = null
+var _cached_quest_style: StyleBoxFlat = null
+var _cached_gate_style: StyleBoxFlat = null
+var _cached_denied_style: StyleBoxFlat = null
+
+# ------------------------------------------------------------------------------
+# Lifecycle
+# ------------------------------------------------------------------------------
+
+func _ready() -> void:
+	# Tier 3 Input Isolation: Root container ignores events to allow upper-screen taps to reach 3D world
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if not is_in_group("touch_controls"):
+		add_to_group("touch_controls")
+
+	if size == Vector2.ZERO:
+		size = Vector2(720.0, 1280.0)
+
+	_setup_styles()
+	_setup_buttons()
+	_update_action_button_visuals(default_action_label, false)
+
+# ------------------------------------------------------------------------------
+# Setup & Styling
+# ------------------------------------------------------------------------------
+
+func _setup_buttons() -> void:
+	var base_w = size.x if size.x > 0.0 else 720.0
+	var base_h = size.y if size.y > 0.0 else 1280.0
+
+	if action_button != null:
+		# Tier 1 Input Isolation: Button absorbs mouse/touch events
+		action_button.mouse_filter = Control.MOUSE_FILTER_STOP
+		action_button.focus_mode = Control.FOCUS_NONE
+		if action_button.size.x < 110.0 or action_button.size.y < 110.0:
+			action_button.size = Vector2(110.0, 110.0)
+		if action_button.position == Vector2.ZERO:
+			action_button.position = Vector2(base_w - 140.0, base_h - 180.0)
+		action_button.pivot_offset = action_button.size * 0.5
+		action_button.button_down.connect(_on_action_button_down)
+		action_button.button_up.connect(_on_action_button_up)
+		action_button.pressed.connect(_on_action_button_pressed)
+		action_button.gui_input.connect(_on_button_gui_input)
+
+	if laptop_button != null:
+		# Tier 1 Input Isolation: Button absorbs mouse/touch events
+		laptop_button.mouse_filter = Control.MOUSE_FILTER_STOP
+		laptop_button.focus_mode = Control.FOCUS_NONE
+		if laptop_button.size.x < 80.0 or laptop_button.size.y < 80.0:
+			laptop_button.size = Vector2(80.0, 80.0)
+		if laptop_button.position == Vector2.ZERO:
+			laptop_button.position = Vector2(base_w - 125.0, base_h - 285.0)
+		laptop_button.pivot_offset = laptop_button.size * 0.5
+		laptop_button.button_down.connect(_on_laptop_button_down)
+		laptop_button.button_up.connect(_on_laptop_button_up)
+		laptop_button.pressed.connect(_on_laptop_button_pressed)
+		laptop_button.gui_input.connect(_on_button_gui_input)
+
+func _setup_styles() -> void:
+	if action_button != null:
+		var existing = action_button.get_theme_stylebox("normal")
+		if existing is StyleBoxFlat:
+			_normal_action_style = existing.duplicate() as StyleBoxFlat
+
+	# Dynamic NPC style (emerald green)
+	_cached_npc_style = StyleBoxFlat.new()
+	_cached_npc_style.bg_color = Color(0.08, 0.28, 0.18, 0.88)
+	_cached_npc_style.border_color = Color(0.25, 0.95, 0.55, 0.95)
+	_cached_npc_style.set_border_width_all(3)
+	_cached_npc_style.set_corner_radius_all(55)
+	_cached_npc_style.corner_detail = 24
+	_cached_npc_style.shadow_color = Color(0.15, 0.85, 0.45, 0.5)
+	_cached_npc_style.shadow_size = 10
+	_cached_npc_style.anti_aliasing = true
+
+	# Dynamic Quest Ready style (amber gold)
+	_cached_quest_style = StyleBoxFlat.new()
+	_cached_quest_style.bg_color = Color(0.32, 0.26, 0.08, 0.90)
+	_cached_quest_style.border_color = Color(1.0, 0.85, 0.20, 0.98)
+	_cached_quest_style.set_border_width_all(3)
+	_cached_quest_style.set_corner_radius_all(55)
+	_cached_quest_style.corner_detail = 24
+	_cached_quest_style.shadow_color = Color(0.95, 0.80, 0.15, 0.55)
+	_cached_quest_style.shadow_size = 12
+	_cached_quest_style.anti_aliasing = true
+
+	# Dynamic Zone Gate Unlock style (neon cyan)
+	_cached_gate_style = StyleBoxFlat.new()
+	_cached_gate_style.bg_color = Color(0.08, 0.24, 0.38, 0.88)
+	_cached_gate_style.border_color = Color(0.30, 0.85, 1.0, 0.95)
+	_cached_gate_style.set_border_width_all(3)
+	_cached_gate_style.set_corner_radius_all(55)
+	_cached_gate_style.corner_detail = 24
+	_cached_gate_style.shadow_color = Color(0.20, 0.70, 1.0, 0.5)
+	_cached_gate_style.shadow_size = 10
+	_cached_gate_style.anti_aliasing = true
+
+	# Dynamic Zone Gate Locked style (coral red)
+	_cached_denied_style = StyleBoxFlat.new()
+	_cached_denied_style.bg_color = Color(0.32, 0.10, 0.10, 0.85)
+	_cached_denied_style.border_color = Color(0.95, 0.35, 0.35, 0.90)
+	_cached_denied_style.set_border_width_all(2)
+	_cached_denied_style.set_corner_radius_all(55)
+	_cached_denied_style.corner_detail = 24
+	_cached_denied_style.shadow_color = Color(0.85, 0.20, 0.20, 0.45)
+	_cached_denied_style.shadow_size = 8
+	_cached_denied_style.anti_aliasing = true
+
+# ------------------------------------------------------------------------------
+# Input Isolation Shield (Tier 2 & 3)
+# ------------------------------------------------------------------------------
+
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch or event is InputEventScreenDrag \
+			or event is InputEventMouseButton or event is InputEventMouseMotion:
+		accept_event()
+
+func _on_button_gui_input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch or event is InputEventScreenDrag \
+			or event is InputEventMouseButton or event is InputEventMouseMotion:
+		accept_event()
+
+# ------------------------------------------------------------------------------
+# Proximity Registration Engine
+# ------------------------------------------------------------------------------
+
+## Registers an interactable entity that entered player proximity range.
+func register_interactable(node: Node3D, label_text: String = "Action [E]") -> void:
+	if node == null:
+		return
+	if not active_interactables.has(node):
+		active_interactables.append(node)
+	active_interactable = node
+	_update_action_button_visuals(label_text, true)
+	interactable_registered.emit(node, label_text)
+	interactable_changed.emit(node)
+
+## Unregisters an interactable entity that exited player proximity range.
+func unregister_interactable(node: Node3D) -> void:
+	if node == null:
+		return
+	active_interactables.erase(node)
+	if active_interactable == node:
+		if active_interactables.is_empty():
+			active_interactable = null
+			_update_action_button_visuals(default_action_label, false)
+		else:
+			active_interactable = active_interactables.back()
+			var remaining_label = "Action [E]"
+			if active_interactable is CharacterBody3D or active_interactable.has_method("interact"):
+				remaining_label = "Talk [E]"
+			elif active_interactable is StaticBody3D or active_interactable.has_method("attempt_unlock"):
+				remaining_label = "Unlock [E]"
+			_update_action_button_visuals(remaining_label, true)
+	interactable_unregistered.emit(node)
+	interactable_changed.emit(active_interactable)
+
+## Returns the currently active interactable target.
+func get_current_interactable() -> Node3D:
+	if is_instance_valid(active_interactable):
+		return active_interactable
+	if not active_interactables.is_empty():
+		var cand = active_interactables.back()
+		if is_instance_valid(cand):
+			return cand
+	return null
+
+# ------------------------------------------------------------------------------
+# Action & Laptop Toggle Dispatch (Dual Channel)
+# ------------------------------------------------------------------------------
+
+func _on_action_button_pressed() -> void:
+	trigger_action()
+
+func _on_laptop_button_pressed() -> void:
+	trigger_laptop_toggle()
+
+## Executes interaction with active entity or synthesizes KEY_E event.
+func trigger_action() -> void:
+	var target = get_current_interactable()
+	action_triggered.emit(target)
+
+	# Channel 1: Direct Method Invocation
+	if is_instance_valid(target):
+		if target.has_method("interact"):
+			target.call("interact")
+		elif target.has_method("attempt_unlock"):
+			target.call("attempt_unlock")
+
+	# Channel 2: Synthetic KEY_E Injection (100% backward compatibility)
+	_synthesize_key(KEY_E)
+
+## Toggles 2D idle overlay via Main3D or synthesizes KEY_TAB.
+func trigger_laptop_toggle() -> void:
+	overlay_toggle_requested.emit()
+
+	var tree = get_tree()
+	if tree != null:
+		var has_main_connection = false
+		for conn in overlay_toggle_requested.get_connections():
+			if conn["callable"].get_object() is Main3D:
+				has_main_connection = true
+				break
+		if not has_main_connection:
+			var main_3d = tree.root.find_child("Main3D", true, false)
+			if main_3d != null and main_3d.has_method("toggle_hud_overlay"):
+				main_3d.call("toggle_hud_overlay")
+			else:
+				_synthesize_key(KEY_TAB)
+	else:
+		_synthesize_key(KEY_TAB)
+
+func _synthesize_key(keycode: Key) -> void:
+	var press = InputEventKey.new()
+	press.keycode = keycode
+	press.pressed = true
+	Input.parse_input_event(press)
+
+	var release = InputEventKey.new()
+	release.keycode = keycode
+	release.pressed = false
+	Input.parse_input_event(release)
+
+# ------------------------------------------------------------------------------
+# Visual State Machine & Dynamic Styling
+# ------------------------------------------------------------------------------
+
+func _update_action_button_visuals(label_text: String = "", is_active: bool = false) -> void:
+	if action_button == null:
+		return
+
+	if not is_instance_valid(active_interactable) and not is_active:
+		# Dormant Idle State
+		action_button.text = default_action_label
+		action_button.modulate.a = dormant_opacity
+		if _normal_action_style != null:
+			action_button.add_theme_stylebox_override("normal", _normal_action_style)
+		return
+
+	# Active Illuminated State
+	action_button.modulate.a = active_opacity
+
+	var text_to_set = label_text
+	if text_to_set.is_empty():
+		text_to_set = "Action [E]"
+
+	# Context determination
+	var target = get_current_interactable()
+	if is_instance_valid(target):
+		if target.has_method("interact"):
+			var gs = get_node_or_null("/root/GameState")
+			var q_id: String = str(target.get("quest_id")) if target.get("quest_id") != null else ""
+			var q_status: String = ""
+			if gs != null and gs.has_method("get_campus_quest_status") and not q_id.is_empty():
+				q_status = gs.get_campus_quest_status(q_id)
+
+			if q_status == "ready":
+				text_to_set = "Claim [E]"
+				if _cached_quest_style != null:
+					action_button.add_theme_stylebox_override("normal", _cached_quest_style)
+			else:
+				if text_to_set.is_empty() or text_to_set == "Action [E]":
+					text_to_set = "Talk [E]"
+				if _cached_npc_style != null:
+					action_button.add_theme_stylebox_override("normal", _cached_npc_style)
+
+		elif target.has_method("attempt_unlock"):
+			var gs = get_node_or_null("/root/GameState")
+			var req_lvl: int = int(target.get("required_level")) if target.get("required_level") != null else 1
+			var cost: float = float(target.get("unlock_cost")) if target.get("unlock_cost") != null else 0.0
+
+			var cur_lvl: int = gs.get_idle_level() if gs != null and gs.has_method("get_idle_level") else 1
+			var energy: float = gs.energy if gs != null else 0.0
+			var can_unlock: bool = (cur_lvl >= req_lvl) or (energy >= cost)
+
+			if can_unlock:
+				if text_to_set.is_empty() or text_to_set == "Action [E]":
+					text_to_set = "Unlock [E]"
+				if _cached_gate_style != null:
+					action_button.add_theme_stylebox_override("normal", _cached_gate_style)
+			else:
+				text_to_set = "Locked [E]"
+				if _cached_denied_style != null:
+					action_button.add_theme_stylebox_override("normal", _cached_denied_style)
+		else:
+			if _cached_npc_style != null:
+				action_button.add_theme_stylebox_override("normal", _cached_npc_style)
+	else:
+		# Explicit label provided without object reference
+		if "Talk" in text_to_set and _cached_npc_style != null:
+			action_button.add_theme_stylebox_override("normal", _cached_npc_style)
+		elif "Unlock" in text_to_set and _cached_gate_style != null:
+			action_button.add_theme_stylebox_override("normal", _cached_gate_style)
+		elif "Claim" in text_to_set and _cached_quest_style != null:
+			action_button.add_theme_stylebox_override("normal", _cached_quest_style)
+
+	action_button.text = text_to_set
+
+# ------------------------------------------------------------------------------
+# Tactile Feedback (Spring Scaling & Haptics)
+# ------------------------------------------------------------------------------
+
+func _on_action_button_down() -> void:
+	if action_button == null:
+		return
+	if _action_tween != null and _action_tween.is_valid():
+		_action_tween.kill()
+	_action_tween = create_tween()
+	_action_tween.tween_property(action_button, "scale", Vector2.ONE * button_spring_scale, 0.06)\
+		.set_trans(Tween.TRANS_QUAD)\
+		.set_ease(Tween.EASE_OUT)
+	_trigger_haptic_tap()
+
+func _on_action_button_up() -> void:
+	if action_button == null:
+		return
+	if _action_tween != null and _action_tween.is_valid():
+		_action_tween.kill()
+	_action_tween = create_tween()
+	_action_tween.tween_property(action_button, "scale", Vector2.ONE, 0.10)\
+		.set_trans(Tween.TRANS_BACK)\
+		.set_ease(Tween.EASE_OUT)
+
+func _on_laptop_button_down() -> void:
+	if laptop_button == null:
+		return
+	if _laptop_tween != null and _laptop_tween.is_valid():
+		_laptop_tween.kill()
+	_laptop_tween = create_tween()
+	_laptop_tween.tween_property(laptop_button, "scale", Vector2.ONE * button_spring_scale, 0.06)\
+		.set_trans(Tween.TRANS_QUAD)\
+		.set_ease(Tween.EASE_OUT)
+	_trigger_haptic_tap()
+
+func _on_laptop_button_up() -> void:
+	if laptop_button == null:
+		return
+	if _laptop_tween != null and _laptop_tween.is_valid():
+		_laptop_tween.kill()
+	_laptop_tween = create_tween()
+	_laptop_tween.tween_property(laptop_button, "scale", Vector2.ONE, 0.10)\
+		.set_trans(Tween.TRANS_BACK)\
+		.set_ease(Tween.EASE_OUT)
+
+func _trigger_haptic_tap() -> void:
+	var hm = get_node_or_null("/root/HapticsManager")
+	if hm != null and hm.has_method("vibrate_button"):
+		hm.vibrate_button()
+	elif OS.has_feature("mobile") and Input.has_method("vibrate_handheld"):
+		Input.vibrate_handheld(20)
+
+# ------------------------------------------------------------------------------
+# Modal Fade & Controls Reset
+# ------------------------------------------------------------------------------
+
+## Resets joystick and input state (e.g. when a modal opens).
+func reset_controls() -> void:
+	if is_instance_valid(virtual_joystick) and virtual_joystick.has_method("reset_joystick"):
+		virtual_joystick.reset_joystick()
+
+## Fades out touch controls smoothly (e.g. when dialogue or overlay is displayed).
+func fade_out_controls(duration: float = -1.0) -> void:
+	var dur = modal_fade_duration if duration < 0.0 else duration
+	is_faded_out = true
+	reset_controls()
+
+	if _fade_tween != null and _fade_tween.is_valid():
+		_fade_tween.kill()
+
+	_fade_tween = create_tween()
+	_fade_tween.tween_property(self, "modulate:a", 0.0, dur)\
+		.set_trans(Tween.TRANS_QUAD)\
+		.set_ease(Tween.EASE_OUT)
+	_fade_tween.tween_callback(func():
+		if is_faded_out:
+			visible = false
+			controls_visibility_changed.emit(false)
+	)
+
+## Fades in touch controls smoothly.
+func fade_in_controls(duration: float = -1.0) -> void:
+	var dur = modal_fade_duration if duration < 0.0 else duration
+	is_faded_out = false
+	visible = true
+
+	if _fade_tween != null and _fade_tween.is_valid():
+		_fade_tween.kill()
+
+	_fade_tween = create_tween()
+	_fade_tween.tween_property(self, "modulate:a", 1.0, dur)\
+		.set_trans(Tween.TRANS_QUAD)\
+		.set_ease(Tween.EASE_OUT)
+	_fade_tween.tween_callback(func():
+		if not is_faded_out:
+			controls_visibility_changed.emit(true)
+	)

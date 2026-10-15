@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://d2zonegate3d01" path="res://scenes/zone_gate_3d.tscn" id="6_gate"]
 [ext_resource type="PackedScene" uid="uid://b8questtracker01" path="res://scenes/quest_tracker.tscn" id="7_tracker"]
 [ext_resource type="PackedScene" uid="uid://dm4dialogue01scene" path="res://scenes/dialogue_panel.tscn" id="8_dialogue"]
+[ext_resource type="PackedScene" uid="uid://dm4touchctrls01scene" path="res://scenes/ui/touch_controls.tscn" id="9_touch"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -421,6 +422,11 @@ reward_amount = 75.0
 layer = 6
 
 [node name="QuestTracker" parent="QuestLayer" instance=ExtResource("7_tracker")]
+
+[node name="TouchControlsLayer" type="CanvasLayer" parent="."]
+layer = 7
+
+[node name="TouchControls" parent="TouchControlsLayer" instance=ExtResource("9_touch")]
 
 [node name="DialogueLayer" type="CanvasLayer" parent="."]
 layer = 8

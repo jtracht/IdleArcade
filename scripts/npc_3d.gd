@@ -79,6 +79,9 @@ func _on_interaction_body_entered(body: Node3D) -> void:
 		_avatar_ref = body
 		if prompt_label != null:
 			prompt_label.visible = true
+		var tc = _find_touch_controls()
+		if tc != null and tc.has_method("register_interactable"):
+			tc.register_interactable(self, "Talk [E]")
 
 func _on_interaction_body_exited(body: Node3D) -> void:
 	if body == _avatar_ref or body.is_in_group("player") or body is CharacterBody3D:
@@ -88,12 +91,18 @@ func _on_interaction_body_exited(body: Node3D) -> void:
 			prompt_label.visible = false
 		if _is_talking:
 			end_dialogue()
+		var tc = _find_touch_controls()
+		if tc != null and tc.has_method("unregister_interactable"):
+			tc.unregister_interactable(self)
 
 ## Initiates interaction with NPC
 func interact() -> void:
 	_is_talking = true
 	if prompt_label != null:
 		prompt_label.visible = false
+	var tc = _find_touch_controls()
+	if tc != null and tc.has_method("unregister_interactable"):
+		tc.unregister_interactable(self)
 		
 	# Find DialoguePanel in scene tree or Main3D
 	var main_3d = get_tree().root.find_child("Main3D", true, false)
@@ -123,6 +132,10 @@ func end_dialogue() -> void:
 	_is_talking = false
 	if _player_in_range and prompt_label != null:
 		prompt_label.visible = true
+	if _player_in_range:
+		var tc = _find_touch_controls()
+		if tc != null and tc.has_method("register_interactable"):
+			tc.register_interactable(self, "Talk [E]")
 	_update_quest_marker()
 	dialogue_closed.emit(npc_id)
 
@@ -169,3 +182,17 @@ func _apply_visual_styling() -> void:
 		
 	if name_label != null:
 		name_label.text = npc_name + "\n" + npc_title
+
+func _exit_tree() -> void:
+	var tc = _find_touch_controls()
+	if tc != null and tc.has_method("unregister_interactable"):
+		tc.unregister_interactable(self)
+
+func _find_touch_controls() -> Node:
+	var tree = get_tree()
+	if tree == null:
+		return null
+	var tc_nodes = tree.get_nodes_in_group("touch_controls")
+	if tc_nodes.size() > 0:
+		return tc_nodes[0]
+	return tree.root.find_child("TouchControls", true, false)

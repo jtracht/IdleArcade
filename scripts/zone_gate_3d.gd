@@ -64,6 +64,11 @@ func _on_interaction_body_entered(body: Node3D) -> void:
 		if prompt_label != null:
 			prompt_label.visible = true
 			
+		if not _is_unlocked:
+			var tc = _find_touch_controls()
+			if tc != null and tc.has_method("register_interactable"):
+				tc.register_interactable(self, "Unlock [E]")
+				
 		if auto_unlock_on_level and not _is_unlocked:
 			var gs = get_node_or_null("/root/GameState")
 			if gs != null and gs.has_method("get_idle_level") and gs.get_idle_level() >= required_level:
@@ -75,6 +80,9 @@ func _on_interaction_body_exited(body: Node3D) -> void:
 		_avatar_ref = null
 		if prompt_label != null and not _is_unlocked:
 			prompt_label.visible = false
+		var tc = _find_touch_controls()
+		if tc != null and tc.has_method("unregister_interactable"):
+			tc.unregister_interactable(self)
 
 ## Attempts to unlock the gate using idle clearance level or energy payment
 func attempt_unlock() -> bool:
@@ -112,6 +120,9 @@ func attempt_unlock() -> bool:
 ## Opens gate barrier and disables physical collision
 func open_gate(animated: bool = true) -> void:
 	_is_unlocked = true
+	var tc = _find_touch_controls()
+	if tc != null and tc.has_method("unregister_interactable"):
+		tc.unregister_interactable(self)
 	
 	if collision_shape != null:
 		collision_shape.set_deferred("disabled", true)
@@ -174,3 +185,17 @@ func _show_denied_feedback() -> void:
 		var tween = create_tween()
 		tween.tween_interval(1.2)
 		tween.tween_callback(_update_prompt_display)
+
+func _exit_tree() -> void:
+	var tc = _find_touch_controls()
+	if tc != null and tc.has_method("unregister_interactable"):
+		tc.unregister_interactable(self)
+
+func _find_touch_controls() -> Node:
+	var tree = get_tree()
+	if tree == null:
+		return null
+	var tc_nodes = tree.get_nodes_in_group("touch_controls")
+	if tc_nodes.size() > 0:
+		return tc_nodes[0]
+	return tree.root.find_child("TouchControls", true, false)

@@ -13,8 +13,45 @@ permissions:
   contents: read
 
 jobs:
+  test:
+    name: Run Headless Tests
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Run Python CI/CD & E2E Verification
+        run: |
+          python3 IdleArcade/tests/test_ci_release_adversarial.py
+          python3 IdleArcade/tests/e2e_suite.py --tier 1
+          python3 IdleArcade/tests/test_phase5_mobile.py
+          python3 IdleArcade/tests/test_ci_export_verify.py
+
+      - name: Run Godot Headless Baseline Tests
+        run: |
+          godot --headless --path IdleArcade -s tests/test_game_logic.gd
+          godot --headless --path IdleArcade -s tests/test_nakama.gd
+          godot --headless --path IdleArcade -s tests/test_p4_m1_avatar.gd
+          godot --headless --path IdleArcade -s tests/test_p4_m2_meta.gd
+          godot --headless --path IdleArcade -s tests/test_p4_m3_quest_collect.gd
+
+      - name: Run Godot Headless Phase 5 Mobile Tests
+        run: |
+          godot --headless --path IdleArcade -s tests/test_p5_m1_joystick.gd
+          godot --headless --path IdleArcade -s tests/test_p5_m2_actions.gd
+          godot --headless --path IdleArcade -s tests/test_p5_m3_haptics.gd
+          godot --headless --path IdleArcade -s tests/test_phase5_mobile.gd
+
   export-web:
     name: Export Web
+    needs: [test]
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.3
@@ -52,6 +89,7 @@ jobs:
 
   export-android:
     name: Export Android
+    needs: [test]
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.3

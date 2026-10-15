@@ -26,6 +26,8 @@ class_name Main3D
 @onready var hud_instance: Control = get_node_or_null("HUDOverlayLayer/OverlayContainer/HUD")
 @onready var dialogue_panel: Control = get_node_or_null("DialogueLayer/DialoguePanel")
 @onready var quest_tracker: Control = get_node_or_null("QuestLayer/QuestTracker")
+@onready var touch_controls_layer: CanvasLayer = get_node_or_null("TouchControlsLayer")
+@onready var touch_controls: Control = get_node_or_null("TouchControlsLayer/TouchControls")
 
 var _overlay_open: bool = false
 
@@ -39,6 +41,7 @@ func _ready() -> void:
 	
 	_setup_camera_rig()
 	_setup_hud_overlay()
+	_setup_touch_controls()
 	_connect_game_state_signals()
 	_update_quick_hud()
 	
@@ -127,6 +130,11 @@ func _setup_hud_overlay() -> void:
 	if exit_to_2d_button != null:
 		exit_to_2d_button.pressed.connect(_on_exit_to_2d_pressed)
 
+func _setup_touch_controls() -> void:
+	if touch_controls != null and touch_controls.has_signal("overlay_toggle_requested"):
+		if not touch_controls.overlay_toggle_requested.is_connected(toggle_hud_overlay):
+			touch_controls.overlay_toggle_requested.connect(toggle_hud_overlay)
+
 func _on_exit_to_2d_pressed() -> void:
 	var gs = get_node_or_null("/root/GameState")
 	if gs != null and gs.has_method("save_to_disk"):
@@ -147,6 +155,11 @@ func open_hud_overlay() -> void:
 		hud_overlay_layer.visible = true
 	if is_instance_valid(avatar) and avatar.has_method("set_input_enabled"):
 		avatar.set_input_enabled(false)
+	if is_instance_valid(touch_controls):
+		if touch_controls.has_method("fade_out_controls"):
+			touch_controls.fade_out_controls()
+		elif touch_controls.has_method("reset_controls"):
+			touch_controls.reset_controls()
 	if hud_instance != null and hud_instance.has_method("_refresh_all_ui"):
 		hud_instance.call("_refresh_all_ui")
 	_update_quick_hud()
@@ -157,6 +170,8 @@ func close_hud_overlay() -> void:
 		hud_overlay_layer.visible = false
 	if is_instance_valid(avatar) and avatar.has_method("set_input_enabled"):
 		avatar.set_input_enabled(true)
+	if is_instance_valid(touch_controls) and touch_controls.has_method("fade_in_controls"):
+		touch_controls.fade_in_controls()
 	_update_quick_hud()
 
 func is_hud_overlay_open() -> bool:
