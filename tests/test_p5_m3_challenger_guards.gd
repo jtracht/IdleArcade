@@ -173,7 +173,7 @@ func _run_adversarial_challenges() -> void:
 	# Start pattern and immediately disable
 	var pattern_task = hm.vibrate_success_pattern(30, 40, 60)
 	hm.haptics_enabled = false
-	await get_tree().create_timer(0.08).timeout
+	await create_timer(0.08).timeout
 
 	# The second pulse (60ms) should NOT have fired
 	var post_suppress_emissions = spy.emissions.size()

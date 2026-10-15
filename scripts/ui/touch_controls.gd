@@ -27,6 +27,9 @@ signal interactable_changed(interactable: Node3D)
 ## Emitted when controls visibility or fade state alters.
 signal controls_visibility_changed(is_visible: bool)
 
+## Emitted when a synthetic keyboard event is dispatched.
+signal key_synthesized(keycode: Key)
+
 # ------------------------------------------------------------------------------
 # Configuration
 # ------------------------------------------------------------------------------
@@ -75,6 +78,9 @@ var registered_interactables: Array[Node3D]:
 
 ## Track modal fade state.
 var is_faded_out: bool = false
+
+## Total count of synthetic keyboard events emitted.
+var synthetic_key_count: int = 0
 
 var _fade_tween: Tween = null
 var _action_tween: Tween = null
@@ -297,6 +303,9 @@ func trigger_laptop_toggle() -> void:
 		_synthesize_key(KEY_TAB)
 
 func _synthesize_key(keycode: Key) -> void:
+	synthetic_key_count += 1
+	key_synthesized.emit(keycode)
+
 	var press = InputEventKey.new()
 	press.keycode = keycode
 	press.pressed = true

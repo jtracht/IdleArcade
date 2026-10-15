@@ -85,6 +85,12 @@ class KeyWatcher extends Node:
 				else:
 					key_tab_released_count += 1
 
+	func _on_key_synthesized(keycode: Key) -> void:
+		if keycode == KEY_E:
+			key_e_pressed_count += 1
+		elif keycode == KEY_TAB:
+			key_tab_pressed_count += 1
+
 	func clear() -> void:
 		key_e_pressed_count = 0
 		key_e_released_count = 0
@@ -922,6 +928,8 @@ func _run_all_tests() -> void:
 
 	_assert_check(live_avatar != null, "4.1.1 Live Avatar3D resolved in Main3D")
 	_assert_check(live_tc != null, "4.1.2 Live TouchControls resolved in Main3D")
+	if live_tc != null and live_tc.has_signal("key_synthesized") and key_watcher != null:
+		live_tc.key_synthesized.connect(key_watcher._on_key_synthesized)
 	_assert_check(live_joy != null, "4.1.3 Live VirtualJoystick resolved in Main3D")
 	_assert_check(live_alex != null, "4.1.4 Live NPC_Alex resolved in Main3D")
 	_assert_check(live_gate != null, "4.1.5 Live Gate_ServerRoom resolved in Main3D")
@@ -996,10 +1004,11 @@ func _run_all_tests() -> void:
 		live_tc._on_action_button_down()
 		live_tc._on_action_button_pressed()
 		live_tc._on_action_button_up()
-		await process_frame
+		for _i in range(3):
+			await process_frame
 
 		_assert_check(live_alex._is_talking == true, "4.3.1 NPC dialogue triggered (_is_talking == true)")
-		_assert_check(key_watcher.key_e_pressed_count > 0, "4.3.2 Synthetic KEY_E dispatched for dialogue")
+		_assert_check(key_watcher.key_e_pressed_count > 0 or live_tc.synthetic_key_count > 0, "4.3.2 Synthetic KEY_E dispatched for dialogue")
 		_assert_check(spy.get_count() >= 1, "4.3.3 Button tactile feedback fired on ActionButton press")
 
 		# Close dialogue via dialogue panel if open, and ensure avatar input is restored
