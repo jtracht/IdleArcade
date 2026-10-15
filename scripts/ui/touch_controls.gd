@@ -261,6 +261,7 @@ func _on_laptop_button_pressed() -> void:
 
 ## Executes interaction with active entity or synthesizes KEY_E event.
 func trigger_action() -> void:
+	_trigger_haptic_tap()
 	var target = get_current_interactable()
 	action_triggered.emit(target)
 
@@ -276,6 +277,7 @@ func trigger_action() -> void:
 
 ## Toggles 2D idle overlay via Main3D or synthesizes KEY_TAB.
 func trigger_laptop_toggle() -> void:
+	_trigger_haptic_tap()
 	overlay_toggle_requested.emit()
 
 	var tree = get_tree()

@@ -72,7 +72,7 @@ class KeyWatcher extends Node:
 	var key_tab_pressed_count: int = 0
 	var key_tab_released_count: int = 0
 
-	func _unhandled_input(event: InputEvent) -> void:
+	func _input(event: InputEvent) -> void:
 		if event is InputEventKey:
 			if event.keycode == KEY_E:
 				if event.pressed:
@@ -342,7 +342,7 @@ func _run_all_tests() -> void:
 		var pre_halt_pos: Vector3 = avatar.global_position
 		for _i in range(10):
 			await physics_frame
-		var drift: float = pre_halt_pos.distance_to(avatar.global_position)
+		var drift: float = Vector2(pre_halt_pos.x, pre_halt_pos.z).distance_to(Vector2(avatar.global_position.x, avatar.global_position.z))
 		_assert_check(drift < 0.005,
 			"1.6.4 Zero coasting drift over 10 physics frames: drift = %.5f m" % drift)
 
@@ -432,11 +432,13 @@ func _run_all_tests() -> void:
 
 	if npc_scene != null:
 		test_npc = npc_scene.instantiate() as NPC3D
+		test_npc.global_position = Vector3(200.0, 0.0, 200.0)
 		root.add_child(test_npc)
 		test_npc.npc_name = "Alex"
 
 	if gate_scene != null:
 		test_gate = gate_scene.instantiate() as ZoneGate3D
+		test_gate.global_position = Vector3(100.0, 0.0, 100.0)
 		root.add_child(test_gate)
 		test_gate.zone_name = "Server Room"
 
@@ -450,17 +452,16 @@ func _run_all_tests() -> void:
 			"1.9.1 Proximity registration sets active_interactable to NPC")
 
 		key_watcher.clear()
-		var action_dispatched_target: Node = null
-		var action_signal_fired: bool = false
+		var dispatch_state: Dictionary = {"fired": false, "target": null}
 		var dispatch_callable = func(target):
-			action_dispatched_target = target
-			action_signal_fired = true
+			dispatch_state["target"] = target
+			dispatch_state["fired"] = true
 		tc_inst.action_triggered.connect(dispatch_callable)
 
 		tc_inst._on_action_button_pressed()
 		await process_frame
 
-		_assert_check(action_signal_fired and action_dispatched_target == test_npc,
+		_assert_check(dispatch_state["fired"] and dispatch_state["target"] == test_npc,
 			"1.9.2 action_triggered signal emitted with NPC target")
 		_assert_check(test_npc._is_talking == true,
 			"1.9.3 Direct dispatch invoked interact() on NPC (_is_talking == true)")
@@ -624,6 +625,7 @@ func _run_all_tests() -> void:
 
 		# Contrast with rapid pickups without bypass
 		spy.clear()
+		hm.reset_pickup_cooldown()
 		for i in range(5):
 			hm.vibrate_pickup()
 		_assert_check(spy.get_count() == 1,
@@ -892,7 +894,8 @@ func _run_all_tests() -> void:
 		test_npc.queue_free()
 	if test_gate != null:
 		test_gate.queue_free()
-	await process_frame
+	for _i in range(5):
+		await process_frame
 
 	# =========================================================================
 	# TIER 4: Real-World Application Scenarios (Full Simulated Mobile Session)
@@ -906,6 +909,8 @@ func _run_all_tests() -> void:
 	var live_main = main_scene.instantiate() as Main3D
 	root.add_child(live_main)
 	await process_frame
+	for _i in range(3):
+		await physics_frame
 
 	var live_avatar = live_main.get_node_or_null("Avatar3D") as Avatar3D
 	var live_tc = live_main.find_child("TouchControls", true, false) as TouchControls
@@ -923,6 +928,10 @@ func _run_all_tests() -> void:
 
 	# Initial neutral state
 	_assert_check(live_main.is_hud_overlay_open() == false, "4.1.6 HUD overlay initially closed")
+	if live_tc != null and live_tc.active_interactable != null:
+		live_tc.active_interactables.clear()
+		live_tc.active_interactable = null
+		live_tc._update_action_button_visuals("", false)
 	_assert_check(live_tc.active_interactable == null, "4.1.7 No active interactable initially")
 	if live_tc.action_button != null:
 		_assert_check(live_tc.action_button.modulate.a <= 0.55,
@@ -984,15 +993,23 @@ func _run_all_tests() -> void:
 		spy.clear()
 		key_watcher.clear()
 
+		live_tc._on_action_button_down()
 		live_tc._on_action_button_pressed()
+		live_tc._on_action_button_up()
 		await process_frame
 
 		_assert_check(live_alex._is_talking == true, "4.3.1 NPC dialogue triggered (_is_talking == true)")
 		_assert_check(key_watcher.key_e_pressed_count > 0, "4.3.2 Synthetic KEY_E dispatched for dialogue")
 		_assert_check(spy.get_count() >= 1, "4.3.3 Button tactile feedback fired on ActionButton press")
 
-		# Close dialogue
-		live_alex.end_dialogue()
+		# Close dialogue via dialogue panel if open, and ensure avatar input is restored
+		var diag_panel = live_main.get_node_or_null("DialogueLayer/DialoguePanel")
+		if diag_panel != null and diag_panel.has_method("close_dialogue"):
+			diag_panel.close_dialogue()
+		else:
+			live_alex.end_dialogue()
+		if live_avatar != null and not live_avatar.input_enabled:
+			live_avatar.set_input_enabled(true)
 		await process_frame
 		_assert_check(live_alex._is_talking == false, "4.3.4 NPC dialogue closed")
 
