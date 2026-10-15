@@ -178,7 +178,7 @@ func _get_keyboard_input_vector() -> Vector3:
 
 func _update_procedural_animation(delta: float, horizontal_vel: Vector3) -> void:
 	var speed_ratio: float = clampf(horizontal_vel.length() / maxf(current_speed, 0.001), 0.0, 1.5)
-	if speed_ratio > 0.05 and is_on_floor():
+	if speed_ratio > 0.05:
 		_anim_time += delta * walk_bob_frequency * speed_ratio
 		var bob_offset: float = abs(sin(_anim_time)) * walk_bob_amplitude * speed_ratio
 		visuals.position.y = _base_visual_y + bob_offset

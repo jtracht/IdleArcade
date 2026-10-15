@@ -7,7 +7,7 @@ extends SceneTree
 var checks_passed: int = 0
 var checks_failed: int = 0
 
-func _assert_check(cond: bool, msg: str) -> void:
+func _assert_check(cond: bool, msg: String) -> void:
 	if cond:
 		print("  [PASS] %s" % msg)
 		checks_passed += 1
