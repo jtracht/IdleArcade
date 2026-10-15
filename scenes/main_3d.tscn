@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://dm4main3d001scene"]
+[gd_scene load_steps=29 format=3 uid="uid://dm4main3d001scene"]
 
 [ext_resource type="Script" path="res://scripts/main_3d.gd" id="1_main3d"]
 [ext_resource type="PackedScene" uid="uid://c8avatar3d001scene" path="res://scenes/avatar_3d.tscn" id="2_avatar"]
@@ -9,6 +9,8 @@
 [ext_resource type="PackedScene" uid="uid://b8questtracker01" path="res://scenes/quest_tracker.tscn" id="7_tracker"]
 [ext_resource type="PackedScene" uid="uid://dm4dialogue01scene" path="res://scenes/dialogue_panel.tscn" id="8_dialogue"]
 [ext_resource type="PackedScene" uid="uid://dm4touchctrls01scene" path="res://scenes/ui/touch_controls.tscn" id="9_touch"]
+[ext_resource type="PackedScene" uid="uid://c6incubatorzone01" path="res://scenes/incubator_zone.tscn" id="10_incubator"]
+[ext_resource type="PackedScene" uid="uid://c6questwaypoint01" path="res://scenes/quest_waypoint.tscn" id="11_waypoint"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -433,3 +435,8 @@ layer = 8
 
 [node name="DialoguePanel" parent="DialogueLayer" instance=ExtResource("8_dialogue")]
 visible = false
+
+[node name="IncubatorZone" parent="." instance=ExtResource("10_incubator")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 0, 0)
+
+[node name="QuestWaypoint" parent="." instance=ExtResource("11_waypoint")]

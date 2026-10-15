@@ -1,0 +1,280 @@
+[gd_scene load_steps=22 format=3 uid="uid://c6officeprops001"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_DeskWood"]
+albedo_color = Color(0.3, 0.22, 0.16, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="Mesh_DeskTop"]
+material = SubResource("Mat_DeskWood")
+size = Vector3(2.4, 0.1, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="Mat_MetalLegs"]
+albedo_color = Color(0.2, 0.22, 0.26, 1)
+metallic = 0.7
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="Mesh_DeskLeg"]
+material = SubResource("Mat_MetalLegs")
+size = Vector3(0.08, 0.75, 1.1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_MonitorBezel"]
+albedo_color = Color(0.1, 0.12, 0.15, 1)
+metallic = 0.5
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="Mesh_Monitor"]
+material = SubResource("Mat_MonitorBezel")
+size = Vector3(0.8, 0.5, 0.05)
+
+[sub_resource type="StandardMaterial3D" id="Mat_ScreenCyan"]
+albedo_color = Color(0.05, 0.12, 0.2, 1)
+emission_enabled = true
+emission = Color(0.1, 0.7, 1, 1)
+emission_energy_multiplier = 0.7
+
+[sub_resource type="BoxMesh" id="Mesh_ScreenFace"]
+material = SubResource("Mat_ScreenCyan")
+size = Vector3(0.76, 0.46, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Chair"]
+albedo_color = Color(0.15, 0.2, 0.3, 1)
+roughness = 0.7
+
+[sub_resource type="BoxMesh" id="Mesh_ChairSeat"]
+material = SubResource("Mat_Chair")
+size = Vector3(0.6, 0.08, 0.6)
+
+[sub_resource type="BoxMesh" id="Mesh_ChairBack"]
+material = SubResource("Mat_Chair")
+size = Vector3(0.6, 0.6, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="Mat_CoffeeMaker"]
+albedo_color = Color(0.75, 0.2, 0.2, 1)
+metallic = 0.3
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="Mesh_CoffeeMaker"]
+material = SubResource("Mat_CoffeeMaker")
+size = Vector3(0.5, 0.6, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="Mat_WaterBottle"]
+transparency = 1
+albedo_color = Color(0.3, 0.75, 1, 0.65)
+roughness = 0.1
+
+[sub_resource type="CylinderMesh" id="Mesh_WaterBottle"]
+material = SubResource("Mat_WaterBottle")
+top_radius = 0.25
+bottom_radius = 0.25
+height = 0.6
+
+[sub_resource type="StandardMaterial3D" id="Mat_Whiteboard"]
+albedo_color = Color(0.96, 0.96, 0.96, 1)
+roughness = 0.2
+
+[sub_resource type="BoxMesh" id="Mesh_Whiteboard"]
+material = SubResource("Mat_Whiteboard")
+size = Vector3(2.8, 1.4, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="Mat_ServerRack"]
+albedo_color = Color(0.08, 0.1, 0.14, 1)
+metallic = 0.7
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="Mesh_ServerRack"]
+material = SubResource("Mat_ServerRack")
+size = Vector3(1.2, 2.2, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="Mat_LedBlink"]
+albedo_color = Color(0.1, 1, 0.4, 1)
+emission_enabled = true
+emission = Color(0.1, 1, 0.4, 1)
+emission_energy_multiplier = 1.2
+
+[sub_resource type="BoxMesh" id="Mesh_Led"]
+material = SubResource("Mat_LedBlink")
+size = Vector3(0.06, 0.04, 0.02)
+
+[node name="OfficeProps" type="Node3D"]
+
+[node name="Desk_1" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, -4)
+
+[node name="DeskTop" type="MeshInstance3D" parent="Desk_1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+mesh = SubResource("Mesh_DeskTop")
+
+[node name="LegLeft" type="MeshInstance3D" parent="Desk_1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1, 0.375, 0)
+mesh = SubResource("Mesh_DeskLeg")
+
+[node name="LegRight" type="MeshInstance3D" parent="Desk_1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 0.375, 0)
+mesh = SubResource("Mesh_DeskLeg")
+
+[node name="MonitorLeft" type="MeshInstance3D" parent="Desk_1"]
+transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, -0.45, 1.05, -0.25)
+mesh = SubResource("Mesh_Monitor")
+
+[node name="ScreenLeft" type="MeshInstance3D" parent="Desk_1/MonitorLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.03)
+mesh = SubResource("Mesh_ScreenFace")
+
+[node name="MonitorRight" type="MeshInstance3D" parent="Desk_1"]
+transform = Transform3D(0.965926, 0, -0.258819, 0, 1, 0, 0.258819, 0, 0.965926, 0.45, 1.05, -0.25)
+mesh = SubResource("Mesh_Monitor")
+
+[node name="ScreenRight" type="MeshInstance3D" parent="Desk_1/MonitorRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.03)
+mesh = SubResource("Mesh_ScreenFace")
+
+[node name="Chair" type="Node3D" parent="Desk_1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.7)
+
+[node name="Seat" type="MeshInstance3D" parent="Desk_1/Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+mesh = SubResource("Mesh_ChairSeat")
+
+[node name="Back" type="MeshInstance3D" parent="Desk_1/Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0.26)
+mesh = SubResource("Mesh_ChairBack")
+
+[node name="Desk_2" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -4)
+
+[node name="DeskTop" type="MeshInstance3D" parent="Desk_2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+mesh = SubResource("Mesh_DeskTop")
+
+[node name="LegLeft" type="MeshInstance3D" parent="Desk_2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1, 0.375, 0)
+mesh = SubResource("Mesh_DeskLeg")
+
+[node name="LegRight" type="MeshInstance3D" parent="Desk_2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 0.375, 0)
+mesh = SubResource("Mesh_DeskLeg")
+
+[node name="Monitor" type="MeshInstance3D" parent="Desk_2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, -0.25)
+mesh = SubResource("Mesh_Monitor")
+
+[node name="Screen" type="MeshInstance3D" parent="Desk_2/Monitor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.03)
+mesh = SubResource("Mesh_ScreenFace")
+
+[node name="Chair" type="Node3D" parent="Desk_2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.7)
+
+[node name="Seat" type="MeshInstance3D" parent="Desk_2/Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+mesh = SubResource("Mesh_ChairSeat")
+
+[node name="Back" type="MeshInstance3D" parent="Desk_2/Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0.26)
+mesh = SubResource("Mesh_ChairBack")
+
+[node name="Desk_3" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 4)
+
+[node name="DeskTop" type="MeshInstance3D" parent="Desk_3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+mesh = SubResource("Mesh_DeskTop")
+
+[node name="LegLeft" type="MeshInstance3D" parent="Desk_3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1, 0.375, 0)
+mesh = SubResource("Mesh_DeskLeg")
+
+[node name="LegRight" type="MeshInstance3D" parent="Desk_3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 0.375, 0)
+mesh = SubResource("Mesh_DeskLeg")
+
+[node name="Monitor" type="MeshInstance3D" parent="Desk_3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, -0.25)
+mesh = SubResource("Mesh_Monitor")
+
+[node name="Screen" type="MeshInstance3D" parent="Desk_3/Monitor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.03)
+mesh = SubResource("Mesh_ScreenFace")
+
+[node name="Chair" type="Node3D" parent="Desk_3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.7)
+
+[node name="Seat" type="MeshInstance3D" parent="Desk_3/Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+mesh = SubResource("Mesh_ChairSeat")
+
+[node name="Back" type="MeshInstance3D" parent="Desk_3/Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0.26)
+mesh = SubResource("Mesh_ChairBack")
+
+[node name="Desk_4" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 4)
+
+[node name="DeskTop" type="MeshInstance3D" parent="Desk_4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+mesh = SubResource("Mesh_DeskTop")
+
+[node name="LegLeft" type="MeshInstance3D" parent="Desk_4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1, 0.375, 0)
+mesh = SubResource("Mesh_DeskLeg")
+
+[node name="LegRight" type="MeshInstance3D" parent="Desk_4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 0.375, 0)
+mesh = SubResource("Mesh_DeskLeg")
+
+[node name="Monitor" type="MeshInstance3D" parent="Desk_4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, -0.25)
+mesh = SubResource("Mesh_Monitor")
+
+[node name="Screen" type="MeshInstance3D" parent="Desk_4/Monitor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.03)
+mesh = SubResource("Mesh_ScreenFace")
+
+[node name="Chair" type="Node3D" parent="Desk_4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.7)
+
+[node name="Seat" type="MeshInstance3D" parent="Desk_4/Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+mesh = SubResource("Mesh_ChairSeat")
+
+[node name="Back" type="MeshInstance3D" parent="Desk_4/Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0.26)
+mesh = SubResource("Mesh_ChairBack")
+
+[node name="CoffeeStation" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 0)
+
+[node name="Table" type="MeshInstance3D" parent="CoffeeStation"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("Mesh_DeskLeg")
+
+[node name="EspressoMaker" type="MeshInstance3D" parent="CoffeeStation"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 1.0, 0)
+mesh = SubResource("Mesh_CoffeeMaker")
+
+[node name="WaterCoolerBottle" type="MeshInstance3D" parent="CoffeeStation"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.35, 1.1, 0)
+mesh = SubResource("Mesh_WaterBottle")
+
+[node name="Whiteboard" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, -8.5)
+mesh = SubResource("Mesh_Whiteboard")
+
+[node name="ServerRackUnit" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, 0, 0)
+
+[node name="RackMesh" type="MeshInstance3D" parent="ServerRackUnit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+mesh = SubResource("Mesh_ServerRack")
+
+[node name="Led1" type="MeshInstance3D" parent="ServerRackUnit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 1.6, 0.41)
+mesh = SubResource("Mesh_Led")
+
+[node name="Led2" type="MeshInstance3D" parent="ServerRackUnit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 1.4, 0.41)
+mesh = SubResource("Mesh_Led")
+
+[node name="Led3" type="MeshInstance3D" parent="ServerRackUnit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 1.2, 0.41)
+mesh = SubResource("Mesh_Led")

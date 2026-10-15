@@ -84,11 +84,41 @@ func collect(collector: Node3D = null) -> void:
 	_play_pickup_animation()
 
 func _play_pickup_animation() -> void:
+	_spawn_floating_text()
 	var tween = create_tween().set_parallel(true)
 	if visuals != null:
 		tween.tween_property(visuals, "scale", Vector3.ZERO, 0.25).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_BACK)
 		tween.tween_property(visuals, "position:y", _base_y + 1.2, 0.25).set_ease(Tween.EASE_OUT)
 	tween.chain().tween_callback(queue_free)
+
+func _spawn_floating_text() -> void:
+	var parent_node = get_parent()
+	if parent_node == null:
+		return
+	var label = Label3D.new()
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.no_depth_test = true
+	label.font_size = 26
+	label.outline_size = 6
+	
+	var text_msg = "+%.0f Energy" % reward_amount
+	var text_color = Color(1.0, 0.85, 0.2)
+	if item_type == "coffee":
+		text_msg = "+%.0f Coffee (Speed Boost!)" % reward_amount
+		text_color = Color(0.4, 0.9, 1.0)
+	elif item_type == "usb_drive":
+		text_msg = "+%.0f Data Drive" % reward_amount
+		text_color = Color(0.7, 0.4, 1.0)
+		
+	label.text = text_msg
+	label.modulate = text_color
+	label.global_position = global_position + Vector3(0.0, 0.8, 0.0)
+	parent_node.add_child(label)
+	
+	var float_tween = label.create_tween().set_parallel(true)
+	float_tween.tween_property(label, "position:y", label.position.y + 1.4, 0.75).set_ease(Tween.EASE_OUT)
+	float_tween.tween_property(label, "modulate:a", 0.0, 0.75).set_delay(0.25)
+	float_tween.chain().tween_callback(label.queue_free)
 
 func _on_avatar_stat_updated(stat_name: String, _new_value: float) -> void:
 	if stat_name == "pickup_radius":

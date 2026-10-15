@@ -23,12 +23,15 @@ signal dialogue_closed(npc_id: String)
 var _player_in_range: bool = false
 var _avatar_ref: Node3D = null
 var _is_talking: bool = false
+var _anim_time: float = 0.0
+var _emote_timer: float = 0.0
 
 @onready var visuals: Node3D = get_node_or_null("Visuals")
 @onready var body_mesh: MeshInstance3D = get_node_or_null("Visuals/BodyMesh")
 @onready var name_label: Label3D = get_node_or_null("Visuals/NameLabel3D")
 @onready var prompt_label: Label3D = get_node_or_null("Visuals/PromptLabel3D")
 @onready var quest_marker: Label3D = get_node_or_null("Visuals/QuestMarkerLabel3D")
+@onready var emote_label: Label3D = get_node_or_null("Visuals/EmoteLabel3D")
 @onready var interaction_area: Area3D = get_node_or_null("InteractionArea")
 
 func _ready() -> void:
@@ -56,6 +59,20 @@ func _ready() -> void:
 	_update_quest_marker()
 
 func _process(delta: float) -> void:
+	_anim_time += delta
+	
+	# Procedural idle breathing and quest marker bounce
+	if visuals != null:
+		visuals.position.y = sin(_anim_time * 2.0) * 0.02
+	if quest_marker != null and quest_marker.visible:
+		quest_marker.position.y = 2.95 + sin(_anim_time * 3.5) * 0.08
+
+	# Emote timer countdown
+	if _emote_timer > 0.0:
+		_emote_timer -= delta
+		if _emote_timer <= 0.0 and emote_label != null:
+			emote_label.visible = false
+
 	# Smoothly turn to face player during active dialogue or when player is close
 	if (_is_talking or _player_in_range) and is_instance_valid(_avatar_ref) and visuals != null:
 		var diff = _avatar_ref.global_position - global_position
@@ -63,6 +80,14 @@ func _process(delta: float) -> void:
 		if diff.length_squared() > 0.05:
 			var target_angle = atan2(diff.x, diff.z)
 			visuals.rotation.y = lerp_angle(visuals.rotation.y, target_angle, 6.0 * delta)
+
+## Displays an animated emote bubble above NPC head
+func show_emote(symbol: String, duration: float = 2.5) -> void:
+	if emote_label == null:
+		return
+	emote_label.text = symbol
+	emote_label.visible = true
+	_emote_timer = duration
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not _player_in_range or _is_talking:
@@ -79,6 +104,7 @@ func _on_interaction_body_entered(body: Node3D) -> void:
 		_avatar_ref = body
 		if prompt_label != null:
 			prompt_label.visible = true
+		show_emote("💬", 2.0)
 		var tc = _find_touch_controls()
 		if tc != null and tc.has_method("register_interactable"):
 			tc.register_interactable(self, "Talk [E]")
@@ -98,6 +124,7 @@ func _on_interaction_body_exited(body: Node3D) -> void:
 ## Initiates interaction with NPC
 func interact() -> void:
 	_is_talking = true
+	show_emote("💡", 3.0)
 	if prompt_label != null:
 		prompt_label.visible = false
 	var tc = _find_touch_controls()
@@ -145,6 +172,7 @@ func _on_quest_updated(q_id: String, _status: String, _curr: int, _target: int) 
 
 func _on_quest_completed(q_id: String, _energy: float, _bonus: int) -> void:
 	if q_id == quest_id:
+		show_emote("🎉", 4.0)
 		_update_quest_marker()
 
 func _update_quest_marker() -> void:

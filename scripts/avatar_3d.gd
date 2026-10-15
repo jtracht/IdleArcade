@@ -20,6 +20,14 @@ signal speed_boost_expired()
 @export var stop_distance: float = 0.2
 @export var use_camera_relative_input: bool = true
 
+# --- Procedural Locomotion Parameters ---
+@export var enable_procedural_animation: bool = true
+@export var walk_bob_frequency: float = 12.0
+@export var walk_bob_amplitude: float = 0.06
+@export var walk_roll_tilt_amplitude: float = 0.05
+@export var idle_breath_frequency: float = 2.0
+@export var idle_breath_amplitude: float = 0.015
+
 # --- Public State ---
 var current_speed: float = 6.0
 var input_enabled: bool = true
@@ -30,13 +38,18 @@ var _click_target: Vector3 = Vector3.ZERO
 var _has_click_target: bool = false
 var _speed_boost_multiplier: float = 1.0
 var _speed_boost_timer: float = 0.0
+var _anim_time: float = 0.0
+var _base_visual_y: float = 0.0
 
 @onready var visuals: Node3D = $Visuals
+@onready var footstep_particles: CPUParticles3D = get_node_or_null("FootstepDust")
 
 func _ready() -> void:
 	if not is_in_group("player"):
 		add_to_group("player")
 	current_speed = get_move_speed()
+	if visuals != null:
+		_base_visual_y = visuals.position.y
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not input_enabled:
@@ -109,6 +122,10 @@ func _physics_process(delta: float) -> void:
 	# 6. Kinematic move execution
 	move_and_slide()
 
+	# 7. Procedural locomotion & visual juice
+	if enable_procedural_animation and visuals != null:
+		_update_procedural_animation(delta, current_horizontal)
+
 ## Raycasts screen coordinate against horizontal ground plane (y = 0)
 func _process_screen_navigation_event(screen_pos: Vector2) -> void:
 	var viewport = get_viewport()
@@ -159,6 +176,31 @@ func _get_keyboard_input_vector() -> Vector3:
 			
 	return Vector3(input_2d.x, 0.0, input_2d.y).normalized()
 
+func _update_procedural_animation(delta: float, horizontal_vel: Vector3) -> void:
+	var speed_ratio: float = clampf(horizontal_vel.length() / maxf(current_speed, 0.001), 0.0, 1.5)
+	if speed_ratio > 0.05 and is_on_floor():
+		_anim_time += delta * walk_bob_frequency * speed_ratio
+		var bob_offset: float = abs(sin(_anim_time)) * walk_bob_amplitude * speed_ratio
+		visuals.position.y = _base_visual_y + bob_offset
+		
+		var roll_sway: float = sin(_anim_time * 0.5) * walk_roll_tilt_amplitude * speed_ratio
+		visuals.rotation.z = lerp_angle(visuals.rotation.z, roll_sway, 12.0 * delta)
+		
+		var forward_pitch: float = -0.06 * speed_ratio
+		visuals.rotation.x = lerp_angle(visuals.rotation.x, forward_pitch, 10.0 * delta)
+		
+		if footstep_particles != null:
+			footstep_particles.emitting = true
+	else:
+		_anim_time += delta * idle_breath_frequency
+		var breath_offset: float = sin(_anim_time) * idle_breath_amplitude
+		visuals.position.y = lerp(visuals.position.y, _base_visual_y + breath_offset, 6.0 * delta)
+		visuals.rotation.z = lerp_angle(visuals.rotation.z, 0.0, 10.0 * delta)
+		visuals.rotation.x = lerp_angle(visuals.rotation.x, 0.0, 10.0 * delta)
+		
+		if footstep_particles != null:
+			footstep_particles.emitting = false
+
 func _update_speed_boost(delta: float) -> void:
 	if _speed_boost_timer > 0.0:
 		_speed_boost_timer -= delta
@@ -191,6 +233,12 @@ func stop_movement() -> void:
 	_script_input_direction = Vector3.ZERO
 	_has_click_target = false
 	velocity = Vector3(0.0, velocity.y, 0.0)
+	if visuals != null:
+		visuals.position.y = _base_visual_y
+		visuals.rotation.z = 0.0
+		visuals.rotation.x = 0.0
+	if footstep_particles != null:
+		footstep_particles.emitting = false
 
 ## Convenience alias for stop_movement()
 func stop() -> void:

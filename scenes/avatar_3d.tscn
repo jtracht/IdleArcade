@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://c8avatar3d001scene"]
+[gd_scene load_steps=11 format=3 uid="uid://c8avatar3d001scene"]
 
 [ext_resource type="Script" path="res://scripts/avatar_3d.gd" id="1_avatar"]
 
@@ -39,6 +39,15 @@ height = 0.01
 [sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
 radius = 1.5
 
+[sub_resource type="StandardMaterial3D" id="Material_dust"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.85, 0.88, 0.95, 0.45)
+
+[sub_resource type="BoxMesh" id="BoxMesh_dust"]
+material = SubResource("Material_dust")
+size = Vector3(0.08, 0.04, 0.08)
+
 [node name="Avatar3D" type="CharacterBody3D" groups=["player"]]
 collision_layer = 1
 collision_mask = 1
@@ -74,3 +83,19 @@ monitorable = true
 [node name="CollisionShape3D" type="CollisionShape3D" parent="InteractionArea"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("SphereShape3D_interact")
+
+[node name="FootstepDust" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+emitting = false
+amount = 8
+lifetime = 0.35
+mesh = SubResource("BoxMesh_dust")
+emission_shape = 1
+emission_sphere_radius = 0.25
+direction = Vector3(0, 1, 0)
+spread = 60.0
+gravity = Vector3(0, -0.5, 0)
+initial_velocity_min = 0.2
+initial_velocity_max = 0.6
+scale_amount_min = 0.5
+scale_amount_max = 1.0

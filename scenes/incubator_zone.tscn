@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://c6incubatorzone01"]
+
+[ext_resource type="Script" path="res://scripts/incubator_manager.gd" id="1_incubator"]
+[ext_resource type="PackedScene" uid="uid://c6officeprops001" path="res://scenes/office_props.tscn" id="2_props"]
+
+[node name="IncubatorZone" type="Node3D" groups=["incubator"]]
+script = ExtResource("1_incubator")
+
+[node name="OfficeProps" parent="." instance=ExtResource("2_props")]

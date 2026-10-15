@@ -1,0 +1,133 @@
+[gd_scene load_steps=14 format=3 uid="uid://c6workeravatar3d01"]
+
+[ext_resource type="Script" path="res://scripts/worker_avatar_3d.gd" id="1_worker"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_worker"]
+radius = 0.25
+height = 1.1
+
+[sub_resource type="StandardMaterial3D" id="Material_worker_body"]
+albedo_color = Color(0.15, 0.65, 0.95, 1)
+roughness = 0.5
+metallic = 0.1
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_worker"]
+material = SubResource("Material_worker_body")
+radius = 0.25
+height = 1.1
+
+[sub_resource type="StandardMaterial3D" id="Material_glasses"]
+albedo_color = Color(0.1, 0.1, 0.15, 1)
+metallic = 0.9
+roughness = 0.1
+
+[sub_resource type="BoxMesh" id="BoxMesh_glasses"]
+material = SubResource("Material_glasses")
+size = Vector3(0.26, 0.08, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="Material_laptop"]
+albedo_color = Color(0.7, 0.72, 0.76, 1)
+metallic = 0.8
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_laptop_base"]
+material = SubResource("Material_laptop")
+size = Vector3(0.28, 0.02, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="Material_screen"]
+albedo_color = Color(0.05, 0.1, 0.15, 1)
+emission_enabled = true
+emission = Color(0.2, 0.9, 0.4, 1)
+emission_energy_multiplier = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_laptop_screen"]
+material = SubResource("Material_screen")
+size = Vector3(0.26, 0.16, 0.015)
+
+[sub_resource type="StandardMaterial3D" id="Material_worker_shadow"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0, 0, 0, 0.35)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_worker_shadow"]
+material = SubResource("Material_worker_shadow")
+top_radius = 0.32
+bottom_radius = 0.32
+height = 0.01
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
+radius = 1.8
+
+[node name="WorkerAvatar3D" type="CharacterBody3D" groups=["workers"]]
+collision_layer = 1
+collision_mask = 1
+script = ExtResource("1_worker")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+shape = SubResource("CapsuleShape3D_worker")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="BodyMesh" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+mesh = SubResource("CapsuleMesh_worker")
+
+[node name="GlassesMesh" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.86, 0.18)
+mesh = SubResource("BoxMesh_glasses")
+
+[node name="LaptopBase" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0.22)
+mesh = SubResource("BoxMesh_laptop_base")
+
+[node name="LaptopScreen" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0.52, 0.3)
+mesh = SubResource("BoxMesh_laptop_screen")
+
+[node name="GroundShadow" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+mesh = SubResource("CylinderMesh_worker_shadow")
+
+[node name="NameLabel3D" type="Label3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
+billboard = 1
+no_depth_test = true
+text = "Worker Name
+Title"
+font_size = 18
+outline_size = 4
+
+[node name="SpeechBubble3D" type="Label3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
+visible = false
+billboard = 1
+no_depth_test = true
+text = "LGTM! 🚀"
+font_size = 22
+outline_size = 6
+modulate = Color(1, 0.95, 0.3, 1)
+
+[node name="CodeParticles" type="CPUParticles3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.52, 0.28)
+emitting = false
+amount = 6
+lifetime = 0.4
+emission_shape = 1
+emission_sphere_radius = 0.12
+direction = Vector3(0, 1, 0)
+spread = 30.0
+gravity = Vector3(0, 1.5, 0)
+initial_velocity_min = 0.2
+initial_velocity_max = 0.5
+scale_amount_min = 0.4
+scale_amount_max = 0.8
+color = Color(0.2, 0.9, 0.4, 0.8)
+
+[node name="InteractionArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractionArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+shape = SubResource("SphereShape3D_interact")
