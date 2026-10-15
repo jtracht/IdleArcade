@@ -43,6 +43,13 @@ var _base_visual_y: float = 0.0
 
 @onready var visuals: Node3D = $Visuals
 @onready var footstep_particles: CPUParticles3D = get_node_or_null("FootstepDust")
+@onready var chibi_root: Node3D = get_node_or_null("Visuals/ChibiRoot")
+@onready var chibi_head: Node3D = get_node_or_null("Visuals/ChibiRoot/Head")
+@onready var chibi_torso: Node3D = get_node_or_null("Visuals/ChibiRoot/Torso")
+@onready var left_arm: Node3D = get_node_or_null("Visuals/ChibiRoot/LeftArm")
+@onready var right_arm: Node3D = get_node_or_null("Visuals/ChibiRoot/RightArm")
+@onready var left_leg: Node3D = get_node_or_null("Visuals/ChibiRoot/LeftLeg")
+@onready var right_leg: Node3D = get_node_or_null("Visuals/ChibiRoot/RightLeg")
 
 func _ready() -> void:
 	if not is_in_group("player"):
@@ -50,6 +57,13 @@ func _ready() -> void:
 	current_speed = get_move_speed()
 	if visuals != null:
 		_base_visual_y = visuals.position.y
+	var gs = get_node_or_null("/root/GameState")
+	if gs != null and gs.has_signal("avatar_stat_updated"):
+		gs.avatar_stat_updated.connect(_on_avatar_stat_updated)
+
+func _on_avatar_stat_updated(stat_name: String, _new_val: float) -> void:
+	if stat_name == "avatar_speed":
+		current_speed = get_move_speed()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not input_enabled:
@@ -80,7 +94,7 @@ func _physics_process(delta: float) -> void:
 	# 3. Resolve desired horizontal movement direction
 	var desired_dir: Vector3 = Vector3.ZERO
 	
-	if _script_input_direction != Vector3.ZERO:
+	if input_enabled and _script_input_direction != Vector3.ZERO:
 		# Priority 1: Injected script input (headless testing / scripted control)
 		desired_dir = _script_input_direction
 		_has_click_target = false
@@ -189,6 +203,20 @@ func _update_procedural_animation(delta: float, horizontal_vel: Vector3) -> void
 		var forward_pitch: float = -0.06 * speed_ratio
 		visuals.rotation.x = lerp_angle(visuals.rotation.x, forward_pitch, 10.0 * delta)
 		
+		# Anti-phase articulated limb swings (left arm forward when right leg forward)
+		var arm_swing: float = sin(_anim_time) * 0.75 * speed_ratio
+		var leg_swing: float = sin(_anim_time) * 0.65 * speed_ratio
+		if left_arm != null:
+			left_arm.rotation.x = -arm_swing
+		if right_arm != null:
+			right_arm.rotation.x = arm_swing
+		if left_leg != null:
+			left_leg.rotation.x = leg_swing
+		if right_leg != null:
+			right_leg.rotation.x = -leg_swing
+		if chibi_torso != null:
+			chibi_torso.position.y = 0.72 + sin(_anim_time * 2.0) * 0.02 * speed_ratio
+		
 		if footstep_particles != null:
 			footstep_particles.emitting = true
 	else:
@@ -197,6 +225,18 @@ func _update_procedural_animation(delta: float, horizontal_vel: Vector3) -> void
 		visuals.position.y = lerp(visuals.position.y, _base_visual_y + breath_offset, 6.0 * delta)
 		visuals.rotation.z = lerp_angle(visuals.rotation.z, 0.0, 10.0 * delta)
 		visuals.rotation.x = lerp_angle(visuals.rotation.x, 0.0, 10.0 * delta)
+		
+		# Reset limbs to resting position
+		if left_arm != null:
+			left_arm.rotation.x = lerp_angle(left_arm.rotation.x, 0.0, 10.0 * delta)
+		if right_arm != null:
+			right_arm.rotation.x = lerp_angle(right_arm.rotation.x, 0.0, 10.0 * delta)
+		if left_leg != null:
+			left_leg.rotation.x = lerp_angle(left_leg.rotation.x, 0.0, 10.0 * delta)
+		if right_leg != null:
+			right_leg.rotation.x = lerp_angle(right_leg.rotation.x, 0.0, 10.0 * delta)
+		if chibi_torso != null:
+			chibi_torso.position.y = lerp(chibi_torso.position.y, 0.72, 6.0 * delta)
 		
 		if footstep_particles != null:
 			footstep_particles.emitting = false
@@ -212,6 +252,12 @@ func _update_speed_boost(delta: float) -> void:
 # ==============================================================================
 # Public API & Headless Test Interface
 # ==============================================================================
+
+## Enables or disables avatar input controls (e.g. during NPC dialogue)
+func set_input_enabled(enabled: bool) -> void:
+	input_enabled = enabled
+	if not input_enabled:
+		stop_movement()
 
 ## Directly injects movement input direction for player or headless tests
 func set_input_direction(dir: Vector3) -> void:
@@ -237,18 +283,22 @@ func stop_movement() -> void:
 		visuals.position.y = _base_visual_y
 		visuals.rotation.z = 0.0
 		visuals.rotation.x = 0.0
+	if left_arm != null:
+		left_arm.rotation.x = 0.0
+	if right_arm != null:
+		right_arm.rotation.x = 0.0
+	if left_leg != null:
+		left_leg.rotation.x = 0.0
+	if right_leg != null:
+		right_leg.rotation.x = 0.0
+	if chibi_torso != null:
+		chibi_torso.position.y = 0.72
 	if footstep_particles != null:
 		footstep_particles.emitting = false
 
 ## Convenience alias for stop_movement()
 func stop() -> void:
 	stop_movement()
-
-## Enables or disables avatar input (e.g. while Laptop menu / HUD is active)
-func set_input_enabled(enabled: bool) -> void:
-	input_enabled = enabled
-	if not enabled:
-		stop_movement()
 
 ## Returns effective movement speed scaling with GameState and active power-ups
 func get_move_speed() -> float:

@@ -39,7 +39,7 @@ offset_top = 70.0
 offset_right = -16.0
 offset_bottom = 150.0
 grow_horizontal = 0
-mouse_filter = 2
+mouse_filter = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_quest_card")
 
 [node name="VBox" type="VBoxContainer" parent="QuestCard"]

@@ -22,6 +22,12 @@ var _base_collision_radius: float = 1.2
 
 @onready var visuals: Node3D = get_node_or_null("Visuals")
 @onready var collision_shape: CollisionShape3D = get_node_or_null("CollisionShape3D")
+@onready var briefcase_mesh: Node3D = get_node_or_null("Visuals/BriefcaseMesh")
+@onready var coffee_mesh: Node3D = get_node_or_null("Visuals/CoffeeMesh")
+@onready var usb_mesh: Node3D = get_node_or_null("Visuals/USBMesh")
+@onready var omni_light: OmniLight3D = get_node_or_null("Visuals/OmniLight3D")
+@onready var sparkle_particles: CPUParticles3D = get_node_or_null("Visuals/SparkleParticles")
+@onready var glow_aura: MeshInstance3D = get_node_or_null("Visuals/GlowAura")
 
 func _ready() -> void:
 	if not is_in_group("collectibles"):
@@ -133,28 +139,41 @@ func _update_pickup_radius() -> void:
 		(collision_shape.shape as SphereShape3D).radius = _base_collision_radius * mult
 
 func _apply_item_type_styling() -> void:
-	# Configure visual mesh if child meshes exist
-	var mesh_inst = visuals.get_node_or_null("ItemMesh") as MeshInstance3D
-	if mesh_inst == null:
-		return
+	if briefcase_mesh != null:
+		briefcase_mesh.visible = (item_type == "briefcase")
+	if coffee_mesh != null:
+		coffee_mesh.visible = (item_type == "coffee")
+	if usb_mesh != null:
+		usb_mesh.visible = (item_type == "usb_drive")
 		
-	var mat = StandardMaterial3D.new()
-	match item_type:
-		"coffee":
-			mat.albedo_color = Color(0.9, 0.3, 0.2, 1.0) # Warm Red
-			mat.roughness = 0.3
-			mat.emission_enabled = true
-			mat.emission = Color(0.9, 0.3, 0.2, 1.0) * 0.2
-		"usb_drive":
-			mat.albedo_color = Color(0.1, 0.7, 1.0, 1.0) # Cyber Cyan
-			mat.metallic = 0.8
-			mat.roughness = 0.2
-			mat.emission_enabled = true
-			mat.emission = Color(0.1, 0.7, 1.0, 1.0) * 0.4
-		_: # "briefcase" default
-			mat.albedo_color = Color(1.0, 0.82, 0.2, 1.0) # Gold
-			mat.metallic = 0.6
-			mat.roughness = 0.3
-			mat.emission_enabled = true
-			mat.emission = Color(1.0, 0.82, 0.2, 1.0) * 0.25
-	mesh_inst.material_override = mat
+	if omni_light != null:
+		match item_type:
+			"coffee":
+				omni_light.light_color = Color(1.0, 0.4, 0.2)
+			"usb_drive":
+				omni_light.light_color = Color(0.1, 0.8, 1.0)
+			_:
+				omni_light.light_color = Color(1.0, 0.85, 0.4)
+				
+	var mesh_inst = visuals.get_node_or_null("ItemMesh") as MeshInstance3D if visuals != null else null
+	if mesh_inst != null:
+		var mat = StandardMaterial3D.new()
+		match item_type:
+			"coffee":
+				mat.albedo_color = Color(0.9, 0.3, 0.2, 1.0) # Warm Red
+				mat.roughness = 0.3
+				mat.emission_enabled = true
+				mat.emission = Color(0.9, 0.3, 0.2, 1.0) * 0.2
+			"usb_drive":
+				mat.albedo_color = Color(0.1, 0.7, 1.0, 1.0) # Cyber Cyan
+				mat.metallic = 0.8
+				mat.roughness = 0.2
+				mat.emission_enabled = true
+				mat.emission = Color(0.1, 0.7, 1.0, 1.0) * 0.4
+			_: # "briefcase" default
+				mat.albedo_color = Color(1.0, 0.82, 0.2, 1.0) # Gold
+				mat.metallic = 0.6
+				mat.roughness = 0.3
+				mat.emission_enabled = true
+				mat.emission = Color(1.0, 0.82, 0.2, 1.0) * 0.25
+		mesh_inst.material_override = mat

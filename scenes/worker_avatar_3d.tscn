@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://c6workeravatar3d01"]
+[gd_scene load_steps=29 format=3 uid="uid://c6workeravatar3d01"]
 
 [ext_resource type="Script" path="res://scripts/worker_avatar_3d.gd" id="1_worker"]
 
@@ -6,24 +6,90 @@
 radius = 0.25
 height = 1.1
 
-[sub_resource type="StandardMaterial3D" id="Material_worker_body"]
+[sub_resource type="StandardMaterial3D" id="Material_worker_body_legacy"]
 albedo_color = Color(0.15, 0.65, 0.95, 1)
 roughness = 0.5
 metallic = 0.1
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_worker"]
-material = SubResource("Material_worker_body")
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_worker_legacy"]
+material = SubResource("Material_worker_body_legacy")
 radius = 0.25
 height = 1.1
+radial_segments = 8
+rings = 2
 
-[sub_resource type="StandardMaterial3D" id="Material_glasses"]
+[sub_resource type="StandardMaterial3D" id="Material_glasses_legacy"]
 albedo_color = Color(0.1, 0.1, 0.15, 1)
 metallic = 0.9
 roughness = 0.1
 
-[sub_resource type="BoxMesh" id="BoxMesh_glasses"]
-material = SubResource("Material_glasses")
+[sub_resource type="BoxMesh" id="BoxMesh_glasses_legacy"]
+material = SubResource("Material_glasses_legacy")
 size = Vector3(0.26, 0.08, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="Material_shadow"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0, 0, 0, 0.35)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_worker_shadow"]
+material = SubResource("Material_shadow")
+top_radius = 0.32
+bottom_radius = 0.32
+height = 0.01
+radial_segments = 12
+rings = 0
+
+[sub_resource type="StandardMaterial3D" id="Material_chibi_head"]
+albedo_color = Color(1, 0.86, 0.76, 1)
+roughness = 0.6
+
+[sub_resource type="SphereMesh" id="SphereMesh_chibi_head"]
+material = SubResource("Material_chibi_head")
+radius = 0.24
+height = 0.48
+radial_segments = 10
+rings = 5
+
+[sub_resource type="StandardMaterial3D" id="Material_chibi_visor"]
+albedo_color = Color(0.1, 0.12, 0.18, 1)
+metallic = 0.8
+roughness = 0.2
+
+[sub_resource type="BoxMesh" id="BoxMesh_chibi_visor"]
+material = SubResource("Material_chibi_visor")
+size = Vector3(0.28, 0.1, 0.14)
+
+[sub_resource type="StandardMaterial3D" id="Material_chibi_torso"]
+albedo_color = Color(0.1, 0.7, 1, 1)
+roughness = 0.5
+metallic = 0.1
+
+[sub_resource type="BoxMesh" id="BoxMesh_chibi_torso"]
+material = SubResource("Material_chibi_torso")
+size = Vector3(0.34, 0.35, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="Material_chibi_limbs"]
+albedo_color = Color(0.1, 0.7, 1, 1)
+roughness = 0.5
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_chibi_arm"]
+material = SubResource("Material_chibi_limbs")
+radius = 0.05
+height = 0.24
+radial_segments = 8
+rings = 2
+
+[sub_resource type="StandardMaterial3D" id="Material_chibi_pants"]
+albedo_color = Color(0.12, 0.14, 0.2, 1)
+roughness = 0.6
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_chibi_leg"]
+material = SubResource("Material_chibi_pants")
+radius = 0.06
+height = 0.26
+radial_segments = 8
+rings = 2
 
 [sub_resource type="StandardMaterial3D" id="Material_laptop"]
 albedo_color = Color(0.7, 0.72, 0.76, 1)
@@ -44,16 +110,33 @@ emission_energy_multiplier = 0.8
 material = SubResource("Material_screen")
 size = Vector3(0.26, 0.16, 0.015)
 
-[sub_resource type="StandardMaterial3D" id="Material_worker_shadow"]
+[sub_resource type="StandardMaterial3D" id="Material_mug"]
+albedo_color = Color(0.95, 0.95, 0.95, 1)
+roughness = 0.3
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_mug"]
+material = SubResource("Material_mug")
+top_radius = 0.05
+bottom_radius = 0.045
+height = 0.12
+radial_segments = 8
+rings = 0
+
+[sub_resource type="TorusMesh" id="TorusMesh_mug_handle"]
+material = SubResource("Material_mug")
+inner_radius = 0.015
+outer_radius = 0.035
+rings = 10
+ring_segments = 6
+
+[sub_resource type="StandardMaterial3D" id="Material_steam"]
 transparency = 1
 shading_mode = 0
-albedo_color = Color(0, 0, 0, 0.35)
+albedo_color = Color(0.9, 0.95, 1, 0.4)
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_worker_shadow"]
-material = SubResource("Material_worker_shadow")
-top_radius = 0.32
-bottom_radius = 0.32
-height = 0.01
+[sub_resource type="BoxMesh" id="BoxMesh_steam"]
+material = SubResource("Material_steam")
+size = Vector3(0.03, 0.03, 0.03)
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
 radius = 1.8
@@ -71,23 +154,103 @@ shape = SubResource("CapsuleShape3D_worker")
 
 [node name="BodyMesh" type="MeshInstance3D" parent="Visuals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
-mesh = SubResource("CapsuleMesh_worker")
+visible = false
+mesh = SubResource("CapsuleMesh_worker_legacy")
 
 [node name="GlassesMesh" type="MeshInstance3D" parent="Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.86, 0.18)
-mesh = SubResource("BoxMesh_glasses")
-
-[node name="LaptopBase" type="MeshInstance3D" parent="Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0.22)
-mesh = SubResource("BoxMesh_laptop_base")
-
-[node name="LaptopScreen" type="MeshInstance3D" parent="Visuals"]
-transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0.52, 0.3)
-mesh = SubResource("BoxMesh_laptop_screen")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.78, 0.18)
+visible = false
+mesh = SubResource("BoxMesh_glasses_legacy")
 
 [node name="GroundShadow" type="MeshInstance3D" parent="Visuals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
 mesh = SubResource("CylinderMesh_worker_shadow")
+
+[node name="ChibiRoot" type="Node3D" parent="Visuals"]
+
+[node name="Head" type="MeshInstance3D" parent="Visuals/ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+mesh = SubResource("SphereMesh_chibi_head")
+
+[node name="Visor" type="MeshInstance3D" parent="Visuals/ChibiRoot/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0.16)
+mesh = SubResource("BoxMesh_chibi_visor")
+
+[node name="VisorEmoteLabel" type="Label3D" parent="Visuals/ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.77, 0.25)
+billboard = 1
+no_depth_test = true
+text = "0101"
+font_size = 18
+outline_size = 4
+modulate = Color(0.2, 0.9, 0.4, 1)
+
+[node name="Torso" type="MeshInstance3D" parent="Visuals/ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0)
+mesh = SubResource("BoxMesh_chibi_torso")
+
+[node name="LeftArm" type="Node3D" parent="Visuals/ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.22, 0.48, 0)
+
+[node name="LeftArmMesh" type="MeshInstance3D" parent="Visuals/ChibiRoot/LeftArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("CapsuleMesh_chibi_arm")
+
+[node name="RightArm" type="Node3D" parent="Visuals/ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.22, 0.48, 0)
+
+[node name="RightArmMesh" type="MeshInstance3D" parent="Visuals/ChibiRoot/RightArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("CapsuleMesh_chibi_arm")
+
+[node name="LeftLeg" type="Node3D" parent="Visuals/ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.11, 0.24, 0)
+
+[node name="LeftLegMesh" type="MeshInstance3D" parent="Visuals/ChibiRoot/LeftLeg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.12, 0)
+mesh = SubResource("CapsuleMesh_chibi_leg")
+
+[node name="RightLeg" type="Node3D" parent="Visuals/ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.11, 0.24, 0)
+
+[node name="RightLegMesh" type="MeshInstance3D" parent="Visuals/ChibiRoot/RightLeg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.12, 0)
+mesh = SubResource("CapsuleMesh_chibi_leg")
+
+[node name="LaptopRoot" type="Node3D" parent="Visuals/ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.38, 0.22)
+
+[node name="LaptopBase" type="MeshInstance3D" parent="Visuals/ChibiRoot/LaptopRoot"]
+mesh = SubResource("BoxMesh_laptop_base")
+
+[node name="LaptopScreen" type="MeshInstance3D" parent="Visuals/ChibiRoot/LaptopRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0.08, 0.08)
+mesh = SubResource("BoxMesh_laptop_screen")
+
+[node name="CoffeeMug" type="Node3D" parent="Visuals/ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.18, 0.38, 0.18)
+visible = false
+
+[node name="MugBody" type="MeshInstance3D" parent="Visuals/ChibiRoot/CoffeeMug"]
+mesh = SubResource("CylinderMesh_mug")
+
+[node name="MugHandle" type="MeshInstance3D" parent="Visuals/ChibiRoot/CoffeeMug"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0.05, 0, 0)
+mesh = SubResource("TorusMesh_mug_handle")
+
+[node name="SteamParticles" type="CPUParticles3D" parent="Visuals/ChibiRoot/CoffeeMug"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, 0)
+emitting = false
+amount = 4
+lifetime = 0.5
+mesh = SubResource("BoxMesh_steam")
+direction = Vector3(0, 1, 0)
+spread = 20.0
+gravity = Vector3(0, 0.5, 0)
+initial_velocity_min = 0.1
+initial_velocity_max = 0.25
+scale_amount_min = 0.5
+scale_amount_max = 1.0
 
 [node name="NameLabel3D" type="Label3D" parent="Visuals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
@@ -109,7 +272,7 @@ outline_size = 6
 modulate = Color(1, 0.95, 0.3, 1)
 
 [node name="CodeParticles" type="CPUParticles3D" parent="Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.52, 0.28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.48, 0.28)
 emitting = false
 amount = 6
 lifetime = 0.4

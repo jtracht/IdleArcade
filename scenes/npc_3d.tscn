@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://dm4npc3d01scene"]
+[gd_scene load_steps=31 format=3 uid="uid://dm4npc3d01scene"]
 
 [ext_resource type="Script" path="res://scripts/npc_3d.gd" id="1_npc"]
 
@@ -6,23 +6,25 @@
 radius = 0.4
 height = 1.8
 
-[sub_resource type="StandardMaterial3D" id="Material_npc_body"]
+[sub_resource type="StandardMaterial3D" id="Material_npc_body_legacy"]
 albedo_color = Color(0.2, 0.8, 0.4, 1)
 roughness = 0.4
 metallic = 0.1
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_npc"]
-material = SubResource("Material_npc_body")
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_npc_legacy"]
+material = SubResource("Material_npc_body_legacy")
 radius = 0.4
 height = 1.8
+radial_segments = 8
+rings = 2
 
-[sub_resource type="StandardMaterial3D" id="Material_visor"]
+[sub_resource type="StandardMaterial3D" id="Material_visor_legacy"]
 albedo_color = Color(0.1, 0.15, 0.25, 1)
 metallic = 0.8
 roughness = 0.2
 
-[sub_resource type="BoxMesh" id="BoxMesh_visor"]
-material = SubResource("Material_visor")
+[sub_resource type="BoxMesh" id="BoxMesh_visor_legacy"]
+material = SubResource("Material_visor_legacy")
 size = Vector3(0.35, 0.15, 0.25)
 
 [sub_resource type="StandardMaterial3D" id="Material_shadow"]
@@ -35,6 +37,152 @@ material = SubResource("Material_shadow")
 top_radius = 0.5
 bottom_radius = 0.5
 height = 0.01
+radial_segments = 12
+rings = 0
+
+[sub_resource type="StandardMaterial3D" id="Material_head"]
+albedo_color = Color(1, 0.86, 0.76, 1)
+roughness = 0.6
+
+[sub_resource type="SphereMesh" id="SphereMesh_head"]
+material = SubResource("Material_head")
+radius = 0.35
+height = 0.7
+radial_segments = 12
+rings = 6
+
+[sub_resource type="StandardMaterial3D" id="Material_torso"]
+albedo_color = Color(0.2, 0.8, 0.4, 1)
+roughness = 0.4
+metallic = 0.1
+
+[sub_resource type="BoxMesh" id="BoxMesh_torso"]
+material = SubResource("Material_torso")
+size = Vector3(0.48, 0.5, 0.32)
+
+[sub_resource type="StandardMaterial3D" id="Material_limbs"]
+albedo_color = Color(0.2, 0.8, 0.4, 1)
+roughness = 0.5
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_arm"]
+material = SubResource("Material_limbs")
+radius = 0.075
+height = 0.36
+radial_segments = 8
+rings = 2
+
+[sub_resource type="StandardMaterial3D" id="Material_pants"]
+albedo_color = Color(0.12, 0.15, 0.22, 1)
+roughness = 0.6
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_leg"]
+material = SubResource("Material_pants")
+radius = 0.085
+height = 0.42
+radial_segments = 8
+rings = 2
+
+[sub_resource type="StandardMaterial3D" id="Material_tie"]
+albedo_color = Color(0.9, 0.15, 0.2, 1)
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_tie"]
+material = SubResource("Material_tie")
+size = Vector3(0.08, 0.28, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="Material_sunglasses"]
+albedo_color = Color(0.08, 0.08, 0.1, 1)
+metallic = 0.9
+roughness = 0.1
+
+[sub_resource type="BoxMesh" id="BoxMesh_sunglasses"]
+material = SubResource("Material_sunglasses")
+size = Vector3(0.36, 0.08, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="Material_hardhat"]
+albedo_color = Color(1, 0.85, 0.1, 1)
+roughness = 0.3
+metallic = 0.1
+
+[sub_resource type="SphereMesh" id="SphereMesh_hardhat_dome"]
+material = SubResource("Material_hardhat")
+radius = 0.37
+height = 0.35
+radial_segments = 10
+rings = 5
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_hardhat_brim"]
+material = SubResource("Material_hardhat")
+top_radius = 0.42
+bottom_radius = 0.42
+height = 0.03
+radial_segments = 12
+rings = 0
+
+[sub_resource type="StandardMaterial3D" id="Material_goggles"]
+albedo_color = Color(0.15, 0.15, 0.15, 1)
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_goggles"]
+material = SubResource("Material_goggles")
+size = Vector3(0.36, 0.1, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="Material_blueprint"]
+albedo_color = Color(0.1, 0.5, 0.9, 1)
+roughness = 0.5
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_blueprint"]
+material = SubResource("Material_blueprint")
+top_radius = 0.06
+bottom_radius = 0.06
+height = 0.45
+radial_segments = 8
+rings = 0
+
+[sub_resource type="StandardMaterial3D" id="Material_labcoat"]
+albedo_color = Color(0.95, 0.96, 0.98, 1)
+roughness = 0.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_labcoat"]
+material = SubResource("Material_labcoat")
+size = Vector3(0.52, 0.54, 0.36)
+
+[sub_resource type="StandardMaterial3D" id="Material_ponytail"]
+albedo_color = Color(0.3, 0.15, 0.1, 1)
+roughness = 0.6
+
+[sub_resource type="SphereMesh" id="SphereMesh_ponytail"]
+material = SubResource("Material_ponytail")
+radius = 0.15
+height = 0.3
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="Material_glass"]
+transparency = 1
+albedo_color = Color(0.8, 0.9, 1, 0.5)
+roughness = 0.1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_flask_body"]
+material = SubResource("Material_glass")
+top_radius = 0.04
+bottom_radius = 0.1
+height = 0.22
+radial_segments = 8
+rings = 0
+
+[sub_resource type="StandardMaterial3D" id="Material_quantum_fluid"]
+albedo_color = Color(0.2, 1, 0.6, 1)
+emission_enabled = true
+emission = Color(0.2, 1, 0.6, 1)
+emission_energy_multiplier = 1.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_fluid"]
+material = SubResource("Material_quantum_fluid")
+radius = 0.07
+height = 0.14
+radial_segments = 8
+rings = 4
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
 radius = 2.5
@@ -52,15 +200,106 @@ shape = SubResource("CapsuleShape3D_npc")
 
 [node name="BodyMesh" type="MeshInstance3D" parent="Visuals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-mesh = SubResource("CapsuleMesh_npc")
+visible = false
+mesh = SubResource("CapsuleMesh_npc_legacy")
 
 [node name="VisorMesh" type="MeshInstance3D" parent="Visuals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0.3)
-mesh = SubResource("BoxMesh_visor")
+visible = false
+mesh = SubResource("BoxMesh_visor_legacy")
 
 [node name="GroundShadow" type="MeshInstance3D" parent="Visuals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
 mesh = SubResource("CylinderMesh_shadow")
+
+[node name="ChibiRoot" type="Node3D" parent="Visuals"]
+
+[node name="Head" type="MeshInstance3D" parent="Visuals/ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
+mesh = SubResource("SphereMesh_head")
+
+[node name="Torso" type="MeshInstance3D" parent="Visuals/ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.72, 0)
+mesh = SubResource("BoxMesh_torso")
+
+[node name="LeftArm" type="Node3D" parent="Visuals/ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 0.82, 0)
+
+[node name="LeftArmMesh" type="MeshInstance3D" parent="Visuals/ChibiRoot/LeftArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
+mesh = SubResource("CapsuleMesh_arm")
+
+[node name="RightArm" type="Node3D" parent="Visuals/ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 0.82, 0)
+
+[node name="RightArmMesh" type="MeshInstance3D" parent="Visuals/ChibiRoot/RightArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
+mesh = SubResource("CapsuleMesh_arm")
+
+[node name="LeftLeg" type="Node3D" parent="Visuals/ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16, 0.44, 0)
+
+[node name="LeftLegMesh" type="MeshInstance3D" parent="Visuals/ChibiRoot/LeftLeg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 0)
+mesh = SubResource("CapsuleMesh_leg")
+
+[node name="RightLeg" type="Node3D" parent="Visuals/ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16, 0.44, 0)
+
+[node name="RightLegMesh" type="MeshInstance3D" parent="Visuals/ChibiRoot/RightLeg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 0)
+mesh = SubResource("CapsuleMesh_leg")
+
+[node name="AlexAccessories" type="Node3D" parent="Visuals/ChibiRoot"]
+visible = false
+
+[node name="TieMesh" type="MeshInstance3D" parent="Visuals/ChibiRoot/AlexAccessories"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.72, 0.17)
+mesh = SubResource("BoxMesh_tie")
+
+[node name="GlassesMesh" type="MeshInstance3D" parent="Visuals/ChibiRoot/AlexAccessories"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.28, 0.32)
+mesh = SubResource("BoxMesh_sunglasses")
+
+[node name="BobAccessories" type="Node3D" parent="Visuals/ChibiRoot"]
+visible = false
+
+[node name="HardHatDome" type="MeshInstance3D" parent="Visuals/ChibiRoot/BobAccessories"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.42, 0)
+mesh = SubResource("SphereMesh_hardhat_dome")
+
+[node name="HardHatBrim" type="MeshInstance3D" parent="Visuals/ChibiRoot/BobAccessories"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.34, 0)
+mesh = SubResource("CylinderMesh_hardhat_brim")
+
+[node name="GogglesMesh" type="MeshInstance3D" parent="Visuals/ChibiRoot/BobAccessories"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.28, 0.32)
+mesh = SubResource("BoxMesh_goggles")
+
+[node name="BlueprintRoll" type="MeshInstance3D" parent="Visuals/ChibiRoot/BobAccessories"]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0.36, 0.72, 0.15)
+mesh = SubResource("CylinderMesh_blueprint")
+
+[node name="LisaAccessories" type="Node3D" parent="Visuals/ChibiRoot"]
+visible = false
+
+[node name="LabCoatMesh" type="MeshInstance3D" parent="Visuals/ChibiRoot/LisaAccessories"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+mesh = SubResource("BoxMesh_labcoat")
+
+[node name="PonytailMesh" type="MeshInstance3D" parent="Visuals/ChibiRoot/LisaAccessories"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, -0.32)
+mesh = SubResource("SphereMesh_ponytail")
+
+[node name="QuantumFlask" type="Node3D" parent="Visuals/ChibiRoot/LisaAccessories"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.36, 0.65, 0.2)
+
+[node name="FlaskBody" type="MeshInstance3D" parent="Visuals/ChibiRoot/LisaAccessories/QuantumFlask"]
+mesh = SubResource("CylinderMesh_flask_body")
+
+[node name="QuantumFluid" type="MeshInstance3D" parent="Visuals/ChibiRoot/LisaAccessories/QuantumFlask"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.04, 0)
+mesh = SubResource("SphereMesh_fluid")
 
 [node name="NameLabel3D" type="Label3D" parent="Visuals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.15, 0)

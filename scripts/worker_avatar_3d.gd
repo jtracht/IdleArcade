@@ -37,6 +37,17 @@ var _interaction_cooldown: float = 0.0
 @onready var speech_bubble: Label3D = get_node_or_null("Visuals/SpeechBubble3D")
 @onready var code_particles: CPUParticles3D = get_node_or_null("Visuals/CodeParticles")
 @onready var interaction_area: Area3D = get_node_or_null("InteractionArea")
+@onready var chibi_root: Node3D = get_node_or_null("Visuals/ChibiRoot")
+@onready var chibi_torso: MeshInstance3D = get_node_or_null("Visuals/ChibiRoot/Torso")
+@onready var visor_emote: Label3D = get_node_or_null("Visuals/ChibiRoot/VisorEmoteLabel")
+@onready var laptop_root: Node3D = get_node_or_null("Visuals/ChibiRoot/LaptopRoot")
+@onready var laptop_screen: MeshInstance3D = get_node_or_null("Visuals/ChibiRoot/LaptopRoot/LaptopScreen")
+@onready var coffee_mug: Node3D = get_node_or_null("Visuals/ChibiRoot/CoffeeMug")
+@onready var steam_particles: CPUParticles3D = get_node_or_null("Visuals/ChibiRoot/CoffeeMug/SteamParticles")
+@onready var left_arm: Node3D = get_node_or_null("Visuals/ChibiRoot/LeftArm")
+@onready var right_arm: Node3D = get_node_or_null("Visuals/ChibiRoot/RightArm")
+@onready var left_leg: Node3D = get_node_or_null("Visuals/ChibiRoot/LeftLeg")
+@onready var right_leg: Node3D = get_node_or_null("Visuals/ChibiRoot/RightLeg")
 
 const WITTY_QUOTES = {
 	"intern": [
@@ -77,6 +88,7 @@ func _ready() -> void:
 	collision_mask = 1
 	
 	_apply_role_styling()
+	_update_accessories_for_state(current_state)
 	_reset_state_timer()
 	
 	if home_desk_position == Vector3.ZERO:
@@ -122,11 +134,19 @@ func _physics_process(delta: float) -> void:
 
 func _process_typing_state(_delta: float) -> void:
 	velocity = Vector3.ZERO
-	# Subtle typing motion (micro-bob and tiny hand shakes)
+	# Subtle typing motion (micro-bob and arm typing movement)
 	if visuals != null:
 		visuals.position.y = sin(_anim_time * 8.0) * 0.015
 		visuals.rotation.x = -0.05 + sin(_anim_time * 4.0) * 0.02
 		visuals.rotation.z = 0.0
+	if left_arm != null:
+		left_arm.rotation = Vector3(-0.6 + sin(_anim_time * 16.0) * 0.08, 0.2, 0.0)
+	if right_arm != null:
+		right_arm.rotation = Vector3(-0.6 - sin(_anim_time * 16.0) * 0.08, -0.2, 0.0)
+	if left_leg != null:
+		left_leg.rotation = Vector3.ZERO
+	if right_leg != null:
+		right_leg.rotation = Vector3.ZERO
 	if code_particles != null:
 		code_particles.emitting = true
 
@@ -155,13 +175,23 @@ func _process_walking_state(delta: float) -> void:
 	velocity.x = dir.x * base_speed
 	velocity.z = dir.z * base_speed
 	
-	# Facing rotation and walking bob
+	# Facing rotation, walking bob, and articulated limb swings
 	if visuals != null:
 		var target_angle = atan2(velocity.x, velocity.z)
 		visuals.rotation.y = lerp_angle(visuals.rotation.y, target_angle, 10.0 * delta)
 		visuals.position.y = abs(sin(_anim_time * 10.0)) * 0.05
 		visuals.rotation.z = sin(_anim_time * 5.0) * 0.04
 		visuals.rotation.x = -0.03
+	
+	var swing = sin(_anim_time * 10.0) * 0.55
+	if left_arm != null:
+		left_arm.rotation = Vector3(-swing, 0.0, 0.0)
+	if right_arm != null:
+		right_arm.rotation = Vector3(swing, 0.0, 0.0)
+	if left_leg != null:
+		left_leg.rotation = Vector3(swing, 0.0, 0.0)
+	if right_leg != null:
+		right_leg.rotation = Vector3(-swing, 0.0, 0.0)
 		
 	move_and_slide()
 
@@ -171,6 +201,14 @@ func _process_coffee_state(_delta: float) -> void:
 		visuals.position.y = sin(_anim_time * 2.0) * 0.02
 		visuals.rotation.x = 0.0
 		visuals.rotation.z = 0.0
+	if right_arm != null:
+		right_arm.rotation = Vector3(-0.7 + sin(_anim_time * 3.0) * 0.05, -0.2, 0.0) # Sipping coffee
+	if left_arm != null:
+		left_arm.rotation = Vector3(0.0, 0.0, 0.0)
+	if left_leg != null:
+		left_leg.rotation = Vector3.ZERO
+	if right_leg != null:
+		right_leg.rotation = Vector3.ZERO
 	if code_particles != null:
 		code_particles.emitting = false
 
@@ -179,12 +217,60 @@ func _process_celebrating_state(_delta: float) -> void:
 	if visuals != null:
 		visuals.position.y = abs(sin(_anim_time * 12.0)) * 0.12
 		visuals.rotation.y += 4.0 * _delta
+	if left_arm != null:
+		left_arm.rotation = Vector3(0.0, 0.0, 2.4 + sin(_anim_time * 12.0) * 0.2)
+	if right_arm != null:
+		right_arm.rotation = Vector3(0.0, 0.0, -2.4 - sin(_anim_time * 12.0) * 0.2)
 	if code_particles != null:
 		code_particles.emitting = true
+
+func _update_accessories_for_state(s: State) -> void:
+	match s:
+		State.TYPING:
+			if visor_emote != null:
+				visor_emote.text = "0101"
+				visor_emote.modulate = Color(0.2, 0.9, 0.4)
+			if laptop_root != null:
+				laptop_root.visible = true
+			if coffee_mug != null:
+				coffee_mug.visible = false
+			if steam_particles != null:
+				steam_particles.emitting = false
+		State.WALKING:
+			if visor_emote != null:
+				visor_emote.text = "•_•"
+				visor_emote.modulate = Color(0.3, 0.7, 1.0)
+			if laptop_root != null:
+				laptop_root.visible = false
+			if coffee_mug != null:
+				coffee_mug.visible = false
+			if steam_particles != null:
+				steam_particles.emitting = false
+		State.COFFEE_BREAK:
+			if visor_emote != null:
+				visor_emote.text = "^.^"
+				visor_emote.modulate = Color(1.0, 0.85, 0.3)
+			if laptop_root != null:
+				laptop_root.visible = false
+			if coffee_mug != null:
+				coffee_mug.visible = true
+			if steam_particles != null:
+				steam_particles.emitting = true
+		State.CELEBRATING:
+			if visor_emote != null:
+				visor_emote.text = "★_★"
+				visor_emote.modulate = Color(1.0, 0.9, 0.1)
+			if laptop_root != null:
+				laptop_root.visible = false
+			if coffee_mug != null:
+				coffee_mug.visible = false
+			if steam_particles != null:
+				steam_particles.emitting = false
 
 func _transition_to(new_state: State) -> void:
 	current_state = new_state
 	_reset_state_timer()
+	_update_accessories_for_state(new_state)
 	state_changed.emit(_get_state_name(new_state))
 	
 	if new_state == State.WALKING:
@@ -321,6 +407,12 @@ func _apply_role_styling() -> void:
 		mat.roughness = 0.5
 		mat.metallic = 0.1
 		body_mesh.material_override = mat
+	if chibi_torso != null:
+		var mat = StandardMaterial3D.new()
+		mat.albedo_color = color
+		mat.roughness = 0.5
+		mat.metallic = 0.1
+		chibi_torso.material_override = mat
 		
 	if name_label != null:
 		name_label.text = worker_name + "\n" + worker_title

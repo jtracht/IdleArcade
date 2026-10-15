@@ -33,6 +33,12 @@ var _emote_timer: float = 0.0
 @onready var quest_marker: Label3D = get_node_or_null("Visuals/QuestMarkerLabel3D")
 @onready var emote_label: Label3D = get_node_or_null("Visuals/EmoteLabel3D")
 @onready var interaction_area: Area3D = get_node_or_null("InteractionArea")
+@onready var chibi_root: Node3D = get_node_or_null("Visuals/ChibiRoot")
+@onready var alex_accessories: Node3D = get_node_or_null("Visuals/ChibiRoot/AlexAccessories")
+@onready var bob_accessories: Node3D = get_node_or_null("Visuals/ChibiRoot/BobAccessories")
+@onready var lisa_accessories: Node3D = get_node_or_null("Visuals/ChibiRoot/LisaAccessories")
+@onready var chibi_torso: MeshInstance3D = get_node_or_null("Visuals/ChibiRoot/Torso")
+@onready var chibi_head: MeshInstance3D = get_node_or_null("Visuals/ChibiRoot/Head")
 
 func _ready() -> void:
 	if not is_in_group("npcs"):
@@ -112,11 +118,11 @@ func _on_interaction_body_entered(body: Node3D) -> void:
 func _on_interaction_body_exited(body: Node3D) -> void:
 	if body == _avatar_ref or body.is_in_group("player") or body is CharacterBody3D:
 		_player_in_range = false
+		if _is_talking:
+			end_dialogue()
 		_avatar_ref = null
 		if prompt_label != null:
 			prompt_label.visible = false
-		if _is_talking:
-			end_dialogue()
 		var tc = _find_touch_controls()
 		if tc != null and tc.has_method("unregister_interactable"):
 			tc.unregister_interactable(self)
@@ -128,8 +134,11 @@ func interact() -> void:
 	if prompt_label != null:
 		prompt_label.visible = false
 	var tc = _find_touch_controls()
-	if tc != null and tc.has_method("unregister_interactable"):
-		tc.unregister_interactable(self)
+	if tc != null:
+		if tc.has_method("unregister_interactable"):
+			tc.unregister_interactable(self)
+		if tc.has_method("fade_out_controls"):
+			tc.fade_out_controls()
 		
 	# Find DialoguePanel in scene tree or Main3D
 	var main_3d = get_tree().root.find_child("Main3D", true, false)
@@ -155,16 +164,33 @@ func interact() -> void:
 			
 	dialogue_opened.emit(npc_id)
 
+var _is_ending_dialogue: bool = false
+
 func end_dialogue() -> void:
+	if _is_ending_dialogue:
+		return
+	_is_ending_dialogue = true
 	_is_talking = false
+	
+	var tree = get_tree()
+	if tree != null and tree.root != null:
+		var dialogue_panel = tree.root.find_child("DialoguePanel", true, false)
+		if dialogue_panel != null and dialogue_panel.has_method("close_dialogue"):
+			if dialogue_panel.visible:
+				dialogue_panel.close_dialogue()
+				
+	var tc = _find_touch_controls()
+	if tc != null and tc.has_method("fade_in_controls"):
+		tc.fade_in_controls()
+		
 	if _player_in_range and prompt_label != null:
 		prompt_label.visible = true
 	if _player_in_range:
-		var tc = _find_touch_controls()
 		if tc != null and tc.has_method("register_interactable"):
 			tc.register_interactable(self, "Talk [E]")
 	_update_quest_marker()
 	dialogue_closed.emit(npc_id)
+	_is_ending_dialogue = false
 
 func _on_quest_updated(q_id: String, _status: String, _curr: int, _target: int) -> void:
 	if q_id == quest_id:
@@ -200,13 +226,25 @@ func _update_quest_marker() -> void:
 		"completed":
 			quest_marker.visible = false
 
+func _apply_chibi_accessories() -> void:
+	if alex_accessories != null:
+		alex_accessories.visible = (npc_id == "ceo_alex")
+	if bob_accessories != null:
+		bob_accessories.visible = (npc_id == "architect_bob")
+	if lisa_accessories != null:
+		lisa_accessories.visible = (npc_id == "scientist_lisa")
+
 func _apply_visual_styling() -> void:
+	var mat = StandardMaterial3D.new()
+	mat.albedo_color = visual_color
+	mat.roughness = 0.4
+	mat.metallic = 0.1
 	if body_mesh != null:
-		var mat = StandardMaterial3D.new()
-		mat.albedo_color = visual_color
-		mat.roughness = 0.4
-		mat.metallic = 0.1
 		body_mesh.material_override = mat
+	if chibi_torso != null:
+		chibi_torso.material_override = mat
+		
+	_apply_chibi_accessories()
 		
 	if name_label != null:
 		name_label.text = npc_name + "\n" + npc_title

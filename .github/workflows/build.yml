@@ -46,6 +46,7 @@ jobs:
           python3 $TARGET_DIR/tests/test_phase5_mobile.py
           python3 $TARGET_DIR/tests/test_ci_export_verify.py
           python3 $TARGET_DIR/tests/test_phase6_visuals.py
+          python3 $TARGET_DIR/tests/test_phase7_redesign.py
 
       - name: Import Godot Project Cache
         run: |
@@ -70,6 +71,14 @@ jobs:
             TARGET_DIR="IdleArcade"
           fi
           godot --headless --path "$TARGET_DIR" -s tests/test_phase6_visuals.gd
+
+      - name: Run Godot Headless Phase 7 Redesign & UX Tests
+        run: |
+          TARGET_DIR="."
+          if [ -d "IdleArcade" ]; then
+            TARGET_DIR="IdleArcade"
+          fi
+          godot --headless --path "$TARGET_DIR" -s tests/test_phase7_ux_models.gd
 
   export-web:
     name: Export Web

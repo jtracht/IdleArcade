@@ -15,6 +15,9 @@ signal action_triggered(interactable: Node3D)
 ## Emitted when the laptop thumb button is pressed.
 signal overlay_toggle_requested()
 
+## Emitted when the campus thumb button is pressed.
+signal campus_toggle_requested()
+
 ## Emitted when an interactable entity enters proximity range.
 signal interactable_registered(interactable: Node3D, label_text: String)
 
@@ -58,6 +61,7 @@ signal key_synthesized(keycode: Key)
 @onready var virtual_joystick: VirtualJoystick = get_node_or_null("VirtualJoystick") as VirtualJoystick
 @onready var action_button: Button = get_node_or_null("%ActionButton") if has_node("%ActionButton") else get_node_or_null("ActionButton")
 @onready var laptop_button: Button = get_node_or_null("%LaptopThumbButton") if has_node("%LaptopThumbButton") else get_node_or_null("LaptopThumbButton")
+@onready var campus_button: Button = get_node_or_null("%CampusThumbButton") if has_node("%CampusThumbButton") else get_node_or_null("CampusThumbButton")
 
 # ------------------------------------------------------------------------------
 # Internal State
@@ -85,12 +89,14 @@ var synthetic_key_count: int = 0
 var _fade_tween: Tween = null
 var _action_tween: Tween = null
 var _laptop_tween: Tween = null
+var _campus_tween: Tween = null
 
 var _normal_action_style: StyleBoxFlat = null
 var _cached_npc_style: StyleBoxFlat = null
 var _cached_quest_style: StyleBoxFlat = null
 var _cached_gate_style: StyleBoxFlat = null
 var _cached_denied_style: StyleBoxFlat = null
+var _cached_collectible_style: StyleBoxFlat = null
 
 # ------------------------------------------------------------------------------
 # Lifecycle
@@ -122,11 +128,12 @@ func _setup_buttons() -> void:
 		# Tier 1 Input Isolation: Button absorbs mouse/touch events
 		action_button.mouse_filter = Control.MOUSE_FILTER_STOP
 		action_button.focus_mode = Control.FOCUS_NONE
-		if action_button.size.x < 110.0 or action_button.size.y < 110.0:
-			action_button.size = Vector2(110.0, 110.0)
+		action_button.custom_minimum_size = Vector2(100.0, 100.0)
+		if action_button.size.x < 100.0 or action_button.size.y < 100.0:
+			action_button.size = Vector2(100.0, 100.0)
 		if action_button.position == Vector2.ZERO:
 			action_button.position = Vector2(base_w - 140.0, base_h - 180.0)
-		action_button.pivot_offset = action_button.size * 0.5
+		action_button.pivot_offset = Vector2(50.0, 50.0)
 		action_button.button_down.connect(_on_action_button_down)
 		action_button.button_up.connect(_on_action_button_up)
 		action_button.pressed.connect(_on_action_button_pressed)
@@ -136,15 +143,31 @@ func _setup_buttons() -> void:
 		# Tier 1 Input Isolation: Button absorbs mouse/touch events
 		laptop_button.mouse_filter = Control.MOUSE_FILTER_STOP
 		laptop_button.focus_mode = Control.FOCUS_NONE
-		if laptop_button.size.x < 80.0 or laptop_button.size.y < 80.0:
-			laptop_button.size = Vector2(80.0, 80.0)
+		laptop_button.custom_minimum_size = Vector2(70.0, 70.0)
+		if laptop_button.size.x < 70.0 or laptop_button.size.y < 70.0:
+			laptop_button.size = Vector2(70.0, 70.0)
 		if laptop_button.position == Vector2.ZERO:
-			laptop_button.position = Vector2(base_w - 125.0, base_h - 285.0)
-		laptop_button.pivot_offset = laptop_button.size * 0.5
+			laptop_button.position = Vector2(base_w - 155.0, base_h - 280.0)
+		laptop_button.pivot_offset = Vector2(35.0, 35.0)
 		laptop_button.button_down.connect(_on_laptop_button_down)
 		laptop_button.button_up.connect(_on_laptop_button_up)
 		laptop_button.pressed.connect(_on_laptop_button_pressed)
 		laptop_button.gui_input.connect(_on_button_gui_input)
+
+	if campus_button != null:
+		# Tier 1 Input Isolation: Button absorbs mouse/touch events
+		campus_button.mouse_filter = Control.MOUSE_FILTER_STOP
+		campus_button.focus_mode = Control.FOCUS_NONE
+		campus_button.custom_minimum_size = Vector2(70.0, 70.0)
+		if campus_button.size.x < 70.0 or campus_button.size.y < 70.0:
+			campus_button.size = Vector2(70.0, 70.0)
+		if campus_button.position == Vector2.ZERO:
+			campus_button.position = Vector2(base_w - 235.0, base_h - 225.0)
+		campus_button.pivot_offset = Vector2(35.0, 35.0)
+		campus_button.button_down.connect(_on_campus_button_down)
+		campus_button.button_up.connect(_on_campus_button_up)
+		campus_button.pressed.connect(_on_campus_button_pressed)
+		campus_button.gui_input.connect(_on_button_gui_input)
 
 func _setup_styles() -> void:
 	if action_button != null:
@@ -157,7 +180,7 @@ func _setup_styles() -> void:
 	_cached_npc_style.bg_color = Color(0.08, 0.28, 0.18, 0.88)
 	_cached_npc_style.border_color = Color(0.25, 0.95, 0.55, 0.95)
 	_cached_npc_style.set_border_width_all(3)
-	_cached_npc_style.set_corner_radius_all(55)
+	_cached_npc_style.set_corner_radius_all(50)
 	_cached_npc_style.corner_detail = 24
 	_cached_npc_style.shadow_color = Color(0.15, 0.85, 0.45, 0.5)
 	_cached_npc_style.shadow_size = 10
@@ -168,7 +191,7 @@ func _setup_styles() -> void:
 	_cached_quest_style.bg_color = Color(0.32, 0.26, 0.08, 0.90)
 	_cached_quest_style.border_color = Color(1.0, 0.85, 0.20, 0.98)
 	_cached_quest_style.set_border_width_all(3)
-	_cached_quest_style.set_corner_radius_all(55)
+	_cached_quest_style.set_corner_radius_all(50)
 	_cached_quest_style.corner_detail = 24
 	_cached_quest_style.shadow_color = Color(0.95, 0.80, 0.15, 0.55)
 	_cached_quest_style.shadow_size = 12
@@ -179,7 +202,7 @@ func _setup_styles() -> void:
 	_cached_gate_style.bg_color = Color(0.08, 0.24, 0.38, 0.88)
 	_cached_gate_style.border_color = Color(0.30, 0.85, 1.0, 0.95)
 	_cached_gate_style.set_border_width_all(3)
-	_cached_gate_style.set_corner_radius_all(55)
+	_cached_gate_style.set_corner_radius_all(50)
 	_cached_gate_style.corner_detail = 24
 	_cached_gate_style.shadow_color = Color(0.20, 0.70, 1.0, 0.5)
 	_cached_gate_style.shadow_size = 10
@@ -190,11 +213,22 @@ func _setup_styles() -> void:
 	_cached_denied_style.bg_color = Color(0.32, 0.10, 0.10, 0.85)
 	_cached_denied_style.border_color = Color(0.95, 0.35, 0.35, 0.90)
 	_cached_denied_style.set_border_width_all(2)
-	_cached_denied_style.set_corner_radius_all(55)
+	_cached_denied_style.set_corner_radius_all(50)
 	_cached_denied_style.corner_detail = 24
 	_cached_denied_style.shadow_color = Color(0.85, 0.20, 0.20, 0.45)
 	_cached_denied_style.shadow_size = 8
 	_cached_denied_style.anti_aliasing = true
+
+	# Dynamic Collectible style (vibrant violet glow)
+	_cached_collectible_style = StyleBoxFlat.new()
+	_cached_collectible_style.bg_color = Color(0.24, 0.10, 0.32, 0.88)
+	_cached_collectible_style.border_color = Color(0.85, 0.45, 1.0, 0.95)
+	_cached_collectible_style.set_border_width_all(3)
+	_cached_collectible_style.set_corner_radius_all(50)
+	_cached_collectible_style.corner_detail = 24
+	_cached_collectible_style.shadow_color = Color(0.75, 0.30, 0.95, 0.55)
+	_cached_collectible_style.shadow_size = 12
+	_cached_collectible_style.anti_aliasing = true
 
 # ------------------------------------------------------------------------------
 # Input Isolation Shield (Tier 2 & 3)
@@ -241,6 +275,8 @@ func unregister_interactable(node: Node3D) -> void:
 				remaining_label = "Talk [E]"
 			elif active_interactable is StaticBody3D or active_interactable.has_method("attempt_unlock"):
 				remaining_label = "Unlock [E]"
+			elif active_interactable is Area3D or active_interactable.is_in_group("collectibles") or active_interactable.has_method("collect"):
+				remaining_label = "Collect [E]"
 			_update_action_button_visuals(remaining_label, true)
 	interactable_unregistered.emit(node)
 	interactable_changed.emit(active_interactable)
@@ -277,6 +313,8 @@ func trigger_action() -> void:
 			target.call("interact")
 		elif target.has_method("attempt_unlock"):
 			target.call("attempt_unlock")
+		elif target.has_method("collect"):
+			target.call("collect")
 
 	# Channel 2: Synthetic KEY_E Injection (100% backward compatibility)
 	_synthesize_key(KEY_E)
@@ -377,6 +415,11 @@ func _update_action_button_visuals(label_text: String = "", is_active: bool = fa
 				text_to_set = "Locked [E]"
 				if _cached_denied_style != null:
 					action_button.add_theme_stylebox_override("normal", _cached_denied_style)
+		elif target is Area3D or target.is_in_group("collectibles") or target.has_method("collect"):
+			if text_to_set.is_empty() or text_to_set == "Action [E]":
+				text_to_set = "Collect [E]"
+			if _cached_collectible_style != null:
+				action_button.add_theme_stylebox_override("normal", _cached_collectible_style)
 		else:
 			if _cached_npc_style != null:
 				action_button.add_theme_stylebox_override("normal", _cached_npc_style)
@@ -388,6 +431,8 @@ func _update_action_button_visuals(label_text: String = "", is_active: bool = fa
 			action_button.add_theme_stylebox_override("normal", _cached_gate_style)
 		elif "Claim" in text_to_set and _cached_quest_style != null:
 			action_button.add_theme_stylebox_override("normal", _cached_quest_style)
+		elif "Collect" in text_to_set and _cached_collectible_style != null:
+			action_button.add_theme_stylebox_override("normal", _cached_collectible_style)
 
 	action_button.text = text_to_set
 
@@ -434,6 +479,39 @@ func _on_laptop_button_up() -> void:
 		_laptop_tween.kill()
 	_laptop_tween = create_tween()
 	_laptop_tween.tween_property(laptop_button, "scale", Vector2.ONE, 0.10)\
+		.set_trans(Tween.TRANS_BACK)\
+		.set_ease(Tween.EASE_OUT)
+
+func _on_campus_button_pressed() -> void:
+	trigger_campus_toggle()
+
+func trigger_campus_toggle() -> void:
+	_trigger_haptic_tap()
+	campus_toggle_requested.emit()
+	var tree = get_tree()
+	if tree != null:
+		var main_3d = tree.root.find_child("Main3D", true, false)
+		if main_3d != null and main_3d.has_method("close_hud_overlay") and main_3d.has_method("is_hud_overlay_open") and main_3d.call("is_hud_overlay_open"):
+			main_3d.call("close_hud_overlay")
+
+func _on_campus_button_down() -> void:
+	if campus_button == null:
+		return
+	if _campus_tween != null and _campus_tween.is_valid():
+		_campus_tween.kill()
+	_campus_tween = create_tween()
+	_campus_tween.tween_property(campus_button, "scale", Vector2.ONE * button_spring_scale, 0.06)\
+		.set_trans(Tween.TRANS_QUAD)\
+		.set_ease(Tween.EASE_OUT)
+	_trigger_haptic_tap()
+
+func _on_campus_button_up() -> void:
+	if campus_button == null:
+		return
+	if _campus_tween != null and _campus_tween.is_valid():
+		_campus_tween.kill()
+	_campus_tween = create_tween()
+	_campus_tween.tween_property(campus_button, "scale", Vector2.ONE, 0.10)\
 		.set_trans(Tween.TRANS_BACK)\
 		.set_ease(Tween.EASE_OUT)
 

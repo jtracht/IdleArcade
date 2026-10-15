@@ -1,0 +1,88 @@
+[gd_scene load_steps=3 format=3 uid="uid://b8questtracker01"]
+
+[ext_resource type="Script" path="res://scripts/quest_tracker.gd" id="1_tracker"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_quest_card"]
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+bg_color = Color(0.1, 0.12, 0.16, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.45, 0.7, 0.6)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="QuestTracker" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_tracker")
+
+[node name="QuestCard" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(280, 75)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -300.0
+offset_top = 70.0
+offset_right = -16.0
+offset_bottom = 150.0
+grow_horizontal = 0
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_quest_card")
+
+[node name="VBox" type="VBoxContainer" parent="QuestCard"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="QuestTitleLabel" type="Label" parent="QuestCard/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "📋 Active Quest"
+
+[node name="QuestProgressBar" type="ProgressBar" parent="QuestCard/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 6)
+layout_mode = 2
+mouse_filter = 2
+show_percentage = false
+
+[node name="QuestProgressLabel" type="Label" parent="QuestCard/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "Progress (0/1)"
+
+[node name="ToastLabel" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 75.0
+offset_right = 200.0
+offset_bottom = 110.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.5, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 16
+text = "🎉 Quest Completed!"
+horizontal_alignment = 1

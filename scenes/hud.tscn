@@ -1,6 +1,34 @@
-[gd_scene load_steps=6 format=3 uid="uid://d3y8w1p6k4m20"]
+[gd_scene load_steps=9 format=3 uid="uid://d3y8w1p6k4m20"]
 
 [ext_resource type="Script" path="res://scripts/hud.gd" id="1_hud"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_burger_btn"]
+bg_color = Color(0.08, 0.12, 0.2, 0.75)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.85, 1, 0.6)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_drawer_panel"]
+bg_color = Color(0.05, 0.07, 0.12, 0.98)
+border_width_left = 2
+border_color = Color(0, 0.85, 1, 0.6)
+corner_radius_top_left = 16
+corner_radius_bottom_left = 16
+content_margin_left = 20.0
+content_margin_top = 24.0
+content_margin_right = 20.0
+content_margin_bottom = 24.0
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_drawer_backdrop"]
+bg_color = Color(0, 0, 0, 0.6)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_energy_panel"]
 bg_color = Color(0.0627451, 0.0901961, 0.14902, 0.88)
@@ -73,6 +101,7 @@ mouse_filter = 2
 
 [node name="HeaderHBox" type="HBoxContainer" parent="TopContainer/TopVBox"]
 layout_mode = 2
+theme_override_constants/separation = 12
 mouse_filter = 2
 
 [node name="GameTitleLabel" type="Label" parent="TopContainer/TopVBox/HeaderHBox"]
@@ -93,44 +122,15 @@ theme_override_colors/font_color = Color(0.46, 1, 0.01, 1)
 theme_override_font_sizes/font_size = 12
 text = "● ONLINE"
 
-[node name="OnlineActionBar" type="HBoxContainer" parent="TopContainer/TopVBox"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="AuthButton" type="Button" parent="TopContainer/TopVBox/OnlineActionBar"]
+[node name="BurgerMenuButton" type="Button" parent="TopContainer/TopVBox/HeaderHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 42)
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
-size_flags_horizontal = 3
-text = "👤 Account"
-
-[node name="LeaderboardButton" type="Button" parent="TopContainer/TopVBox/OnlineActionBar"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 42)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "🏆 Rank"
-
-[node name="GuildButton" type="Button" parent="TopContainer/TopVBox/OnlineActionBar"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 42)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "🏢 Guild"
-
-[node name="QuestButton" type="Button" parent="TopContainer/TopVBox/OnlineActionBar"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 42)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "📜 Quests"
-
-[node name="CampusButton" type="Button" parent="TopContainer/TopVBox/OnlineActionBar"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 42)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "🌐 3D"
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxFlat_burger_btn")
+text = "☰"
 
 [node name="EnergyDisplayPanel" type="PanelContainer" parent="TopContainer/TopVBox"]
 layout_mode = 2
@@ -207,9 +207,11 @@ offset_right = -20.0
 offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 0
+mouse_filter = 0
 
 [node name="ShopPanel" type="PanelContainer" parent="BottomContainer"]
 layout_mode = 2
+mouse_filter = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_shop_panel")
 
 [node name="ShopVBox" type="VBoxContainer" parent="BottomContainer/ShopPanel"]
@@ -253,7 +255,18 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="ModalContainer" type="Control" parent="."]
+[node name="NavDrawer" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="NavDrawerBackdrop" type="Button" parent="NavDrawer"]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -261,5 +274,114 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_drawer_backdrop")
+flat = true
+
+[node name="DrawerPanel" type="PanelContainer" parent="NavDrawer"]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -440.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_drawer_panel")
+
+[node name="DrawerVBox" type="VBoxContainer" parent="NavDrawer/DrawerPanel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="DrawerHeaderHBox" type="HBoxContainer" parent="NavDrawer/DrawerPanel/DrawerVBox"]
+layout_mode = 2
+
+[node name="DrawerTitle" type="Label" parent="NavDrawer/DrawerPanel/DrawerVBox/DrawerHeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "⚡ OPERATIONS"
+
+[node name="DrawerSpacer" type="Control" parent="NavDrawer/DrawerPanel/DrawerVBox/DrawerHeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CloseNavButton" type="Button" parent="NavDrawer/DrawerPanel/DrawerVBox/DrawerHeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 24
+text = "✕"
+
+[node name="HSeparator" type="HSeparator" parent="NavDrawer/DrawerPanel/DrawerVBox"]
+layout_mode = 2
+
+[node name="NavScroll" type="ScrollContainer" parent="NavDrawer/DrawerPanel/DrawerVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="NavItemsVBox" type="VBoxContainer" parent="NavDrawer/DrawerPanel/DrawerVBox/NavScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="AuthButton" type="Button" parent="NavDrawer/DrawerPanel/DrawerVBox/NavScroll/NavItemsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 18
+text = "👤 Founder Account"
+
+[node name="LeaderboardButton" type="Button" parent="NavDrawer/DrawerPanel/DrawerVBox/NavScroll/NavItemsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 18
+text = "🏆 Global Rankings"
+
+[node name="GuildButton" type="Button" parent="NavDrawer/DrawerPanel/DrawerVBox/NavScroll/NavItemsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 18
+text = "🏢 Enterprise Network"
+
+[node name="QuestButton" type="Button" parent="NavDrawer/DrawerPanel/DrawerVBox/NavScroll/NavItemsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 18
+text = "📜 Daily Quests"
+
+[node name="CampusButton" type="Button" parent="NavDrawer/DrawerPanel/DrawerVBox/NavScroll/NavItemsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 18
+text = "🌐 3D Campus World"
+
+[node name="ModalContainer" type="Control" parent="."]
+unique_name_in_owner = true
 mouse_filter = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 

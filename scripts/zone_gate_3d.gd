@@ -22,8 +22,15 @@ var _avatar_ref: Node3D = null
 @onready var barrier_mesh: MeshInstance3D = get_node_or_null("Visuals/BarrierMesh")
 @onready var prompt_label: Label3D = get_node_or_null("Visuals/PromptLabel3D")
 @onready var interaction_area: Area3D = get_node_or_null("InteractionArea")
+@onready var left_post: MeshInstance3D = get_node_or_null("Visuals/LeftPost")
+@onready var right_post: MeshInstance3D = get_node_or_null("Visuals/RightPost")
+@onready var left_beacon: MeshInstance3D = get_node_or_null("Visuals/LeftPost/StatusBeacon")
+@onready var right_beacon: MeshInstance3D = get_node_or_null("Visuals/RightPost/StatusBeacon")
+@onready var unlock_particles: CPUParticles3D = get_node_or_null("Visuals/UnlockParticles")
 
 func _ready() -> void:
+	if not is_in_group("zone_gates"):
+		add_to_group("zone_gates")
 	collision_layer = 1 # Solid obstacle for Avatar
 	collision_mask = 0
 	
@@ -113,6 +120,17 @@ func attempt_unlock() -> bool:
 		gate_interacted.emit(zone_id, true)
 		return true
 	else:
+		current_level = gs.get_idle_level() if gs.has_method("get_idle_level") else 1
+		var energy: float = gs.energy
+		var feedback_text: String = ""
+		if energy < unlock_cost:
+			var cost_str = gs.format_number(unlock_cost) if gs.has_method("format_number") else str(int(unlock_cost))
+			feedback_text = "Benötigt %s Energie zum Freischalten" % cost_str
+		elif current_level < required_level:
+			feedback_text = "Benötigt Campus Level %d" % required_level
+		else:
+			feedback_text = "Benötigt %s Energie zum Freischalten" % str(int(unlock_cost))
+		show_missing_resource_feedback(feedback_text)
 		_show_denied_feedback()
 		gate_interacted.emit(zone_id, false)
 		return false
@@ -131,6 +149,12 @@ func open_gate(animated: bool = true) -> void:
 		prompt_label.text = "✓ " + zone_name + " Unlocked"
 		prompt_label.modulate = Color(0.3, 1.0, 0.4)
 		prompt_label.visible = true
+		
+	_set_beacon_color(Color(0.2, 1.0, 0.4)) # Green status LED
+		
+	if unlock_particles != null and animated:
+		unlock_particles.restart()
+		unlock_particles.emitting = true
 		
 	if barrier_mesh != null:
 		if animated:
@@ -151,12 +175,61 @@ func _on_stat_updated(stat_name: String, _val: float) -> void:
 	if stat_name == "idle_level" and not _is_unlocked:
 		_update_prompt_display()
 
+func _set_beacon_color(c: Color) -> void:
+	var mat = StandardMaterial3D.new()
+	mat.albedo_color = c
+	mat.emission_enabled = true
+	mat.emission = c
+	mat.emission_energy_multiplier = 1.5
+	mat.roughness = 0.2
+	if left_beacon != null:
+		left_beacon.material_override = mat
+	if right_beacon != null:
+		right_beacon.material_override = mat
+	var pl_beacon = get_node_or_null("Visuals/PostLeft/StatusBeacon") as MeshInstance3D
+	if pl_beacon != null:
+		pl_beacon.material_override = mat
+	var pr_beacon = get_node_or_null("Visuals/PostRight/StatusBeacon") as MeshInstance3D
+	if pr_beacon != null:
+		pr_beacon.material_override = mat
+
+func show_missing_resource_feedback(text_msg: String = "") -> void:
+	var msg: String = text_msg
+	if msg.is_empty():
+		var gs = get_node_or_null("/root/GameState")
+		var current_level: int = gs.get_idle_level() if (gs != null and gs.has_method("get_idle_level")) else 1
+		var energy: float = gs.energy if gs != null else 0.0
+		if energy < unlock_cost:
+			var cost_str = gs.format_number(unlock_cost) if (gs != null and gs.has_method("format_number")) else str(int(unlock_cost))
+			msg = "Benötigt %s Energie zum Freischalten" % cost_str
+		elif current_level < required_level:
+			msg = "Benötigt Campus Level %d" % required_level
+		else:
+			msg = "Benötigt %s Energie zum Freischalten" % str(int(unlock_cost))
+
+	var target_parent = get_parent() if get_parent() != null else self
+	var label = Label3D.new()
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.no_depth_test = true
+	label.font_size = 24
+	label.outline_size = 6
+	label.text = msg
+	label.modulate = Color(1.0, 0.3, 0.3)
+	target_parent.add_child(label)
+	label.global_position = global_position + Vector3(0.0, 2.5, 0.0)
+	
+	var tw = label.create_tween().set_parallel(true)
+	tw.tween_property(label, "position:y", label.position.y + 1.2, 1.2).set_ease(Tween.EASE_OUT)
+	tw.tween_property(label, "modulate:a", 0.0, 1.2)
+	tw.chain().tween_callback(label.queue_free)
+
 func _update_prompt_display() -> void:
 	if prompt_label == null:
 		return
 	if _is_unlocked:
 		prompt_label.text = "✓ " + zone_name + " Unlocked"
 		prompt_label.modulate = Color(0.3, 1.0, 0.4)
+		_set_beacon_color(Color(0.2, 1.0, 0.4))
 		return
 		
 	var gs = get_node_or_null("/root/GameState")
@@ -170,16 +243,18 @@ func _update_prompt_display() -> void:
 	if current_level >= required_level:
 		prompt_label.text = "[E] Unlock " + zone_name + " (Clearance Lvl " + str(required_level) + " Granted)"
 		prompt_label.modulate = Color(0.4, 0.9, 1.0)
+		_set_beacon_color(Color(0.2, 0.8, 1.0))
 	elif energy >= unlock_cost:
 		prompt_label.text = "[E] Unlock " + zone_name + " (" + cost_str + " or Lvl " + str(required_level) + ")"
 		prompt_label.modulate = Color(1.0, 0.85, 0.3)
+		_set_beacon_color(Color(1.0, 0.85, 0.2))
 	else:
 		prompt_label.text = "[Locked] Requires Clearance Lvl " + str(required_level) + " or " + cost_str
 		prompt_label.modulate = Color(1.0, 0.4, 0.4)
+		_set_beacon_color(Color(1.0, 0.2, 0.2))
 
 func _show_denied_feedback() -> void:
 	if prompt_label != null:
-		var orig_mod = prompt_label.modulate
 		prompt_label.text = "✖ ACCESS DENIED (Req: Lvl " + str(required_level) + ")"
 		prompt_label.modulate = Color(1.0, 0.2, 0.2)
 		var tween = create_tween()

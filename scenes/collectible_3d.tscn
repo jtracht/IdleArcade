@@ -1,11 +1,11 @@
-[gd_scene load_steps=8 format=3 uid="uid://b8collectible3d01"]
+[gd_scene load_steps=29 format=3 uid="uid://b8collectible3d01"]
 
 [ext_resource type="Script" path="res://scripts/collectible_3d.gd" id="1_collect"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_pickup"]
 radius = 1.2
 
-[sub_resource type="StandardMaterial3D" id="Material_gold"]
+[sub_resource type="StandardMaterial3D" id="Material_gold_legacy"]
 albedo_color = Color(1, 0.82, 0.2, 1)
 metallic = 0.6
 roughness = 0.3
@@ -13,9 +13,18 @@ emission_enabled = true
 emission = Color(0.9, 0.7, 0.1, 1)
 emission_energy_multiplier = 0.3
 
-[sub_resource type="BoxMesh" id="BoxMesh_item"]
-material = SubResource("Material_gold")
+[sub_resource type="BoxMesh" id="BoxMesh_item_legacy"]
+material = SubResource("Material_gold_legacy")
 size = Vector3(0.6, 0.4, 0.25)
+
+[sub_resource type="StandardMaterial3D" id="Material_handle_legacy"]
+albedo_color = Color(0.2, 0.2, 0.2, 1)
+metallic = 0.8
+roughness = 0.2
+
+[sub_resource type="BoxMesh" id="BoxMesh_handle_legacy"]
+material = SubResource("Material_handle_legacy")
+size = Vector3(0.25, 0.1, 0.06)
 
 [sub_resource type="StandardMaterial3D" id="Material_aura"]
 transparency = 1
@@ -27,15 +36,117 @@ material = SubResource("Material_aura")
 top_radius = 0.5
 bottom_radius = 0.5
 height = 0.02
+radial_segments = 12
+rings = 0
 
-[sub_resource type="StandardMaterial3D" id="Material_handle"]
-albedo_color = Color(0.2, 0.2, 0.2, 1)
-metallic = 0.8
+[sub_resource type="StandardMaterial3D" id="Material_briefcase"]
+albedo_color = Color(1, 0.82, 0.2, 1)
+metallic = 0.5
+roughness = 0.3
+emission_enabled = true
+emission = Color(0.9, 0.75, 0.1, 1)
+emission_energy_multiplier = 0.25
+
+[sub_resource type="BoxMesh" id="BoxMesh_briefcase_body"]
+material = SubResource("Material_briefcase")
+size = Vector3(0.6, 0.4, 0.25)
+
+[sub_resource type="StandardMaterial3D" id="Material_metal_chrome"]
+albedo_color = Color(0.85, 0.88, 0.92, 1)
+metallic = 0.95
+roughness = 0.15
+
+[sub_resource type="BoxMesh" id="BoxMesh_briefcase_handle"]
+material = SubResource("Material_metal_chrome")
+size = Vector3(0.24, 0.1, 0.05)
+
+[sub_resource type="StandardMaterial3D" id="Material_buckle"]
+albedo_color = Color(1, 0.9, 0.4, 1)
+metallic = 0.9
 roughness = 0.2
 
-[sub_resource type="BoxMesh" id="BoxMesh_handle"]
-material = SubResource("Material_handle")
-size = Vector3(0.25, 0.1, 0.06)
+[sub_resource type="BoxMesh" id="BoxMesh_buckle"]
+material = SubResource("Material_buckle")
+size = Vector3(0.05, 0.08, 0.03)
+
+[sub_resource type="StandardMaterial3D" id="Material_coffee_cup"]
+albedo_color = Color(0.9, 0.3, 0.2, 1)
+roughness = 0.25
+metallic = 0.1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_coffee_cup"]
+material = SubResource("Material_coffee_cup")
+top_radius = 0.2
+bottom_radius = 0.17
+height = 0.4
+radial_segments = 10
+rings = 0
+
+[sub_resource type="TorusMesh" id="TorusMesh_coffee_handle"]
+material = SubResource("Material_coffee_cup")
+inner_radius = 0.04
+outer_radius = 0.1
+rings = 10
+ring_segments = 6
+
+[sub_resource type="StandardMaterial3D" id="Material_coffee_liquid"]
+albedo_color = Color(0.18, 0.1, 0.06, 1)
+roughness = 0.2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_coffee_liquid"]
+material = SubResource("Material_coffee_liquid")
+top_radius = 0.18
+bottom_radius = 0.18
+height = 0.02
+radial_segments = 8
+rings = 0
+
+[sub_resource type="StandardMaterial3D" id="Material_steam"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.92, 0.95, 1, 0.45)
+
+[sub_resource type="BoxMesh" id="BoxMesh_steam"]
+material = SubResource("Material_steam")
+size = Vector3(0.04, 0.04, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="Material_usb_body"]
+albedo_color = Color(0.1, 0.7, 1, 1)
+metallic = 0.4
+roughness = 0.2
+emission_enabled = true
+emission = Color(0.1, 0.75, 1, 1)
+emission_energy_multiplier = 0.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_usb_body"]
+material = SubResource("Material_usb_body")
+size = Vector3(0.24, 0.45, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_usb_plug"]
+material = SubResource("Material_metal_chrome")
+size = Vector3(0.16, 0.18, 0.07)
+
+[sub_resource type="StandardMaterial3D" id="Material_usb_led"]
+albedo_color = Color(0.2, 1, 0.8, 1)
+emission_enabled = true
+emission = Color(0.2, 1, 0.8, 1)
+emission_energy_multiplier = 1.5
+
+[sub_resource type="SphereMesh" id="SphereMesh_usb_led"]
+material = SubResource("Material_usb_led")
+radius = 0.035
+height = 0.07
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="Material_sparkle"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 0.9, 0.5, 0.8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sparkle"]
+material = SubResource("Material_sparkle")
+size = Vector3(0.05, 0.05, 0.05)
 
 [node name="Collectible3D" type="Area3D" groups=["collectibles"]]
 collision_layer = 4
@@ -50,11 +161,12 @@ shape = SubResource("SphereShape3D_pickup")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 
 [node name="ItemMesh" type="MeshInstance3D" parent="Visuals"]
-mesh = SubResource("BoxMesh_item")
+visible = false
+mesh = SubResource("BoxMesh_item_legacy")
 
 [node name="HandleMesh" type="MeshInstance3D" parent="Visuals/ItemMesh"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, 0)
-mesh = SubResource("BoxMesh_handle")
+mesh = SubResource("BoxMesh_handle_legacy")
 
 [node name="GlowAura" type="MeshInstance3D" parent="Visuals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.4, 0)
@@ -64,3 +176,77 @@ mesh = SubResource("CylinderMesh_aura")
 light_color = Color(1, 0.85, 0.4, 1)
 light_energy = 0.5
 omni_range = 2.5
+
+[node name="SparkleParticles" type="CPUParticles3D" parent="Visuals"]
+emitting = true
+amount = 8
+lifetime = 0.8
+mesh = SubResource("BoxMesh_sparkle")
+emission_shape = 1
+emission_sphere_radius = 0.45
+direction = Vector3(0, 1, 0)
+spread = 180.0
+gravity = Vector3(0, 0.2, 0)
+initial_velocity_min = 0.05
+initial_velocity_max = 0.15
+scale_amount_min = 0.5
+scale_amount_max = 1.2
+
+[node name="BriefcaseMesh" type="Node3D" parent="Visuals"]
+
+[node name="CaseBody" type="MeshInstance3D" parent="Visuals/BriefcaseMesh"]
+mesh = SubResource("BoxMesh_briefcase_body")
+
+[node name="CaseHandle" type="MeshInstance3D" parent="Visuals/BriefcaseMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, 0)
+mesh = SubResource("BoxMesh_briefcase_handle")
+
+[node name="LeftBuckle" type="MeshInstance3D" parent="Visuals/BriefcaseMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16, 0.05, 0.13)
+mesh = SubResource("BoxMesh_buckle")
+
+[node name="RightBuckle" type="MeshInstance3D" parent="Visuals/BriefcaseMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16, 0.05, 0.13)
+mesh = SubResource("BoxMesh_buckle")
+
+[node name="CoffeeMesh" type="Node3D" parent="Visuals"]
+visible = false
+
+[node name="MugCup" type="MeshInstance3D" parent="Visuals/CoffeeMesh"]
+mesh = SubResource("CylinderMesh_coffee_cup")
+
+[node name="MugHandle" type="MeshInstance3D" parent="Visuals/CoffeeMesh"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0.22, 0, 0)
+mesh = SubResource("TorusMesh_coffee_handle")
+
+[node name="CoffeeLiquid" type="MeshInstance3D" parent="Visuals/CoffeeMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.18, 0)
+mesh = SubResource("CylinderMesh_coffee_liquid")
+
+[node name="SteamParticles" type="CPUParticles3D" parent="Visuals/CoffeeMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, 0)
+emitting = true
+amount = 6
+lifetime = 0.8
+mesh = SubResource("BoxMesh_steam")
+direction = Vector3(0, 1, 0)
+spread = 25.0
+gravity = Vector3(0, 0.4, 0)
+initial_velocity_min = 0.1
+initial_velocity_max = 0.3
+scale_amount_min = 0.5
+scale_amount_max = 1.0
+
+[node name="USBMesh" type="Node3D" parent="Visuals"]
+visible = false
+
+[node name="USBBody" type="MeshInstance3D" parent="Visuals/USBMesh"]
+mesh = SubResource("BoxMesh_usb_body")
+
+[node name="USBPlug" type="MeshInstance3D" parent="Visuals/USBMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.28, 0)
+mesh = SubResource("BoxMesh_usb_plug")
+
+[node name="USBBlinkLED" type="MeshInstance3D" parent="Visuals/USBMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0.06)
+mesh = SubResource("SphereMesh_usb_led")

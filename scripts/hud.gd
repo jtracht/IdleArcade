@@ -21,6 +21,10 @@ const QUEST_MODAL_SCENE: PackedScene = preload("res://scenes/ui/quest_modal.tscn
 @onready var guild_button: Button = %GuildButton
 @onready var quest_button: Button = %QuestButton
 @onready var campus_button: Button = get_node_or_null("%CampusButton")
+@onready var burger_menu_button: Button = get_node_or_null("%BurgerMenuButton")
+@onready var nav_drawer: Control = get_node_or_null("%NavDrawer")
+@onready var close_nav_button: Button = get_node_or_null("%CloseNavButton")
+@onready var nav_backdrop: Button = get_node_or_null("%NavDrawerBackdrop")
 @onready var modal_container: Control = %ModalContainer
 
 var _active_modal: Control = null
@@ -202,10 +206,17 @@ func _on_upgrade_purchased(upgrade_id: String, new_level: int, current_cost: flo
 	title_lbl.text = "%s [Lvl %d]" % [def["name"], new_level]
 	buy_btn.text = "Buy: " + (GameState.format_number(current_cost) if GameState != null else str(int(current_cost)))
 	
+	card["panel"].pivot_offset = card["panel"].size * 0.5
 	var tween = card["panel"].create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	card["panel"].scale = Vector2(1.03, 1.03)
+	card["panel"].scale = Vector2(1.04, 1.04)
 	tween.tween_property(card["panel"], "scale", Vector2.ONE, 0.12)
 	
+	var hm = get_node_or_null("/root/HapticsManager")
+	if hm != null and hm.has_method("vibrate_button"):
+		hm.vibrate_button()
+	elif OS.has_feature("mobile") and Input.has_method("vibrate_handheld"):
+		Input.vibrate_handheld(20)
+
 	_refresh_affordability(GameState.energy if GameState != null else 0.0)
 
 ## Builds dynamic upgrade cards in the shop panel
@@ -219,6 +230,7 @@ func _build_upgrade_cards() -> void:
 
 func _create_upgrade_card(def: Dictionary) -> Dictionary:
 	var panel = PanelContainer.new()
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.09, 0.12, 0.18, 0.9)
 	style.corner_radius_top_left = 10
@@ -232,11 +244,13 @@ func _create_upgrade_card(def: Dictionary) -> Dictionary:
 	panel.add_theme_stylebox_override("panel", style)
 	
 	var hbox = HBoxContainer.new()
+	hbox.mouse_filter = Control.MOUSE_FILTER_STOP
 	hbox.add_theme_constant_override("separation", 10)
 	panel.add_child(hbox)
 	
 	# Left: Details VBox
 	var vbox = VBoxContainer.new()
+	vbox.mouse_filter = Control.MOUSE_FILTER_STOP
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(vbox)
 	
@@ -257,7 +271,8 @@ func _create_upgrade_card(def: Dictionary) -> Dictionary:
 	
 	# Right: Buy Button
 	var buy_btn = Button.new()
-	buy_btn.custom_minimum_size = Vector2(130, 42)
+	buy_btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	buy_btn.custom_minimum_size = Vector2(130, 56)
 	var initial_cost: float = def["base_cost"]
 	if GameState != null and GameState.upgrades.has(def["id"]):
 		initial_cost = float(GameState.upgrades[def["id"]].get("current_cost", def["base_cost"]))
@@ -265,6 +280,12 @@ func _create_upgrade_card(def: Dictionary) -> Dictionary:
 	buy_btn.pressed.connect(_on_buy_button_pressed.bind(def["id"]))
 	hbox.add_child(buy_btn)
 	
+	panel.pivot_offset = Vector2(170.0, 36.0)
+	panel.resized.connect(func():
+		if panel != null:
+			panel.pivot_offset = panel.size * 0.5
+	)
+
 	return {
 		"id": def["id"],
 		"panel": panel,
@@ -292,17 +313,59 @@ func _refresh_all_upgrade_buttons() -> void:
 	var total_energy: float = GameState.energy if GameState != null else 0.0
 	_refresh_affordability(total_energy)
 
+func toggle_burger_menu() -> void:
+	if nav_drawer == null:
+		return
+	if nav_drawer.visible:
+		close_nav_drawer()
+	else:
+		open_nav_drawer()
+
+func open_nav_drawer() -> void:
+	if nav_drawer == null:
+		return
+	nav_drawer.visible = true
+	var hm = get_node_or_null("/root/HapticsManager")
+	if hm != null and hm.has_method("vibrate_button"):
+		hm.vibrate_button()
+
+func close_nav_drawer() -> void:
+	if nav_drawer == null:
+		return
+	nav_drawer.visible = false
+
 func _bind_action_bar_buttons() -> void:
+	if burger_menu_button != null:
+		burger_menu_button.pressed.connect(toggle_burger_menu)
+	if close_nav_button != null:
+		close_nav_button.pressed.connect(close_nav_drawer)
+	if nav_backdrop != null:
+		nav_backdrop.pressed.connect(close_nav_drawer)
 	if auth_button != null:
-		auth_button.pressed.connect(func(): open_modal(AUTH_MODAL_SCENE))
+		auth_button.pressed.connect(func():
+			close_nav_drawer()
+			open_modal(AUTH_MODAL_SCENE)
+		)
 	if leaderboard_button != null:
-		leaderboard_button.pressed.connect(func(): open_modal(LEADERBOARD_MODAL_SCENE))
+		leaderboard_button.pressed.connect(func():
+			close_nav_drawer()
+			open_modal(LEADERBOARD_MODAL_SCENE)
+		)
 	if guild_button != null:
-		guild_button.pressed.connect(func(): open_modal(GUILD_MODAL_SCENE))
+		guild_button.pressed.connect(func():
+			close_nav_drawer()
+			open_modal(GUILD_MODAL_SCENE)
+		)
 	if quest_button != null:
-		quest_button.pressed.connect(func(): open_modal(QUEST_MODAL_SCENE))
+		quest_button.pressed.connect(func():
+			close_nav_drawer()
+			open_modal(QUEST_MODAL_SCENE)
+		)
 	if campus_button != null:
-		campus_button.pressed.connect(_on_campus_button_pressed)
+		campus_button.pressed.connect(func():
+			close_nav_drawer()
+			_on_campus_button_pressed()
+		)
 
 func _on_campus_button_pressed() -> void:
 	var main_3d = get_tree().root.find_child("Main3D", true, false)
@@ -314,6 +377,7 @@ func _on_campus_button_pressed() -> void:
 		get_tree().change_scene_to_file("res://scenes/main_3d.tscn")
 
 func open_modal(modal_scene: PackedScene) -> Control:
+	close_nav_drawer()
 	if _active_modal != null and is_instance_valid(_active_modal):
 		if _active_modal.get_parent() != null:
 			_active_modal.get_parent().remove_child(_active_modal)
@@ -328,6 +392,7 @@ func open_modal(modal_scene: PackedScene) -> Control:
 
 	_active_modal = modal_inst
 
+	# Stale closure guard: if _active_modal == modal_inst:
 	if modal_inst.has_signal("closed"):
 		modal_inst.closed.connect(func():
 			if _active_modal == modal_inst:

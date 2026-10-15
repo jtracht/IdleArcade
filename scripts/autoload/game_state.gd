@@ -36,6 +36,7 @@ var pickup_radius_level: int = 0
 var collectibles_collected: int = 0
 var unlocked_zones: Array[String] = []
 var campus_quests: Dictionary = {}
+var active_campus_quest_id: String = ""
 
 var base_click_power: float = 1.0
 var base_passive_rps: float = 0.0
@@ -342,9 +343,13 @@ func get_upgrade_data(upgrade_id: String) -> Dictionary:
 func get_bonus_multiplier() -> float:
 	return 1.0 + (float(bonus_users) * 0.01)
 
-## Returns passive RPS boosted by bonus users multiplier.
+## Returns passive boost multiplier from collected 3D campus items (+5% per item).
+func get_campus_item_multiplier() -> float:
+	return 1.0 + (float(collectibles_collected) * 0.05)
+
+## Returns passive RPS boosted by bonus users multiplier and campus item multiplier.
 func get_effective_passive_rps() -> float:
-	return base_passive_rps * get_bonus_multiplier()
+	return base_passive_rps * get_bonus_multiplier() * get_campus_item_multiplier()
 
 ## Awards bonus users from daily quests or milestone rewards.
 func award_bonus_users(amount: int) -> void:
@@ -382,6 +387,7 @@ func collect_3d_item(item_type: String, reward_amount: float = 50.0) -> void:
 	total_energy_earned += reward
 	collectibles_collected += 1
 	energy_changed.emit(energy, reward)
+	rps_changed.emit(get_effective_passive_rps())
 	collectible_picked_up.emit(item_type, collectibles_collected)
 	
 	# Quest tracker auto-advancement
@@ -423,14 +429,35 @@ func get_campus_quest_status(quest_id: String) -> String:
 
 ## Starts an active campus quest with a target count.
 func start_campus_quest(quest_id: String, target_count: int = 1) -> void:
+	active_campus_quest_id = quest_id
 	if campus_quests.has(quest_id) and campus_quests[quest_id].get("status") in ["active", "ready", "completed"]:
+		if campus_quests[quest_id].get("status") == "active":
+			if quest_id == "quest_server" and is_zone_unlocked("server_room"):
+				campus_quests[quest_id]["current_count"] = 1
+				campus_quests[quest_id]["status"] = "ready"
+				campus_quest_updated.emit(quest_id, "ready", 1, 1)
+			elif quest_id == "quest_lab" and is_zone_unlocked("lab_room"):
+				campus_quests[quest_id]["current_count"] = 1
+				campus_quests[quest_id]["status"] = "ready"
+				campus_quest_updated.emit(quest_id, "ready", 1, 1)
 		return
+
 	campus_quests[quest_id] = {
 		"status": "active",
 		"current_count": 0,
 		"target_count": maxi(1, target_count)
 	}
-	campus_quest_updated.emit(quest_id, "active", 0, maxi(1, target_count))
+
+	if quest_id == "quest_server" and is_zone_unlocked("server_room"):
+		campus_quests[quest_id]["current_count"] = 1
+		campus_quests[quest_id]["status"] = "ready"
+		campus_quest_updated.emit(quest_id, "ready", 1, 1)
+	elif quest_id == "quest_lab" and is_zone_unlocked("lab_room"):
+		campus_quests[quest_id]["current_count"] = 1
+		campus_quests[quest_id]["status"] = "ready"
+		campus_quest_updated.emit(quest_id, "ready", 1, 1)
+	else:
+		campus_quest_updated.emit(quest_id, "active", 0, maxi(1, target_count))
 
 ## Increments quest progress counter towards completion.
 func advance_campus_quest(quest_id: String, amount: int = 1) -> void:
@@ -452,6 +479,8 @@ func complete_campus_quest(quest_id: String, reward_energy: float = 0.0, reward_
 	if q.get("status") != "ready":
 		return false
 	q["status"] = "completed"
+	if active_campus_quest_id == quest_id:
+		active_campus_quest_id = ""
 	if reward_energy > 0.0:
 		energy += reward_energy
 		total_energy_earned += reward_energy
@@ -481,6 +510,7 @@ func save_to_disk() -> void:
 		"idle_level": idle_level,
 		"pickup_radius_level": pickup_radius_level,
 		"collectibles_collected": collectibles_collected,
+		"active_campus_quest_id": active_campus_quest_id,
 		"unlocked_zones": unlocked_zones.duplicate(),
 		"campus_quests": campus_quests.duplicate(true),
 		"upgrades": {}
@@ -536,6 +566,7 @@ func load_from_disk() -> bool:
 	idle_level = maxi(1, int(data.get("idle_level", 1)))
 	pickup_radius_level = maxi(0, int(data.get("pickup_radius_level", 0)))
 	collectibles_collected = maxi(0, int(data.get("collectibles_collected", 0)))
+	active_campus_quest_id = str(data.get("active_campus_quest_id", ""))
 	
 	unlocked_zones.clear()
 	var raw_zones = data.get("unlocked_zones", [])
