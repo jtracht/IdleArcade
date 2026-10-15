@@ -626,7 +626,7 @@ def run_tier_4():
             success = res.returncode == 0
             detail = ""
             if not success:
-                detail = res.stderr[-300:] if res.stderr else res.stdout[-300:]
+                detail = (res.stderr + "\n" + res.stdout)[-600:].strip()
             return reporter.check(t, success, f"Regression Battery: {name} passed (exit code 0)", detail)
         except Exception as e:
             return reporter.check(t, False, f"Regression Battery: {name} execution error", str(e))

@@ -42,6 +42,7 @@ def check(condition: bool, description: str, module: str = ""):
     else:
         failed += 1
         print(f"  [FAIL] {tag}{description}")
+        print(f"  [FAIL] {tag}{description}", file=sys.stderr)
 
 print("====================================================================")
 print(">>> RUNNING P7-M3 EMPIRICAL AUDIT & VERIFICATION SUITE <<<")
@@ -293,19 +294,22 @@ check("quit(0)" in test_content and "quit(1)" in test_content, "Contains headles
 print("\n--- Module 7: Regression Test Battery Execution ---")
 
 suites_to_run = [
-    ("M1 Challenger Oracle", GAME_DIR / "tests/test_p7_m1_challenger_oracle.py"),
-    ("M2 Empirical Audit", GAME_DIR / "verify_m2.py"),
-    ("Phase 5 Mobile Oracle", GAME_DIR / "tests/test_phase5_mobile.py"),
-    ("Phase 6 Visual Life Oracle", GAME_DIR / "tests/test_phase6_visuals.py"),
-    ("End-to-End Suite", GAME_DIR / "tests/e2e_suite.py"),
+    ("M1 Challenger Oracle", GAME_DIR / "tests/test_p7_m1_challenger_oracle.py", []),
+    ("M2 Empirical Audit", GAME_DIR / "verify_m2.py", []),
+    ("Phase 5 Mobile Oracle", GAME_DIR / "tests/test_phase5_mobile.py", []),
+    ("Phase 6 Visual Life Oracle", GAME_DIR / "tests/test_phase6_visuals.py", []),
+    ("End-to-End Suite", GAME_DIR / "tests/e2e_suite.py", ["--tier", "1"]),
 ]
 
-for name, script_path in suites_to_run:
+for item in suites_to_run:
+    name, script_path, extra_args = item[0], item[1], item[2]
     if script_path.exists():
-        res = subprocess.run([sys.executable, str(script_path)], capture_output=True, text=True, cwd=str(GAME_DIR))
+        res = subprocess.run([sys.executable, str(script_path)] + extra_args, capture_output=True, text=True, cwd=str(GAME_DIR))
         check(res.returncode == 0, f"Regression Battery: {name} passed (exit code 0)", "Regression")
         if res.returncode != 0:
-            print(f"    [ERROR OUTPUT from {name}]:\n{res.stderr}\n{res.stdout[-400:]}")
+            err_msg = f"    [ERROR OUTPUT from {name}]:\n{res.stderr}\n{res.stdout[-400:]}"
+            print(err_msg)
+            print(err_msg, file=sys.stderr)
     else:
         check(False, f"Regression Battery: {name} script {script_path} not found", "Regression")
 
