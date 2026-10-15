@@ -46,6 +46,14 @@ jobs:
           python3 $TARGET_DIR/tests/test_phase5_mobile.py
           python3 $TARGET_DIR/tests/test_ci_export_verify.py
 
+      - name: Import Godot Project Cache
+        run: |
+          TARGET_DIR="."
+          if [ -d "IdleArcade" ]; then
+            TARGET_DIR="IdleArcade"
+          fi
+          godot --headless --path "$TARGET_DIR" --editor --quit || true
+
       - name: Run Godot Headless Phase 5 Mobile Tests
         run: |
           TARGET_DIR="."

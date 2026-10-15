@@ -52,6 +52,15 @@ const CAMERA_YAW_45_RAD: float = 0.7853981633974483
 const VIEWPORT_WIDTH: float = 720.0
 const VIEWPORT_HEIGHT: float = 1280.0
 
+# Preloaded scripts for headless class resolution without editor cache
+const VirtualJoystick = preload("res://scripts/ui/virtual_joystick.gd")
+const TouchControls = preload("res://scripts/ui/touch_controls.gd")
+const Avatar3D = preload("res://scripts/avatar_3d.gd")
+const Main3D = preload("res://scripts/main_3d.gd")
+const NPC3D = preload("res://scripts/npc_3d.gd")
+const ZoneGate3D = preload("res://scripts/zone_gate_3d.gd")
+const Collectible3D = preload("res://scripts/collectible_3d.gd")
+
 # ------------------------------------------------------------------------------
 # Test Helper Classes
 # ------------------------------------------------------------------------------
