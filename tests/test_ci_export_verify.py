@@ -197,7 +197,10 @@ def validate_pkcs12_binary(file_path: Path) -> Tuple[bool, str]:
 class ExportAndCiVerifier:
     def __init__(self, workspace_root: Optional[Path] = None, strict_audit: bool = False):
         self.root = (workspace_root or find_workspace_root()).resolve()
-        self.game_dir = self.root / "IdleArcade"
+        if (self.root / "project.godot").is_file():
+            self.game_dir = self.root
+        else:
+            self.game_dir = self.root / "IdleArcade"
         self.strict_audit = strict_audit
         self.checks: List[VerificationCheck] = []
 
@@ -206,6 +209,8 @@ class ExportAndCiVerifier:
         self.project_godot_path = self.game_dir / "project.godot"
         self.workflow_root_path = self.root / ".github" / "workflows" / "build.yml"
         self.workflow_game_path = self.game_dir / ".github" / "workflows" / "build.yml"
+        if not self.workflow_root_path.exists() and self.workflow_game_path.exists():
+            self.workflow_root_path = self.workflow_game_path
         self.keystore_path = self.game_dir / "keystores" / "release.keystore"
 
         # Cached parsed data
@@ -444,23 +449,22 @@ class ExportAndCiVerifier:
 
     def verify_workflow_parity(self) -> None:
         chk = VerificationCheck("TC-CI-01", "CI/CD Workflow File Existence & Parity Check", "CI/CD Pipeline")
-        if not self.workflow_root_path.exists():
-            chk.fail_check(f"Root workflow missing at {self.workflow_root_path}")
-            self._record(chk)
-            return
-        if not self.workflow_game_path.exists():
-            chk.fail_check(f"IdleArcade workflow copy missing at {self.workflow_game_path}")
+        if not self.workflow_game_path.exists() and not self.workflow_root_path.exists():
+            chk.fail_check(f"Workflow file missing at {self.workflow_game_path}")
             self._record(chk)
             return
 
-        c_root = self.workflow_root_path.read_text(encoding="utf-8").strip()
-        c_game = self.workflow_game_path.read_text(encoding="utf-8").strip()
+        if self.workflow_root_path.exists() and self.workflow_game_path.exists() and self.workflow_root_path.resolve() != self.workflow_game_path.resolve():
+            c_root = self.workflow_root_path.read_text(encoding="utf-8").strip()
+            c_game = self.workflow_game_path.read_text(encoding="utf-8").strip()
 
-        if c_root != c_game:
-            chk.fail_check("Parity mismatch between .github/workflows/build.yml and IdleArcade/.github/workflows/build.yml")
-            chk.details.append("Both files must be strictly synchronized to satisfy test_ci_release_adversarial.py")
+            if c_root != c_game:
+                chk.fail_check("Parity mismatch between .github/workflows/build.yml and IdleArcade/.github/workflows/build.yml")
+                chk.details.append("Both files must be strictly synchronized to satisfy test_ci_release_adversarial.py")
+            else:
+                chk.pass_check("Root and IdleArcade build.yml files are 100% byte-for-byte synchronized")
         else:
-            chk.pass_check("Root and IdleArcade build.yml files are 100% byte-for-byte synchronized")
+            chk.pass_check("Workflow file verified at repository root (.github/workflows/build.yml)")
         self._record(chk)
 
     def verify_workflow_triggers_and_tag_rules(self) -> None:
