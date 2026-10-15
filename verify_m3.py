@@ -18,14 +18,17 @@ import math
 import subprocess
 from pathlib import Path
 
-# Resolve game directory whether run from root or IdleArcade
+# Resolve game directory dynamically
 cwd = Path.cwd()
-if (cwd / "IdleArcade").exists():
-    GAME_DIR = cwd / "IdleArcade"
-    ROOT_DIR = cwd
-else:
+if (cwd / "project.godot").exists():
     GAME_DIR = cwd
-    ROOT_DIR = cwd.parent
+elif (cwd / "IdleArcade" / "project.godot").exists():
+    GAME_DIR = cwd / "IdleArcade"
+else:
+    script_dir = Path(__file__).resolve().parent
+    GAME_DIR = script_dir if (script_dir / "project.godot").exists() else script_dir / "IdleArcade"
+
+ROOT_DIR = GAME_DIR.parent if (GAME_DIR.parent / ".github").exists() else GAME_DIR
 
 passed = 0
 failed = 0
@@ -290,16 +293,16 @@ check("quit(0)" in test_content and "quit(1)" in test_content, "Contains headles
 print("\n--- Module 7: Regression Test Battery Execution ---")
 
 suites_to_run = [
-    ("M1 Challenger Oracle", ROOT_DIR / "IdleArcade/tests/test_p7_m1_challenger_oracle.py"),
-    ("M2 Empirical Audit", ROOT_DIR / "IdleArcade/verify_m2.py"),
-    ("Phase 5 Mobile Oracle", ROOT_DIR / "IdleArcade/tests/test_phase5_mobile.py"),
-    ("Phase 6 Visual Life Oracle", ROOT_DIR / "IdleArcade/tests/test_phase6_visuals.py"),
-    ("End-to-End Suite", ROOT_DIR / "IdleArcade/tests/e2e_suite.py"),
+    ("M1 Challenger Oracle", GAME_DIR / "tests/test_p7_m1_challenger_oracle.py"),
+    ("M2 Empirical Audit", GAME_DIR / "verify_m2.py"),
+    ("Phase 5 Mobile Oracle", GAME_DIR / "tests/test_phase5_mobile.py"),
+    ("Phase 6 Visual Life Oracle", GAME_DIR / "tests/test_phase6_visuals.py"),
+    ("End-to-End Suite", GAME_DIR / "tests/e2e_suite.py"),
 ]
 
 for name, script_path in suites_to_run:
     if script_path.exists():
-        res = subprocess.run([sys.executable, str(script_path)], capture_output=True, text=True, cwd=str(ROOT_DIR))
+        res = subprocess.run([sys.executable, str(script_path)], capture_output=True, text=True, cwd=str(GAME_DIR))
         check(res.returncode == 0, f"Regression Battery: {name} passed (exit code 0)", "Regression")
         if res.returncode != 0:
             print(f"    [ERROR OUTPUT from {name}]:\n{res.stderr}\n{res.stdout[-400:]}")

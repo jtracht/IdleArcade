@@ -8,7 +8,14 @@ import re
 import math
 from pathlib import Path
 
-GAME_DIR = Path("c:/Projects/Game/IdleArcade")
+cwd = Path.cwd()
+if (cwd / "project.godot").exists():
+    GAME_DIR = cwd
+elif (cwd / "IdleArcade" / "project.godot").exists():
+    GAME_DIR = cwd / "IdleArcade"
+else:
+    script_dir = Path(__file__).resolve().parent
+    GAME_DIR = script_dir if (script_dir / "project.godot").exists() else script_dir / "IdleArcade"
 
 passed = 0
 failed = 0
