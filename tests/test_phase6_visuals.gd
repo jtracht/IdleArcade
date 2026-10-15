@@ -22,7 +22,7 @@ func _init() -> void:
 	call_deferred("_run_tests")
 
 func _run_tests() -> void:
-	var root = root
+	var test_root = self.root
 	
 	# --------------------------------------------------------------------------
 	# 1. Avatar3D Procedural Locomotion & Bobbing
@@ -32,7 +32,7 @@ func _run_tests() -> void:
 	_assert_check(avatar_scene != null, "1.1 avatar_3d.tscn loads successfully")
 	
 	var avatar: Avatar3D = avatar_scene.instantiate() as Avatar3D
-	root.add_child(avatar)
+	test_root.add_child(avatar)
 	await process_frame
 	
 	_assert_check(avatar.visuals != null, "1.2 Avatar has Visuals node")
@@ -63,7 +63,7 @@ func _run_tests() -> void:
 	var npc: NPC3D = npc_scene.instantiate() as NPC3D
 	if npc.interaction_area != null:
 		npc.interaction_area.monitoring = false
-	root.add_child(npc)
+	test_root.add_child(npc)
 	await process_frame
 	
 	_assert_check(npc.emote_label != null, "2.2 NPC3D has EmoteLabel3D billboard node")
@@ -89,7 +89,7 @@ func _run_tests() -> void:
 	var col: Collectible3D = col_scene.instantiate() as Collectible3D
 	col.reward_amount = 50.0
 	col.item_type = "briefcase"
-	root.add_child(col)
+	test_root.add_child(col)
 	await process_frame
 	
 	col.collect(avatar)
@@ -97,7 +97,7 @@ func _run_tests() -> void:
 	
 	# Verify that a Label3D was spawned in the root
 	var found_label: bool = false
-	for child in root.get_children():
+	for child in test_root.get_children():
 		if child is Label3D and "+50 Energy" in child.text:
 			found_label = true
 			break
@@ -111,7 +111,7 @@ func _run_tests() -> void:
 	_assert_check(inc_scene != null, "4.1 incubator_zone.tscn loads successfully")
 	
 	var incubator: IncubatorManager = inc_scene.instantiate() as IncubatorManager
-	root.add_child(incubator)
+	test_root.add_child(incubator)
 	await process_frame
 	
 	var worker_count = incubator.get_worker_count()
@@ -141,7 +141,7 @@ func _run_tests() -> void:
 	_assert_check(wp_scene != null, "5.1 quest_waypoint.tscn loads successfully")
 	
 	var waypoint: QuestWaypoint3D = wp_scene.instantiate() as QuestWaypoint3D
-	root.add_child(waypoint)
+	test_root.add_child(waypoint)
 	await process_frame
 	
 	# Place avatar at (0, 0, 0) and target at (10, 0, 0)
