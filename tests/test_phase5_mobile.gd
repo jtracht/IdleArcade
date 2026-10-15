@@ -661,6 +661,7 @@ func _run_all_tests() -> void:
 		# Action triggered with null interactable
 		key_watcher.clear()
 		tc_inst._on_action_button_pressed()
+		await process_frame
 		_assert_check(key_watcher.key_e_pressed_count > 0,
 			"2.5.4 Action button press with null interactable falls back to synthetic KEY_E safely")
 
@@ -763,6 +764,14 @@ func _run_all_tests() -> void:
 	# --- 3.2 Dynamic Proximity Registration During Active Drag ---
 	print("\n--- 3.2 Dynamic Proximity Registration During Active Drag ---")
 	if joystick != null and tc_inst != null and test_npc != null:
+		if test_gate != null:
+			test_gate.global_position = Vector3(100.0, 0.0, 100.0)
+		test_npc.global_position = Vector3(50.0, 0.0, 50.0)
+		tc_inst.active_interactables.clear()
+		tc_inst.active_interactable = null
+		if action_btn != null:
+			action_btn.modulate.a = 0.35
+
 		# Begin drag
 		var t_drag_start = InputEventScreenTouch.new()
 		t_drag_start.index = 0
@@ -848,7 +857,7 @@ func _run_all_tests() -> void:
 		t_on_action.position = action_btn.global_position + action_btn.size * 0.5
 		t_on_action.pressed = true
 
-		action_btn._gui_input(t_on_action)
+		tc_inst._on_button_gui_input(t_on_action)
 		_assert_check(avatar._has_click_target == false,
 			"3.4.5 Touch on ActionButton absorbed by GUI; ground raycast NOT triggered")
 
@@ -858,7 +867,7 @@ func _run_all_tests() -> void:
 		t_on_laptop.position = laptop_btn.global_position + laptop_btn.size * 0.5
 		t_on_laptop.pressed = true
 
-		laptop_btn._gui_input(t_on_laptop)
+		tc_inst._on_button_gui_input(t_on_laptop)
 		_assert_check(avatar._has_click_target == false,
 			"3.4.6 Touch on LaptopThumbButton absorbed by GUI; ground raycast NOT triggered")
 
