@@ -141,7 +141,7 @@ func _test_module_1_mobile_ux() -> void:
 		_assert_check(edge_act_lap >= 25.0, "1.14 Action-Laptop edge clearance >= 25px (got %.1fpx)" % edge_act_lap)
 		_assert_check(edge_lap_cam >= 25.0, "1.15 Laptop-Campus edge clearance >= 25px (got %.1fpx)" % edge_lap_cam)
 		
-		var corner = Vector2(VIEWPORT_W, VIEWPORT_H)
+		var corner = tc_inst.size if tc_inst.size.x > 0.0 and tc_inst.size.y > 0.0 else Vector2(VIEWPORT_W, VIEWPORT_H)
 		var reach_act = corner.distance_to(act_center)
 		var reach_lap = corner.distance_to(lap_center)
 		var reach_cam = corner.distance_to(cam_center)
@@ -156,17 +156,17 @@ func _test_module_1_mobile_ux() -> void:
 
 	# 1.2 ActionButton Visual Readiness
 	if tc_inst.has_method("register_interactable") and act_btn != null:
-		var dummy_npc = Node3D.new()
+		var dummy_npc = CharacterBody3D.new()
 		dummy_npc.set_script(load("res://scripts/npc_3d.gd"))
 		tc_inst.call("register_interactable", dummy_npc)
 		_assert_check(act_btn.text == "Talk [E]", "1.20 ActionButton highlights 'Talk [E]' on NPC overlap")
 		
-		var dummy_gate = Node3D.new()
+		var dummy_gate = StaticBody3D.new()
 		dummy_gate.set_script(load("res://scripts/zone_gate_3d.gd"))
 		tc_inst.call("register_interactable", dummy_gate)
 		_assert_check(act_btn.text == "Unlock [E]", "1.21 ActionButton highlights 'Unlock [E]' on ZoneGate overlap")
 		
-		var dummy_col = Node3D.new()
+		var dummy_col = Area3D.new()
 		dummy_col.set_script(load("res://scripts/collectible_3d.gd"))
 		tc_inst.call("register_interactable", dummy_col)
 		_assert_check(act_btn.text == "Collect [E]", "1.22 ActionButton highlights 'Collect [E]' on Collectible overlap")

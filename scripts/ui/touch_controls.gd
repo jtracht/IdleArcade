@@ -255,6 +255,13 @@ func register_interactable(node: Node3D, label_text: String = "Action [E]") -> v
 	if not active_interactables.has(node):
 		active_interactables.append(node)
 	active_interactable = node
+	if label_text == "Action [E]" or label_text.is_empty():
+		if node is CharacterBody3D or node.has_method("interact"):
+			label_text = "Talk [E]"
+		elif node is StaticBody3D or node.has_method("attempt_unlock"):
+			label_text = "Unlock [E]"
+		elif node is Area3D or node.is_in_group("collectibles") or node.has_method("collect"):
+			label_text = "Collect [E]"
 	_update_action_button_visuals(label_text, true)
 	interactable_registered.emit(node, label_text)
 	interactable_changed.emit(node)
@@ -406,9 +413,8 @@ func _update_action_button_visuals(label_text: String = "", is_active: bool = fa
 			var energy: float = gs.energy if gs != null else 0.0
 			var can_unlock: bool = (cur_lvl >= req_lvl) or (energy >= cost)
 
-			if can_unlock:
-				if text_to_set.is_empty() or text_to_set == "Action [E]":
-					text_to_set = "Unlock [E]"
+			if can_unlock or text_to_set == "Unlock [E]":
+				text_to_set = "Unlock [E]"
 				if _cached_gate_style != null:
 					action_button.add_theme_stylebox_override("normal", _cached_gate_style)
 			else:
