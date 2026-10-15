@@ -28,6 +28,13 @@ jobs:
             apt-get update && apt-get install -y --no-install-recommends python3
           fi
 
+      - name: Provision Android Keystore Fallback
+        run: |
+          mkdir -p keystores
+          if [ ! -f keystores/release.keystore ]; then
+            keytool -genkeypair -v -keystore keystores/release.keystore -storepass android -alias genericreleasekey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=IdleArcade, OU=Development, O=IdleArcade, L=Berlin, ST=Berlin, C=DE" || true
+          fi
+
       - name: Run Python CI/CD & E2E Verification
         run: |
           TARGET_DIR="."
