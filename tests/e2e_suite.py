@@ -103,7 +103,9 @@ def find_project_root() -> Path:
         if (curr / "IdleArcade").exists() or (curr / "PROJECT.md").exists():
             return curr
         if (curr / "project.godot").exists():
-            return curr.parent
+            if (curr.parent / "IdleArcade").exists() or (curr.parent / ".github").exists():
+                return curr.parent
+            return curr
         curr = curr.parent
     return Path.cwd().resolve()
 
@@ -270,7 +272,10 @@ def calculate_upgrade_cost(base_cost: float, multiplier: float, level: int) -> i
 class IdleArcadeE2ESuite:
     def __init__(self, root_dir: Optional[Path] = None, verbose: bool = False):
         self.root_dir = (root_dir or find_project_root()).resolve()
-        self.game_dir = self.root_dir / "IdleArcade"
+        if (self.root_dir / "project.godot").is_file():
+            self.game_dir = self.root_dir
+        else:
+            self.game_dir = self.root_dir / "IdleArcade"
         self.verbose = verbose
         self.results: List[TestResult] = []
 
@@ -293,6 +298,8 @@ class IdleArcadeE2ESuite:
         self.export_presets = parse_godot_config(exp_presets)
 
         ci_yaml = self.root_dir / ".github" / "workflows" / "build.yml"
+        if not ci_yaml.exists():
+            ci_yaml = self.game_dir / ".github" / "workflows" / "build.yml"
         self.ci_workflow = parse_simple_yaml(ci_yaml)
 
         gs_path = self.game_dir / "scripts" / "autoload" / "game_state.gd"
@@ -681,6 +688,8 @@ class IdleArcadeE2ESuite:
     def _test_tc_1_6_1_github_actions_workflow_syntax(self):
         res = TestResult("TC-1.6.1", "GitHub Actions CI/CD Workflow File Syntax", 1, "CI/CD Pipeline")
         wf_path = self.root_dir / ".github" / "workflows" / "build.yml"
+        if not wf_path.exists():
+            wf_path = self.game_dir / ".github" / "workflows" / "build.yml"
         if not wf_path.exists():
             res.fail_test(f"build.yml not found at {wf_path}")
         elif not self.ci_workflow:
