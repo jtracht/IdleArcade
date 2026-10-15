@@ -442,6 +442,9 @@ func _run_all_tests() -> void:
 		root.add_child(test_npc)
 		test_npc.global_position = Vector3(200.0, 0.0, 200.0)
 		test_npc.npc_name = "Alex"
+		if test_npc.interaction_area != null:
+			test_npc.interaction_area.monitoring = false
+		test_npc._player_in_range = false
 
 	if gate_scene != null:
 		test_gate = gate_scene.instantiate() as ZoneGate3D
@@ -449,6 +452,9 @@ func _run_all_tests() -> void:
 		root.add_child(test_gate)
 		test_gate.global_position = Vector3(100.0, 0.0, 100.0)
 		test_gate.zone_name = "Server Room"
+		if test_gate.interaction_area != null:
+			test_gate.interaction_area.monitoring = false
+		test_gate._player_in_range = false
 
 	await process_frame
 
@@ -480,13 +486,13 @@ func _run_all_tests() -> void:
 			"1.9.4 Synthetic KEY_E press emitted into Input queue (count: %d)" % key_watcher.key_e_pressed_count)
 
 		test_npc.end_dialogue()
+		test_npc._player_in_range = false
 		tc_inst.unregister_interactable(test_npc)
 		tc_inst.active_interactables.clear()
 		tc_inst.active_interactable = null
-		tc_inst.action_triggered.disconnect(dispatch_callable)
-		await process_frame
 		_assert_check(tc_inst.active_interactable == null,
 			"1.9.5 Unregistering NPC restores active_interactable to null")
+		tc_inst.action_triggered.disconnect(dispatch_callable)
 
 	# --- 1.10 HapticsManager Singleton & Semantic Methods ---
 	print("\n--- 1.10 HapticsManager Singleton & Semantic Methods ---")
