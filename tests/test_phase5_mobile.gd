@@ -438,19 +438,24 @@ func _run_all_tests() -> void:
 
 	if npc_scene != null:
 		test_npc = npc_scene.instantiate() as NPC3D
-		test_npc.global_position = Vector3(200.0, 0.0, 200.0)
+		test_npc.position = Vector3(200.0, 0.0, 200.0)
 		root.add_child(test_npc)
+		test_npc.global_position = Vector3(200.0, 0.0, 200.0)
 		test_npc.npc_name = "Alex"
 
 	if gate_scene != null:
 		test_gate = gate_scene.instantiate() as ZoneGate3D
-		test_gate.global_position = Vector3(100.0, 0.0, 100.0)
+		test_gate.position = Vector3(100.0, 0.0, 100.0)
 		root.add_child(test_gate)
+		test_gate.global_position = Vector3(100.0, 0.0, 100.0)
 		test_gate.zone_name = "Server Room"
 
 	await process_frame
 
 	if tc_inst != null and test_npc != null:
+		tc_inst.active_interactables.clear()
+		tc_inst.active_interactable = null
+
 		# Register NPC
 		tc_inst.register_interactable(test_npc, "Talk [E]")
 		await process_frame
@@ -476,6 +481,8 @@ func _run_all_tests() -> void:
 
 		test_npc.end_dialogue()
 		tc_inst.unregister_interactable(test_npc)
+		tc_inst.active_interactables.clear()
+		tc_inst.active_interactable = null
 		tc_inst.action_triggered.disconnect(dispatch_callable)
 		await process_frame
 		_assert_check(tc_inst.active_interactable == null,
@@ -661,6 +668,8 @@ func _run_all_tests() -> void:
 
 	if tc_inst != null:
 		# Null interactable registration / unregistration
+		tc_inst.active_interactables.clear()
+		tc_inst.active_interactable = null
 		tc_inst.register_interactable(null)
 		tc_inst.unregister_interactable(null)
 		_assert_check(tc_inst.active_interactable == null,
