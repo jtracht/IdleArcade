@@ -76,8 +76,8 @@ func _update_team_headcount() -> void:
 			
 	desired_count = clampi(desired_count, 1, WORKER_DEFS.size())
 	
-	while _workers.size() < desired_count:
-		_spawn_worker(_workers.size())
+	for i in range(_workers.size(), desired_count):
+		_spawn_worker(i)
 
 func _spawn_worker(index: int) -> void:
 	if worker_scene == null or index >= WORKER_DEFS.size():
@@ -87,7 +87,10 @@ func _spawn_worker(index: int) -> void:
 	worker_inst.worker_name = def["name"]
 	worker_inst.role = def["role"]
 	worker_inst.home_desk_position = def["home"]
-	worker_inst.patrol_targets = def["patrol"]
+	var patrol_list: Array = []
+	for p in def.get("patrol", []):
+		patrol_list.append(p)
+	worker_inst.patrol_targets = patrol_list
 	worker_inst.position = def["home"]
 	
 	add_child(worker_inst)

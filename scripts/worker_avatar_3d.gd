@@ -20,7 +20,7 @@ enum State {
 @export var worker_name: String = "Sam"
 @export var worker_title: String = "Fullstack Dev"
 @export var base_speed: float = 3.2
-@export var patrol_targets: Array[Vector3] = []
+@export var patrol_targets: Array = []
 @export var home_desk_position: Vector3 = Vector3.ZERO
 
 var current_state: State = State.TYPING
