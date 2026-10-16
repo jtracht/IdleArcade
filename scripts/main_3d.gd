@@ -292,11 +292,23 @@ func _on_light_cycle_mode_changed(mode: String) -> void:
 	if day_night_cycle != null and day_night_cycle.has_method("set_cycle_mode"):
 		day_night_cycle.set_cycle_mode(mode)
 
-func _on_frenzy_updated(multiplier: float, fill_percentage: float) -> void:
-	if fill_percentage >= 99.9 and multiplier > 1.0 and not _last_frenzy_active:
-		_last_frenzy_active = true
-		add_screen_shake(0.65)
-	elif fill_percentage <= 0.01:
+func _on_frenzy_updated(arg1: Variant = 3.0, arg2: Variant = 100.0) -> void:
+	var is_active: bool = false
+	if typeof(arg1) == TYPE_BOOL:
+		is_active = bool(arg1)
+	elif typeof(arg1) in [TYPE_FLOAT, TYPE_INT]:
+		var mult: float = float(arg1)
+		var fill: float = float(arg2) if arg2 != null else 0.0
+		if (fill >= 99.9 and mult > 1.0) or mult >= 3.0:
+			is_active = true
+		elif fill <= 0.01 and mult <= 1.0:
+			is_active = false
+
+	if is_active:
+		if not _last_frenzy_active:
+			_last_frenzy_active = true
+			add_screen_shake(0.65)
+	else:
 		_last_frenzy_active = false
 
 func _on_energy_changed(new_energy: float, _delta: float) -> void:

@@ -170,10 +170,10 @@ func _test_section_1_confetti_burst() -> void:
 			"1.24 Particles3D pruned in 2D mode")
 
 	# Test emitter finished queue_free trigger
-	var finished_signal_fired: bool = false
-	burst_3d.burst_finished.connect(func(): finished_signal_fired = true)
+	var finished_signal_fired: Dictionary = {"emitted": false}
+	burst_3d.burst_finished.connect(func(): finished_signal_fired["emitted"] = true)
 	burst_3d._on_emitter_finished()
-	_assert_check(finished_signal_fired == true, "1.25 _on_emitter_finished emits burst_finished")
+	_assert_check(finished_signal_fired["emitted"] == true, "1.25 _on_emitter_finished emits burst_finished")
 	_assert_check(burst_3d.is_queued_for_deletion(), "1.26 burst_3d queued for deletion on emitter finish")
 
 	burst_2d.queue_free()
@@ -244,7 +244,7 @@ func _test_section_2_screen_shake(gs: Node) -> void:
 	# Test frenzy activation hook
 	m3d.trauma = 0.0
 	if gs.has_signal("frenzy_updated"):
-		gs.frenzy_updated.emit(true)
+		gs.frenzy_updated.emit(3.0, 100.0)
 		await process_frame
 		_assert_check(m3d.trauma >= 0.60,
 			"2.13 Frenzy activation signal triggers strong screen shake (trauma: %.2f)" % m3d.trauma)
