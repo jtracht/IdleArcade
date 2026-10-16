@@ -14,7 +14,14 @@ import sys
 import re
 from pathlib import Path
 
-GAME_DIR = Path("c:/Projects/Game/IdleArcade")
+def find_game_dir() -> Path:
+    cwd = Path.cwd().resolve()
+    for candidate in [cwd, cwd / "IdleArcade", cwd.parent, cwd.parent / "IdleArcade"]:
+        if (candidate / "project.godot").exists():
+            return candidate
+    return cwd
+
+GAME_DIR = find_game_dir()
 
 class ChallengerHarness:
     def __init__(self):
