@@ -137,18 +137,24 @@ func _test_section_1_campaign_flow_and_save(gs: Node) -> void:
 	_assert_check(gs.campaign_chapter == 1, "1.9 Reset to Chapter 1 for quest sequence")
 
 	# Alex: Chapter 1 -> 2
+	gs.start_campus_quest("quest_briefcases", 1)
+	gs.advance_campus_quest("quest_briefcases", 1)
 	gs.complete_campus_quest("quest_briefcases")
 	_assert_check(gs.campaign_completed_quests.has("quest_briefcases"), "1.10 quest_briefcases recorded in campaign_completed_quests")
 	_assert_check(gs.is_campaign_quest_completed("quest_briefcases"), "1.11 is_campaign_quest_completed('quest_briefcases') is true")
 	_assert_check(gs.campaign_chapter == 2, "1.12 Chapter advanced to 2 upon completing quest_briefcases")
 
 	# Bob: Chapter 2 -> 3
+	gs.start_campus_quest("quest_server", 1)
+	gs.advance_campus_quest("quest_server", 1)
 	gs.complete_campus_quest("quest_server")
 	_assert_check(gs.campaign_completed_quests.has("quest_server"), "1.13 quest_server recorded in campaign_completed_quests")
 	_assert_check(gs.is_campaign_quest_completed("quest_server"), "1.14 is_campaign_quest_completed('quest_server') is true")
 	_assert_check(gs.campaign_chapter == 3, "1.15 Chapter advanced to 3 upon completing quest_server")
 
 	# Lisa: Chapter 3 -> 4 (Unicorn journey achieved)
+	gs.start_campus_quest("quest_lab", 1)
+	gs.advance_campus_quest("quest_lab", 1)
 	gs.complete_campus_quest("quest_lab")
 	_assert_check(gs.campaign_completed_quests.has("quest_lab"), "1.16 quest_lab recorded in campaign_completed_quests")
 	_assert_check(gs.is_campaign_quest_completed("quest_lab"), "1.17 is_campaign_quest_completed('quest_lab') is true")
@@ -158,16 +164,21 @@ func _test_section_1_campaign_flow_and_save(gs: Node) -> void:
 	gs.reset_state()
 	gs.campaign_chapter = 1
 	# Complete Bob's quest while still on Chapter 1
+	gs.start_campus_quest("quest_server", 1)
+	gs.advance_campus_quest("quest_server", 1)
 	gs.complete_campus_quest("quest_server")
 	_assert_check(gs.campaign_chapter == 1, "1.19 Out-of-order quest_server does not prematurely skip Chapter 1")
 	# Now complete Alex's quest - should cascade past consumed Bob quest
+	gs.start_campus_quest("quest_briefcases", 1)
+	gs.advance_campus_quest("quest_briefcases", 1)
 	gs.complete_campus_quest("quest_briefcases")
 	_assert_check(gs.campaign_chapter >= 3, "1.20 Completing prerequisite cascades chapter past consumed quest to 3")
 
 	# Test Save & Load serialization
 	gs.reset_state()
 	gs.campaign_chapter = 2
-	gs.campaign_completed_quests = ["quest_briefcases"]
+	var saved_quests: Array[String] = ["quest_briefcases"]
+	gs.campaign_completed_quests = saved_quests
 	gs.campaign_choices = {"1": "ch1_tech", 1: "ch1_tech"}
 	gs.save_to_disk()
 
