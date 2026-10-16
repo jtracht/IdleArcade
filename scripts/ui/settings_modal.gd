@@ -15,6 +15,8 @@ signal sfx_mute_changed(muted: bool)
 signal music_mute_changed(muted: bool)
 signal haptics_toggled(enabled: bool)
 signal battery_saver_toggled(enabled: bool)
+signal screen_shake_changed(intensity: float)
+signal light_cycle_mode_changed(mode: String)
 
 # Node References
 @onready var backdrop: ColorRect = get_node_or_null("Backdrop")
@@ -34,6 +36,13 @@ signal battery_saver_toggled(enabled: bool)
 
 @onready var haptics_toggle: Button = get_node_or_null("%HapticsToggle")
 @onready var battery_saver_toggle: Button = get_node_or_null("%BatterySaverToggle")
+@onready var screen_shake_slider: HSlider = get_node_or_null("%ScreenShakeSlider")
+@onready var screen_shake_value_label: Label = get_node_or_null("%ScreenShakeValue")
+
+@onready var light_cycle_auto_btn: Button = get_node_or_null("%LightCycleAutoButton")
+@onready var light_cycle_day_btn: Button = get_node_or_null("%LightCycleDayButton")
+@onready var light_cycle_night_btn: Button = get_node_or_null("%LightCycleNightButton")
+@onready var light_cycle_value_label: Label = get_node_or_null("%LightCycleValue")
 
 # Internal State Fallbacks
 var master_volume: float = 1.0
@@ -44,6 +53,8 @@ var music_muted: bool = false
 var sfx_muted: bool = false
 var haptics_enabled: bool = true
 var battery_saver_enabled: bool = false
+var screen_shake_intensity: float = 1.0
+var light_cycle_mode: String = "auto"
 
 var _is_updating_ui: bool = false
 
@@ -88,18 +99,40 @@ func _bind_controls() -> void:
 	if battery_saver_toggle != null and not battery_saver_toggle.toggled.is_connected(_on_battery_saver_toggled):
 		battery_saver_toggle.toggled.connect(_on_battery_saver_toggled)
 
-## Connects to GameState audio settings signal for real-time external synchronization.
+	if screen_shake_slider != null and not screen_shake_slider.value_changed.is_connected(_on_screen_shake_slider_changed):
+		screen_shake_slider.value_changed.connect(_on_screen_shake_slider_changed)
+
+	if light_cycle_auto_btn != null and not light_cycle_auto_btn.pressed.is_connected(_on_light_cycle_auto_pressed):
+		light_cycle_auto_btn.pressed.connect(_on_light_cycle_auto_pressed)
+	if light_cycle_day_btn != null and not light_cycle_day_btn.pressed.is_connected(_on_light_cycle_day_pressed):
+		light_cycle_day_btn.pressed.connect(_on_light_cycle_day_pressed)
+	if light_cycle_night_btn != null and not light_cycle_night_btn.pressed.is_connected(_on_light_cycle_night_pressed):
+		light_cycle_night_btn.pressed.connect(_on_light_cycle_night_pressed)
+
+## Connects to GameState audio & VFX settings signals for real-time external synchronization.
 func _connect_game_state_signals() -> void:
 	var gs = _get_game_state()
 	if gs != null and gs.has_signal("audio_settings_changed"):
 		if not gs.audio_settings_changed.is_connected(_on_game_state_audio_changed):
 			gs.audio_settings_changed.connect(_on_game_state_audio_changed)
+	if gs != null and gs.has_signal("screen_shake_changed"):
+		if not gs.screen_shake_changed.is_connected(_on_game_state_screen_shake_changed):
+			gs.screen_shake_changed.connect(_on_game_state_screen_shake_changed)
+	if gs != null and gs.has_signal("light_cycle_mode_changed"):
+		if not gs.light_cycle_mode_changed.is_connected(_on_game_state_light_cycle_changed):
+			gs.light_cycle_mode_changed.connect(_on_game_state_light_cycle_changed)
 
 func _disconnect_game_state_signals() -> void:
 	var gs = _get_game_state()
 	if gs != null and gs.has_signal("audio_settings_changed"):
 		if gs.audio_settings_changed.is_connected(_on_game_state_audio_changed):
 			gs.audio_settings_changed.disconnect(_on_game_state_audio_changed)
+	if gs != null and gs.has_signal("screen_shake_changed"):
+		if gs.screen_shake_changed.is_connected(_on_game_state_screen_shake_changed):
+			gs.screen_shake_changed.disconnect(_on_game_state_screen_shake_changed)
+	if gs != null and gs.has_signal("light_cycle_mode_changed"):
+		if gs.light_cycle_mode_changed.is_connected(_on_game_state_light_cycle_changed):
+			gs.light_cycle_mode_changed.disconnect(_on_game_state_light_cycle_changed)
 
 ## Lifecycle open method. Reads current game and system states and refreshes UI.
 func open(_args: Dictionary = {}) -> void:
@@ -181,6 +214,20 @@ func _read_current_state() -> void:
 	var cur_fps: int = Engine.max_fps
 	battery_saver_enabled = (cur_fps > 0 and cur_fps <= 30)
 
+	# 6. Screen Shake
+	if gs != null and "screen_shake_intensity" in gs:
+		screen_shake_intensity = float(gs.screen_shake_intensity)
+	elif gs != null and gs.has_method("get_screen_shake_intensity"):
+		screen_shake_intensity = gs.get_screen_shake_intensity()
+
+	# 7. Light Cycle Mode
+	if gs != null and "light_cycle_mode" in gs:
+		light_cycle_mode = str(gs.light_cycle_mode)
+	elif gs != null and gs.has_method("get_light_cycle_mode"):
+		light_cycle_mode = gs.get_light_cycle_mode()
+	else:
+		light_cycle_mode = "auto"
+
 func _update_ui() -> void:
 	_is_updating_ui = true
 
@@ -220,6 +267,15 @@ func _update_ui() -> void:
 	if battery_saver_toggle != null:
 		battery_saver_toggle.button_pressed = battery_saver_enabled
 		battery_saver_toggle.text = "🔋 Energiesparmodus (30 FPS): AN" if battery_saver_enabled else "🔋 Energiesparmodus (30 FPS): AUS"
+
+	# Screen Shake
+	if screen_shake_slider != null:
+		screen_shake_slider.value = screen_shake_intensity
+	if screen_shake_value_label != null:
+		screen_shake_value_label.text = "%d%%" % int(round(screen_shake_intensity * 100.0))
+
+	# Light Cycle
+	_update_light_cycle_buttons()
 
 	_is_updating_ui = false
 
@@ -378,6 +434,32 @@ func _on_battery_saver_toggled(pressed: bool) -> void:
 
 	battery_saver_toggled.emit(battery_saver_enabled)
 
+func _on_screen_shake_slider_changed(val: float) -> void:
+	if _is_updating_ui:
+		return
+	if val > 1.0:
+		val /= 100.0
+	screen_shake_intensity = clampf(val, 0.0, 1.0)
+	if screen_shake_value_label != null:
+		screen_shake_value_label.text = "%d%%" % int(round(screen_shake_intensity * 100.0))
+
+	var gs = _get_game_state()
+	if gs != null and gs.has_method("set_screen_shake_intensity"):
+		gs.set_screen_shake_intensity(screen_shake_intensity)
+	elif gs != null and "screen_shake_intensity" in gs:
+		gs.screen_shake_intensity = screen_shake_intensity
+
+	screen_shake_changed.emit(screen_shake_intensity)
+
+func _on_game_state_screen_shake_changed(new_intensity: float) -> void:
+	if _is_updating_ui:
+		return
+	screen_shake_intensity = clampf(new_intensity, 0.0, 1.0)
+	if screen_shake_slider != null:
+		screen_shake_slider.value = screen_shake_intensity
+	if screen_shake_value_label != null:
+		screen_shake_value_label.text = "%d%%" % int(round(screen_shake_intensity * 100.0))
+
 func _on_game_state_audio_changed(setting_name: String, _val: Variant) -> void:
 	if _is_updating_ui:
 		return
@@ -435,6 +517,95 @@ func set_battery_saver_val(enabled: bool) -> void:
 		battery_saver_toggle.button_pressed = enabled
 	else:
 		_on_battery_saver_toggled(enabled)
+
+func set_screen_shake_val(val: float) -> void:
+	if screen_shake_slider != null:
+		screen_shake_slider.value = val
+	else:
+		_on_screen_shake_slider_changed(val)
+
+func set_light_cycle_val(mode: String) -> void:
+	_set_light_cycle_mode(mode)
+
+func _on_light_cycle_auto_pressed() -> void:
+	_set_light_cycle_mode("auto")
+
+func _on_light_cycle_day_pressed() -> void:
+	_set_light_cycle_mode("day")
+
+func _on_light_cycle_night_pressed() -> void:
+	_set_light_cycle_mode("night")
+
+func _set_light_cycle_mode(mode: String) -> void:
+	if _is_updating_ui:
+		return
+	var clean_mode = mode.to_lower()
+	if clean_mode not in ["auto", "day", "night"]:
+		clean_mode = "auto"
+	light_cycle_mode = clean_mode
+
+	var gs = _get_game_state()
+	if gs != null and gs.has_method("set_light_cycle_mode"):
+		gs.set_light_cycle_mode(light_cycle_mode)
+
+	var am = _get_audio_manager()
+	if am != null and am.has_method("play_sfx_click"):
+		am.play_sfx_click()
+
+	_update_light_cycle_buttons()
+	light_cycle_mode_changed.emit(light_cycle_mode)
+
+func _on_game_state_light_cycle_changed(new_mode: String) -> void:
+	light_cycle_mode = new_mode
+	_update_light_cycle_buttons()
+
+func _update_light_cycle_buttons() -> void:
+	if light_cycle_value_label != null:
+		match light_cycle_mode:
+			"day":
+				light_cycle_value_label.text = "Immer Tag"
+			"night":
+				light_cycle_value_label.text = "Cyberpunk Nacht"
+			"auto", _:
+				light_cycle_value_label.text = "Auto (180s)"
+
+	_apply_mode_button_style(light_cycle_auto_btn, light_cycle_mode == "auto", "🔄 Auto")
+	_apply_mode_button_style(light_cycle_day_btn, light_cycle_mode == "day", "☀️ Tag")
+	_apply_mode_button_style(light_cycle_night_btn, light_cycle_mode == "night", "🌙 Nacht")
+
+func _apply_mode_button_style(btn: Button, is_active: bool, label_text: String) -> void:
+	if btn == null:
+		return
+	if is_active:
+		btn.text = "▶ " + label_text
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.0, 0.40, 0.55, 0.95)
+		style.border_color = Color(0.0, 0.95, 1.0, 1.0)
+		style.border_width_left = 2
+		style.border_width_top = 2
+		style.border_width_right = 2
+		style.border_width_bottom = 2
+		style.corner_radius_top_left = 6
+		style.corner_radius_top_right = 6
+		style.corner_radius_bottom_right = 6
+		style.corner_radius_bottom_left = 6
+		btn.add_theme_stylebox_override("normal", style)
+		btn.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+	else:
+		btn.text = label_text
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.06, 0.10, 0.16, 0.85)
+		style.border_color = Color(0.15, 0.25, 0.38, 0.5)
+		style.border_width_left = 1
+		style.border_width_top = 1
+		style.border_width_right = 1
+		style.border_width_bottom = 1
+		style.corner_radius_top_left = 6
+		style.corner_radius_top_right = 6
+		style.corner_radius_bottom_right = 6
+		style.corner_radius_bottom_left = 6
+		btn.add_theme_stylebox_override("normal", style)
+		btn.add_theme_color_override("font_color", Color(0.65, 0.78, 0.90, 0.8))
 
 # ------------------------------------------------------------------------------
 # Defensive Duck Typing Utilities

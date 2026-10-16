@@ -156,6 +156,18 @@ func open_gate(animated: bool = true) -> void:
 		unlock_particles.restart()
 		unlock_particles.emitting = true
 		
+	if animated:
+		var confetti_cls = load("res://scripts/vfx/confetti_burst.gd")
+		if confetti_cls != null and confetti_cls.has_method("spawn_burst_3d"):
+			confetti_cls.spawn_burst_3d(get_parent() if get_parent() != null else self, global_position + Vector3(0.0, 1.5, 0.0), 45)
+		
+		# Screen-Shake juice: moderate shake on gate unlock
+		var tree = get_tree()
+		if tree != null and tree.root != null:
+			var m3d = tree.root.find_child("Main3D", true, false)
+			if m3d != null and m3d.has_method("add_screen_shake"):
+				m3d.add_screen_shake(0.45)
+		
 	if barrier_mesh != null:
 		if animated:
 			var tween = create_tween().set_parallel(true)

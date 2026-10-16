@@ -212,6 +212,13 @@ func activate_drone() -> void:
 	if am != null and am.has_method("play_sfx_drone_hum"):
 		am.play_sfx_drone_hum()
 
+	# Screen-Shake juice: subtle shake on takeoff/activation
+	var tree = get_tree()
+	if tree != null and tree.root != null:
+		var m3d = tree.root.find_child("Main3D", true, false)
+		if m3d != null and m3d.has_method("add_screen_shake"):
+			m3d.add_screen_shake(0.20)
+
 ## Deactivates drone into docked/idle sleep
 func deactivate_drone() -> void:
 	is_drone_active = false

@@ -200,6 +200,9 @@ func _on_quest_completed(q_id: String, _energy: float, _bonus: int) -> void:
 	if q_id == quest_id:
 		show_emote("🎉", 4.0)
 		_update_quest_marker()
+		var confetti_cls = load("res://scripts/vfx/confetti_burst.gd")
+		if confetti_cls != null and confetti_cls.has_method("spawn_burst_3d"):
+			confetti_cls.spawn_burst_3d(get_parent() if get_parent() != null else self, global_position + Vector3(0.0, 2.0, 0.0), 50)
 
 func _update_quest_marker() -> void:
 	if quest_marker == null or quest_id.is_empty():

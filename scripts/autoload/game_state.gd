@@ -32,6 +32,11 @@ signal audio_settings_changed(setting_name: String, value: Variant)
 signal server_overclock_buff_started(multiplier: float, duration: float)
 signal server_overclock_buff_ended()
 
+# Phase 10 VFX & Milestone Signals
+signal level_up(new_level: int)
+signal screen_shake_changed(new_intensity: float)
+signal light_cycle_mode_changed(new_mode: String)
+
 # --- State Variables ---
 var energy: float = 0.0
 var total_energy_earned: float = 0.0
@@ -46,6 +51,8 @@ var sfx_volume: float = 1.0        # Range: 0.0 to 1.0
 var master_muted: bool = false
 var music_muted: bool = false
 var sfx_muted: bool = false
+var screen_shake_intensity: float = 1.0  # Range: 0.0 to 1.0 (Phase 10 Screen-Shake Accessibility)
+var light_cycle_mode: String = "auto"    # "auto", "day", "night" (Phase 10 Day/Night Light Cycle)
 
 # Phase 4 (3D Open World & Meta-Progression) State Variables
 var avatar_speed_level: int = 0
@@ -313,6 +320,7 @@ func reset_state() -> void:
 	master_muted = false
 	music_muted = false
 	sfx_muted = false
+	screen_shake_intensity = 1.0
 
 	# Phase 9 Server Overclock Buff Defaults
 	server_overclock_buff_timer = 0.0
@@ -426,6 +434,7 @@ func buy_upgrade(upgrade_id: String) -> bool:
 		avatar_stat_updated.emit("pickup_radius", get_effective_pickup_radius())
 	elif upgrade_id == "clearance_level":
 		avatar_stat_updated.emit("idle_level", float(idle_level))
+		level_up.emit(idle_level)
 		
 	return true
 
@@ -670,6 +679,12 @@ func save_to_disk() -> void:
 			"music_muted": music_muted,
 			"sfx_muted": sfx_muted
 		},
+		"screen_shake_intensity": screen_shake_intensity,
+		"light_cycle_mode": light_cycle_mode,
+		"vfx_settings": {
+			"screen_shake_intensity": screen_shake_intensity,
+			"light_cycle_mode": light_cycle_mode
+		},
 		"upgrades": {}
 	}
 	
@@ -814,6 +829,27 @@ func load_from_disk() -> bool:
 		var am = get_node_or_null("/root/AudioManager")
 		if am != null and am.has_method("apply_settings"):
 			am.apply_settings(get_audio_settings())
+
+	# Phase 10 Screen Shake Deserialization
+	if data.has("screen_shake_intensity"):
+		screen_shake_intensity = clampf(float(data.get("screen_shake_intensity", 1.0)), 0.0, 1.0)
+	elif data.has("vfx_settings") and data["vfx_settings"] is Dictionary and data["vfx_settings"].has("screen_shake_intensity"):
+		screen_shake_intensity = clampf(float(data["vfx_settings"].get("screen_shake_intensity", 1.0)), 0.0, 1.0)
+	else:
+		screen_shake_intensity = 1.0
+	screen_shake_changed.emit(screen_shake_intensity)
+
+	# Phase 10 Day/Night Light Cycle Deserialization
+	var loaded_light_mode: String = "auto"
+	if data.has("light_cycle_mode"):
+		loaded_light_mode = str(data.get("light_cycle_mode", "auto")).to_lower()
+	elif data.has("vfx_settings") and data["vfx_settings"] is Dictionary and data["vfx_settings"].has("light_cycle_mode"):
+		loaded_light_mode = str(data["vfx_settings"].get("light_cycle_mode", "auto")).to_lower()
+
+	if loaded_light_mode not in ["auto", "day", "night"]:
+		loaded_light_mode = "auto"
+	light_cycle_mode = loaded_light_mode
+	light_cycle_mode_changed.emit(light_cycle_mode)
 			
 	energy_changed.emit(energy, offline_gain)
 	rps_changed.emit(get_effective_passive_rps())
@@ -998,5 +1034,35 @@ func get_audio_settings() -> Dictionary:
 		"music_muted": music_muted,
 		"sfx_muted": sfx_muted
 	}
+
+# ==============================================================================
+# Phase 10 VFX & Screen Shake Methods
+# ==============================================================================
+
+## Sets screen shake intensity (0.0 to 1.0) and emits screen_shake_changed
+func set_screen_shake_intensity(val: float) -> void:
+	screen_shake_intensity = clampf(val, 0.0, 1.0)
+	screen_shake_changed.emit(screen_shake_intensity)
+
+## Returns current screen shake intensity
+func get_screen_shake_intensity() -> float:
+	return screen_shake_intensity
+
+# ==============================================================================
+# Phase 10 Day/Night Light Cycle Methods
+# ==============================================================================
+
+## Sets light cycle mode ("auto", "day", "night") and emits light_cycle_mode_changed
+func set_light_cycle_mode(mode: String) -> void:
+	var valid_mode = mode.to_lower()
+	if valid_mode not in ["auto", "day", "night"]:
+		valid_mode = "auto"
+	if light_cycle_mode != valid_mode:
+		light_cycle_mode = valid_mode
+		light_cycle_mode_changed.emit(light_cycle_mode)
+
+## Returns current light cycle mode
+func get_light_cycle_mode() -> String:
+	return light_cycle_mode
 
 

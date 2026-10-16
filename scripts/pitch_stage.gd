@@ -163,6 +163,16 @@ func interact() -> void:
 	if confetti_particles != null:
 		confetti_particles.restart()
 		confetti_particles.emitting = true
+	var confetti_cls = load("res://scripts/vfx/confetti_burst.gd")
+	if confetti_cls != null and confetti_cls.has_method("spawn_burst_3d"):
+		confetti_cls.spawn_burst_3d(get_parent() if get_parent() != null else self, global_position + Vector3(0.0, 1.8, 0.0), 60)
+
+	# Screen-Shake juice: moderate shake on successful pitch
+	var tree = get_tree()
+	if tree != null and tree.root != null:
+		var m3d = tree.root.find_child("Main3D", true, false)
+		if m3d != null and m3d.has_method("add_screen_shake"):
+			m3d.add_screen_shake(0.40)
 		
 	# Visual juice: stage spotlight flash
 	if stage_spotlight != null:
@@ -176,10 +186,12 @@ func interact() -> void:
 		arm_tw.tween_property(investor_right_arm, "rotation_degrees:x", -50.0, 0.25)
 		arm_tw.tween_property(investor_right_arm, "rotation_degrees:x", 0.0, 0.45)
 		
-	# SFX juice: research celebratory chime or briefcase pickup
+	# SFX juice: celebratory confetti chime or research chime
 	var am = get_node_or_null("/root/AudioManager")
 	if am != null:
-		if am.has_method("play_sfx_research"):
+		if am.has_method("play_sfx_confetti"):
+			am.play_sfx_confetti()
+		elif am.has_method("play_sfx_research"):
 			am.play_sfx_research()
 		elif am.has_method("play_sfx_pickup"):
 			am.play_sfx_pickup("briefcase")

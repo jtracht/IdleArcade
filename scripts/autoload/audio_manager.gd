@@ -51,6 +51,7 @@ var _wav_research: AudioStreamWAV = null
 var _wav_drone_hum: AudioStreamWAV = null
 var _wav_overdrive: AudioStreamWAV = null
 var _wav_ambient_bgm: AudioStreamWAV = null
+var _wav_confetti: AudioStreamWAV = null
 
 # Footstep throttle tracking
 var _last_footstep_msec: int = -10000
@@ -344,6 +345,10 @@ func stop_ambient_bgm() -> void:
 	is_bgm_playing = false
 	bgm_stopped.emit()
 
+## 9. Sparkling celebratory confetti burst chime / arpeggio.
+func play_sfx_confetti() -> void:
+	_play_sfx_stream(_wav_confetti, "confetti")
+
 # ------------------------------------------------------------------------------
 # Decoupled Signal Bindings
 # ------------------------------------------------------------------------------
@@ -368,6 +373,20 @@ func _bind_game_signals() -> void:
 		# Connect upgrade purchased to UI click SFX
 		if gs.has_signal("upgrade_purchased") and not gs.upgrade_purchased.is_connected(_on_game_state_upgrade_purchased):
 			gs.upgrade_purchased.connect(_on_game_state_upgrade_purchased)
+			
+		# Connect level up signal to confetti celebration SFX
+		if gs.has_signal("level_up") and not gs.level_up.is_connected(_on_game_state_level_up):
+			gs.level_up.connect(_on_game_state_level_up)
+			
+		# Connect campus quest completion to celebratory SFX
+		if gs.has_signal("campus_quest_completed") and not gs.campus_quest_completed.is_connected(_on_game_state_quest_completed):
+			gs.campus_quest_completed.connect(_on_game_state_quest_completed)
+
+func _on_game_state_level_up(_new_level: int) -> void:
+	play_sfx_confetti()
+
+func _on_game_state_quest_completed(_quest_id: String, _reward_energy: float, _reward_bonus: int) -> void:
+	play_sfx_confetti()
 
 func _on_game_state_upgrade_purchased(_upgrade_id: String, _new_level: int, _current_cost: float) -> void:
 	play_sfx_click()
@@ -403,6 +422,7 @@ func _prebake_sound_streams() -> void:
 	_wav_drone_hum = _synth_drone_hum()
 	_wav_overdrive = _synth_overdrive()
 	_wav_ambient_bgm = _synth_ambient_bgm()
+	_wav_confetti = _synth_confetti()
 
 ## Encodes normalized float samples [-1.0, 1.0] into an AudioStreamWAV resource.
 func _create_wav_stream(samples: PackedFloat32Array, sample_rate: int = SAMPLE_RATE, loop: bool = false) -> AudioStreamWAV:
@@ -642,3 +662,26 @@ func _synth_ambient_bgm() -> AudioStreamWAV:
 		samples[i] = clampf(final_wave * tremolo * 0.45, -1.0, 1.0)
 		
 	return _create_wav_stream(samples, SAMPLE_RATE, true)
+
+# 9. Festive Confetti Chime: Sparkling upward arpeggio + pop transient (0.32s)
+func _synth_confetti() -> AudioStreamWAV:
+	var count: int = int(SAMPLE_RATE * 0.32)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var notes: Array[float] = [783.99, 987.77, 1174.66, 1567.98]
+	var delays: Array[float] = [0.00, 0.04, 0.08, 0.12]
+	for i in range(count):
+		var t: float = float(i) / float(SAMPLE_RATE)
+		var pop: float = sin(2.0 * PI * 1800.0 * (1.0 - exp(-t * 120.0)) * 0.02) * exp(-t * 90.0)
+		var sparkle_sum: float = 0.0
+		for n in range(4):
+			var note_t: float = t - delays[n]
+			if note_t >= 0.0:
+				var f: float = notes[n]
+				var env: float = (1.0 - exp(-note_t * 300.0)) * exp(-note_t * 9.0)
+				var tone: float = sin(2.0 * PI * f * note_t) + 0.35 * sin(4.0 * PI * f * note_t)
+				sparkle_sum += tone * env
+		var combined: float = 0.35 * pop + 0.65 * (sparkle_sum / 2.0)
+		samples[i] = clampf(combined * 0.85, -1.0, 1.0)
+	return _create_wav_stream(samples, SAMPLE_RATE, false)
+

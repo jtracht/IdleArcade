@@ -193,6 +193,10 @@ func _on_energy_changed(_total_energy: float, _delta: float) -> void:
 
 func _on_tech_researched(_tech_id: String) -> void:
 	_update_ui()
+	var confetti_cls = load("res://scripts/vfx/confetti_burst.gd")
+	if confetti_cls != null and confetti_cls.has_method("spawn_burst_2d"):
+		var burst_pos = get_viewport_rect().size * 0.5 if is_inside_tree() else Vector2(270, 300)
+		confetti_cls.spawn_burst_2d(self, burst_pos, 50)
 
 func _on_collectible_picked_up(_item_type: String, _count: int) -> void:
 	_update_ui()

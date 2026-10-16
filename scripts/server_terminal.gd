@@ -167,6 +167,13 @@ func interact() -> void:
 		overclock_sparks.emitting = true
 	if terminal_omni_light != null:
 		terminal_omni_light.light_energy = 2.4
+
+	# Screen-Shake juice: strong shockwave
+	var tree = get_tree()
+	if tree != null and tree.root != null:
+		var m3d = tree.root.find_child("Main3D", true, false)
+		if m3d != null and m3d.has_method("add_screen_shake"):
+			m3d.add_screen_shake(0.60)
 		
 	# SFX juice: overdrive sound
 	var am = get_node_or_null("/root/AudioManager")

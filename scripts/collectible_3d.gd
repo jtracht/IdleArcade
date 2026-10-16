@@ -90,6 +90,13 @@ func collect(collector: Node3D = null) -> void:
 	var am = get_node_or_null("/root/AudioManager")
 	if am != null and am.has_method("play_sfx_pickup"):
 		am.play_sfx_pickup(item_type)
+
+	# Screen-Shake juice: subtle shake on item pickup
+	var tree = get_tree()
+	if tree != null and tree.root != null:
+		var m3d = tree.root.find_child("Main3D", true, false)
+		if m3d != null and m3d.has_method("add_screen_shake"):
+			m3d.add_screen_shake(0.12)
 	
 	# Pickup celebration animation
 	_play_pickup_animation()

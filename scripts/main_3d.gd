@@ -33,9 +33,20 @@ class_name Main3D
 @onready var server_overclock_glow: OmniLight3D = get_node_or_null("CampusLevel/ServerOverclockGlow")
 @onready var server_terminal: Node3D = get_node_or_null("ServerTerminal")
 @onready var pitch_stage: Node3D = get_node_or_null("PitchStage")
+@onready var day_night_cycle: DayNightCycle = get_node_or_null("DayNightCycle")
+@onready var screen_transition: ScreenTransition = get_node_or_null("ScreenTransition")
 
 var _overlay_open: bool = false
 var _overclock_time: float = 0.0
+
+# Phase 10 Camera Screen-Shake Controller
+var trauma: float = 0.0
+var shake_frequency: float = 28.0
+var shake_decay_rate: float = 1.4
+var max_shake_h: float = 0.45
+var max_shake_v: float = 0.35
+var _shake_time: float = 0.0
+var _last_frenzy_active: bool = false
 
 func _ready() -> void:
 	print("[Main3D] Initializing 3D Campus World...")
@@ -49,6 +60,7 @@ func _ready() -> void:
 	_setup_hud_overlay()
 	_setup_touch_controls()
 	_setup_tech_tree_integrations()
+	_setup_day_night_cycle()
 	_connect_game_state_signals()
 	_update_quick_hud()
 	
@@ -59,6 +71,9 @@ func _ready() -> void:
 	var am = get_node_or_null("/root/AudioManager")
 	if am != null and am.has_method("start_ambient_bgm"):
 		am.start_ambient_bgm()
+
+func _process(delta: float) -> void:
+	_update_screen_shake(delta)
 
 func _physics_process(delta: float) -> void:
 	_update_camera_tracking(delta)
@@ -127,6 +142,42 @@ func snap_camera_to_avatar() -> void:
 	if camera_rig != null and is_instance_valid(avatar):
 		camera_rig.global_position = avatar.global_position
 
+# --- Phase 10 Procedural Screen-Shake Controller ---
+
+## Adds trauma for procedural camera screen shake (clamped in [0.0, 1.0])
+func add_screen_shake(amount: float) -> void:
+	trauma = clampf(trauma + amount, 0.0, 1.0)
+
+## Computes non-linear trauma decay and camera h_offset / v_offset oscillation
+func _update_screen_shake(delta: float) -> void:
+	if camera == null:
+		camera = get_node_or_null("CameraRig/Camera3D")
+	
+	# Trauma decay: decay rate ~1.4
+	trauma = maxf(0.0, trauma - shake_decay_rate * delta)
+	
+	# User intensity setting from GameState
+	var user_intensity: float = 1.0
+	var gs = get_node_or_null("/root/GameState")
+	if gs != null and "screen_shake_intensity" in gs:
+		user_intensity = float(gs.screen_shake_intensity)
+	elif gs != null and gs.has_method("get_screen_shake_intensity"):
+		user_intensity = gs.get_screen_shake_intensity()
+	
+	# Effective shake calculation (trauma^2 * user_intensity)
+	var shake: float = trauma * trauma * user_intensity
+	
+	if shake > 0.001 and camera != null:
+		_shake_time += delta * shake_frequency
+		var noise_h: float = sin(_shake_time * 1.0) * cos(_shake_time * 0.73)
+		var noise_v: float = cos(_shake_time * 1.17) * sin(_shake_time * 0.89)
+		camera.h_offset = noise_h * max_shake_h * shake
+		camera.v_offset = noise_v * max_shake_v * shake
+	else:
+		if camera != null:
+			camera.h_offset = 0.0
+			camera.v_offset = 0.0
+
 # --- HUD Overlay & Meta Progression Mechanics ---
 
 func _setup_hud_overlay() -> void:
@@ -161,6 +212,16 @@ func toggle_hud_overlay() -> void:
 		open_hud_overlay()
 
 func open_hud_overlay() -> void:
+	if screen_transition != null and not _overlay_open:
+		if screen_transition.has_method("is_transitioning") and screen_transition.is_transitioning():
+			return
+		screen_transition.transition_wipe(func():
+			_apply_open_hud_overlay()
+		)
+	else:
+		_apply_open_hud_overlay()
+
+func _apply_open_hud_overlay() -> void:
 	if dialogue_panel != null and dialogue_panel.visible and dialogue_panel.has_method("close_dialogue"):
 		dialogue_panel.close_dialogue()
 	_overlay_open = true
@@ -178,6 +239,16 @@ func open_hud_overlay() -> void:
 	_update_quick_hud()
 
 func close_hud_overlay() -> void:
+	if screen_transition != null and _overlay_open:
+		if screen_transition.has_method("is_transitioning") and screen_transition.is_transitioning():
+			return
+		screen_transition.transition_wipe(func():
+			_apply_close_hud_overlay()
+		)
+	else:
+		_apply_close_hud_overlay()
+
+func _apply_close_hud_overlay() -> void:
 	_overlay_open = false
 	if hud_overlay_layer != null:
 		hud_overlay_layer.visible = false
@@ -204,6 +275,29 @@ func _connect_game_state_signals() -> void:
 		gs.rps_changed.connect(_on_rps_changed)
 	if gs.has_signal("tech_researched"):
 		gs.tech_researched.connect(_on_tech_researched)
+	if gs.has_signal("frenzy_updated"):
+		gs.frenzy_updated.connect(_on_frenzy_updated)
+	if gs.has_signal("light_cycle_mode_changed"):
+		gs.light_cycle_mode_changed.connect(_on_light_cycle_mode_changed)
+
+func _setup_day_night_cycle() -> void:
+	if day_night_cycle == null:
+		day_night_cycle = get_node_or_null("DayNightCycle")
+	if day_night_cycle != null:
+		var gs = get_node_or_null("/root/GameState")
+		if gs != null and gs.has_method("get_light_cycle_mode"):
+			day_night_cycle.set_cycle_mode(gs.get_light_cycle_mode())
+
+func _on_light_cycle_mode_changed(mode: String) -> void:
+	if day_night_cycle != null and day_night_cycle.has_method("set_cycle_mode"):
+		day_night_cycle.set_cycle_mode(mode)
+
+func _on_frenzy_updated(multiplier: float, fill_percentage: float) -> void:
+	if fill_percentage >= 99.9 and multiplier > 1.0 and not _last_frenzy_active:
+		_last_frenzy_active = true
+		add_screen_shake(0.65)
+	elif fill_percentage <= 0.01:
+		_last_frenzy_active = false
 
 func _on_energy_changed(new_energy: float, _delta: float) -> void:
 	var gs = get_node_or_null("/root/GameState")

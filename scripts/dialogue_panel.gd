@@ -172,6 +172,10 @@ func _on_complete_pressed() -> void:
 	if gs != null and gs.has_method("complete_campus_quest"):
 		gs.complete_campus_quest(_current_quest_id, _reward_energy, _reward_bonus)
 	quest_completed.emit(_current_quest_id)
+	var confetti_cls = load("res://scripts/vfx/confetti_burst.gd")
+	if confetti_cls != null and confetti_cls.has_method("spawn_burst_2d"):
+		var burst_pos = size * 0.5 if size != Vector2.ZERO else Vector2(250, 180)
+		confetti_cls.spawn_burst_2d(self, burst_pos, 45)
 	_refresh_quest_ui(
 		quest_title_label.text.replace("📜 Quest: ", "") if quest_title_label else "",
 		quest_desc_label.text if quest_desc_label else ""

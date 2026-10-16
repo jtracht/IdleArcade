@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3 uid="uid://dm4transition01scene"]
+
+[ext_resource type="Script" path="res://scripts/ui/screen_transition.gd" id="1_transition"]
+
+[node name="ScreenTransition" type="CanvasLayer"]
+layer = 15
+script = ExtResource("1_transition")
+
+[node name="TransitionRect" type="ColorRect" parent="."]
+visible = false
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.04, 0.06, 0.09, 1)

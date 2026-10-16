@@ -146,6 +146,7 @@ const UPGRADE_DEFINITIONS: Array[Dictionary] = [
 ]
 
 var _upgrade_cards: Dictionary = {}
+var _last_confetti_burst_msec: int = -10000
 
 func _ready() -> void:
 	_build_upgrade_cards()
@@ -166,6 +167,8 @@ func _connect_game_state_signals() -> void:
 		GameState.frenzy_updated.connect(_on_frenzy_updated)
 	if GameState.has_signal("upgrade_purchased"):
 		GameState.upgrade_purchased.connect(_on_upgrade_purchased)
+	if GameState.has_signal("level_up"):
+		GameState.level_up.connect(_on_level_up)
 
 func _refresh_all_ui() -> void:
 	if GameState == null:
@@ -222,7 +225,23 @@ func _on_upgrade_purchased(upgrade_id: String, new_level: int, current_cost: flo
 	elif OS.has_feature("mobile") and Input.has_method("vibrate_handheld"):
 		Input.vibrate_handheld(20)
 
+	if upgrade_id == "clearance_level":
+		_trigger_level_up_confetti()
+
 	_refresh_affordability(GameState.energy if GameState != null else 0.0)
+
+func _on_level_up(_new_level: int) -> void:
+	_trigger_level_up_confetti()
+
+func _trigger_level_up_confetti() -> void:
+	var now = Time.get_ticks_msec()
+	if now - _last_confetti_burst_msec < 500:
+		return
+	_last_confetti_burst_msec = now
+	var confetti_cls = load("res://scripts/vfx/confetti_burst.gd")
+	if confetti_cls != null and confetti_cls.has_method("spawn_burst_2d"):
+		var burst_pos = get_viewport_rect().size * 0.5 if is_inside_tree() else Vector2(250, 300)
+		confetti_cls.spawn_burst_2d(self, burst_pos, 50)
 
 ## Builds dynamic upgrade cards in the shop panel
 func _build_upgrade_cards() -> void:
@@ -242,6 +261,11 @@ func _create_upgrade_card(def: Dictionary) -> Dictionary:
 	style.corner_radius_top_right = 10
 	style.corner_radius_bottom_right = 10
 	style.corner_radius_bottom_left = 10
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.border_color = Color(0.18, 0.24, 0.35, 0.5)
 	style.content_margin_left = 10.0
 	style.content_margin_right = 10.0
 	style.content_margin_top = 8.0
@@ -297,7 +321,10 @@ func _create_upgrade_card(def: Dictionary) -> Dictionary:
 		"title_label": title_lbl,
 		"desc_label": desc_lbl,
 		"buy_button": buy_btn,
-		"def": def
+		"def": def,
+		"style": style,
+		"is_affordable": false,
+		"glow_tween": null
 	}
 
 func _on_buy_button_pressed(upgrade_id: String) -> void:
@@ -306,13 +333,54 @@ func _on_buy_button_pressed(upgrade_id: String) -> void:
 
 func _refresh_affordability(total_energy: float) -> void:
 	for id in _upgrade_cards:
-		var card = _upgrade_cards[id]
+		var card: Dictionary = _upgrade_cards[id]
 		var btn: Button = card["buy_button"]
 		var cost: float = card["def"]["base_cost"]
 		if GameState != null and GameState.upgrades.has(id):
 			cost = float(GameState.upgrades[id].get("current_cost", cost))
 		
-		btn.disabled = (total_energy < cost)
+		var can_afford: bool = (total_energy >= cost)
+		btn.disabled = not can_afford
+		
+		var was_affordable: bool = card.get("is_affordable", false)
+		if can_afford and not was_affordable:
+			card["is_affordable"] = true
+			_start_card_glow_pulse(card)
+		elif not can_afford and was_affordable:
+			card["is_affordable"] = false
+			_stop_card_glow_pulse(card)
+
+func _start_card_glow_pulse(card: Dictionary) -> void:
+	var panel: PanelContainer = card["panel"]
+	var style: StyleBoxFlat = card["style"]
+	style.shadow_color = Color(0.0, 0.85, 1.0, 0.25)
+	style.shadow_size = 4
+	if card.get("glow_tween") != null and card["glow_tween"].is_valid():
+		card["glow_tween"].kill()
+	var tw: Tween = panel.create_tween().set_loops()
+	tw.tween_property(style, "border_color", Color(0.2, 0.8, 1.0, 0.9), 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(style, "border_color", Color(0.1, 0.4, 0.6, 0.4), 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	card["glow_tween"] = tw
+
+func _stop_card_glow_pulse(card: Dictionary) -> void:
+	if card.get("glow_tween") != null and card["glow_tween"].is_valid():
+		card["glow_tween"].kill()
+	card["glow_tween"] = null
+	var style: StyleBoxFlat = card["style"]
+	style.border_color = Color(0.18, 0.24, 0.35, 0.5)
+	style.shadow_size = 0
+
+## Helper to query card pulsation state for testing
+func is_card_pulsing(upgrade_id: String) -> bool:
+	if _upgrade_cards.has(upgrade_id):
+		return _upgrade_cards[upgrade_id].get("is_affordable", false)
+	return false
+
+## Helper to query card border color for testing
+func get_card_border_color(upgrade_id: String) -> Color:
+	if _upgrade_cards.has(upgrade_id) and _upgrade_cards[upgrade_id].has("style"):
+		return _upgrade_cards[upgrade_id]["style"].border_color
+	return Color.TRANSPARENT
 
 func _refresh_all_upgrade_buttons() -> void:
 	var total_energy: float = GameState.energy if GameState != null else 0.0
@@ -480,4 +548,12 @@ func _on_authenticated(session) -> void:
 func _on_logged_out() -> void:
 	if auth_button != null:
 		auth_button.text = "👤 Account"
+
+func _exit_tree() -> void:
+	for id in _upgrade_cards:
+		var card = _upgrade_cards[id]
+		if card.get("glow_tween") != null and card["glow_tween"].is_valid():
+			card["glow_tween"].kill()
+			card["glow_tween"] = null
+
 

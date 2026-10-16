@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://dm4daynight01scene"]
+
+[ext_resource type="Script" path="res://scripts/day_night_cycle.gd" id="1_daynight"]
+
+[node name="DayNightCycle" type="Node3D"]
+script = ExtResource("1_daynight")
+cycle_duration = 180.0
+time_of_day = 0.2
+cycle_mode = "auto"
