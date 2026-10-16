@@ -319,10 +319,10 @@ func _test_section_3_3d_campus_stations_and_audio(gs: Node, am: Node) -> void:
 	await process_frame
 
 	_assert_check(showcase.is_in_group("trophy_showcase"), "3.18 TrophyShowcase3D in group 'trophy_showcase'")
-	var p_brief = showcase.get_node_or_null("Pedestals/Pedestal_Briefcase")
-	var p_server = showcase.get_node_or_null("Pedestals/Pedestal_Server")
-	var p_chalice = showcase.get_node_or_null("Pedestals/Pedestal_Chalice")
-	var p_bull = showcase.get_node_or_null("Pedestals/Pedestal_Bull")
+	var p_brief = showcase.get_node_or_null("Visuals/Pedestals/Pedestal_Briefcase")
+	var p_server = showcase.get_node_or_null("Visuals/Pedestals/Pedestal_Server")
+	var p_chalice = showcase.get_node_or_null("Visuals/Pedestals/Pedestal_Chalice")
+	var p_bull = showcase.get_node_or_null("Visuals/Pedestals/Pedestal_Bull")
 
 	_assert_check(p_brief != null, "3.19 Pedestal_Briefcase exists in showcase")
 	_assert_check(p_server != null, "3.20 Pedestal_Server exists in showcase")
