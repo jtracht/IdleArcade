@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3 uid="uid://dm4main3d001scene"]
+[gd_scene load_steps=31 format=3 uid="uid://dm4main3d001scene"]
 
 [ext_resource type="Script" path="res://scripts/main_3d.gd" id="1_main3d"]
 [ext_resource type="PackedScene" uid="uid://c8avatar3d001scene" path="res://scenes/avatar_3d.tscn" id="2_avatar"]
@@ -11,6 +11,8 @@
 [ext_resource type="PackedScene" uid="uid://dm4touchctrls01scene" path="res://scenes/ui/touch_controls.tscn" id="9_touch"]
 [ext_resource type="PackedScene" uid="uid://c6incubatorzone01" path="res://scenes/incubator_zone.tscn" id="10_incubator"]
 [ext_resource type="PackedScene" uid="uid://c6questwaypoint01" path="res://scenes/quest_waypoint.tscn" id="11_waypoint"]
+[ext_resource type="PackedScene" uid="uid://dm4techlabterm01" path="res://scenes/tech_lab_terminal.tscn" id="12_terminal"]
+[ext_resource type="PackedScene" uid="uid://dm4deliverydrone01" path="res://scenes/delivery_drone_3d.tscn" id="13_drone"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -122,6 +124,12 @@ near = 0.5
 far = 150.0
 
 [node name="CampusLevel" type="Node3D" parent="."]
+
+[node name="ServerOverclockGlow" type="OmniLight3D" parent="CampusLevel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -18)
+light_color = Color(0.1, 0.85, 1, 1)
+light_energy = 0.0
+omni_range = 14.0
 
 [node name="Floors" type="Node3D" parent="CampusLevel"]
 
@@ -420,6 +428,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19, 0, -4)
 item_type = "usb_drive"
 reward_amount = 75.0
 
+[node name="Collectible_USBCourtyard" parent="Collectibles" instance=ExtResource("5_collectible")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 19)
+item_type = "usb_drive"
+reward_amount = 75.0
+
 [node name="QuestLayer" type="CanvasLayer" parent="."]
 layer = 6
 
@@ -440,3 +453,9 @@ visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 0, 0)
 
 [node name="QuestWaypoint" parent="." instance=ExtResource("11_waypoint")]
+
+[node name="TechLabTerminal" parent="." instance=ExtResource("12_terminal")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19, 0, 0)
+
+[node name="DeliveryDrone3D" parent="." instance=ExtResource("13_drone")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)

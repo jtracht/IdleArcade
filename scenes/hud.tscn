@@ -375,6 +375,15 @@ mouse_filter = 0
 theme_override_font_sizes/font_size = 18
 text = "🌐 3D Campus World"
 
+[node name="TechTreeButton" type="Button" parent="NavDrawer/DrawerPanel/DrawerVBox/NavScroll/NavItemsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 18
+text = "🔬 R&D Tech-Tree"
+
 [node name="ModalContainer" type="Control" parent="."]
 unique_name_in_owner = true
 mouse_filter = 2

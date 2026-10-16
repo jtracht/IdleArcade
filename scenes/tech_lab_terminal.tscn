@@ -1,0 +1,209 @@
+[gd_scene load_steps=23 format=3 uid="uid://dm4techlabterm01"]
+
+[ext_resource type="Script" path="res://scripts/tech_lab_terminal.gd" id="1_term"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_root"]
+size = Vector3(1.2, 1, 0.8)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_area"]
+radius = 2.4
+
+[sub_resource type="StandardMaterial3D" id="Mat_ConsoleBase"]
+albedo_color = Color(0.12, 0.14, 0.18, 1)
+metallic = 0.7
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_base"]
+material = SubResource("Mat_ConsoleBase")
+size = Vector3(1, 0.15, 0.7)
+
+[sub_resource type="StandardMaterial3D" id="Mat_PedestalColumn"]
+albedo_color = Color(0.16, 0.18, 0.22, 1)
+metallic = 0.6
+roughness = 0.45
+
+[sub_resource type="BoxMesh" id="BoxMesh_column"]
+material = SubResource("Mat_PedestalColumn")
+size = Vector3(0.4, 0.75, 0.35)
+
+[sub_resource type="StandardMaterial3D" id="Mat_ConsoleDesk"]
+albedo_color = Color(0.08, 0.11, 0.16, 1)
+metallic = 0.8
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_desk"]
+material = SubResource("Mat_ConsoleDesk")
+size = Vector3(1.1, 0.15, 0.65)
+
+[sub_resource type="StandardMaterial3D" id="Mat_EmitterDish"]
+albedo_color = Color(0.2, 0.25, 0.3, 1)
+metallic = 0.9
+roughness = 0.2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_emitter_dish"]
+material = SubResource("Mat_EmitterDish")
+top_radius = 0.25
+bottom_radius = 0.25
+height = 0.04
+radial_segments = 12
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="Mat_EmitterRing"]
+albedo_color = Color(0, 0.9, 1, 1)
+emission_enabled = true
+emission = Color(0, 0.9, 1, 1)
+emission_energy_multiplier = 1.5
+
+[sub_resource type="TorusMesh" id="TorusMesh_emitter_ring"]
+material = SubResource("Mat_EmitterRing")
+inner_radius = 0.2
+outer_radius = 0.26
+rings = 8
+ring_segments = 4
+
+[sub_resource type="StandardMaterial3D" id="Mat_Keyboard"]
+albedo_color = Color(0.2, 0.22, 0.26, 1)
+metallic = 0.3
+roughness = 0.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_keyboard"]
+material = SubResource("Mat_Keyboard")
+size = Vector3(0.7, 0.04, 0.25)
+
+[sub_resource type="StandardMaterial3D" id="Mat_StatusLEDLeft"]
+albedo_color = Color(0.1, 0.9, 0.4, 1)
+emission_enabled = true
+emission = Color(0.1, 0.9, 0.4, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_led_left"]
+material = SubResource("Mat_StatusLEDLeft")
+size = Vector3(0.06, 0.04, 0.03)
+
+[sub_resource type="StandardMaterial3D" id="Mat_StatusLEDRight"]
+albedo_color = Color(0, 0.8, 1, 1)
+emission_enabled = true
+emission = Color(0, 0.8, 1, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_led_right"]
+material = SubResource("Mat_StatusLEDRight")
+size = Vector3(0.06, 0.04, 0.03)
+
+[sub_resource type="StandardMaterial3D" id="Mat_CoreOrb"]
+transparency = 1
+albedo_color = Color(0, 0.9, 1, 0.85)
+emission_enabled = true
+emission = Color(0, 0.9, 1, 1)
+emission_energy_multiplier = 2.2
+
+[sub_resource type="SphereMesh" id="SphereMesh_core_orb"]
+material = SubResource("Mat_CoreOrb")
+radius = 0.14
+height = 0.28
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="Mat_OrbitCyan"]
+albedo_color = Color(0, 0.85, 1, 1)
+emission_enabled = true
+emission = Color(0, 0.85, 1, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="TorusMesh" id="TorusMesh_orbit_cyan"]
+material = SubResource("Mat_OrbitCyan")
+inner_radius = 0.22
+outer_radius = 0.26
+rings = 8
+ring_segments = 4
+
+[sub_resource type="StandardMaterial3D" id="Mat_OrbitMagenta"]
+albedo_color = Color(1, 0.15, 0.85, 1)
+emission_enabled = true
+emission = Color(1, 0.15, 0.85, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="TorusMesh" id="TorusMesh_orbit_magenta"]
+material = SubResource("Mat_OrbitMagenta")
+inner_radius = 0.26
+outer_radius = 0.3
+rings = 8
+ring_segments = 4
+
+[node name="TechLabTerminal" type="StaticBody3D" groups=["research_terminals", "terminals"]]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_term")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_root")
+
+[node name="InteractionArea" type="Area3D" parent="."]
+collision_layer = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractionArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("SphereShape3D_area")
+
+[node name="PromptLabel3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+visible = false
+billboard = 1
+text = "[E] R&D Research Station"
+font_size = 28
+outline_size = 6
+outline_color = Color(0.05, 0.05, 0.1, 0.9)
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="ConsoleBase" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075, 0)
+mesh = SubResource("BoxMesh_base")
+
+[node name="PedestalColumn" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, 0)
+mesh = SubResource("BoxMesh_column")
+
+[node name="ConsoleDesk" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0.95, -0.05)
+mesh = SubResource("BoxMesh_desk")
+
+[node name="HologramEmitterDish" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, -0.15)
+mesh = SubResource("CylinderMesh_emitter_dish")
+
+[node name="HologramEmitterRing" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.08, -0.15)
+mesh = SubResource("TorusMesh_emitter_ring")
+
+[node name="KeyboardPlate" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 1.02, 0.15)
+mesh = SubResource("BoxMesh_keyboard")
+
+[node name="StatusLEDLeft" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 1.02, 0.15)
+mesh = SubResource("BoxMesh_led_left")
+
+[node name="StatusLEDRight" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 1.02, 0.15)
+mesh = SubResource("BoxMesh_led_right")
+
+[node name="TerminalLight" type="OmniLight3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -0.15)
+light_color = Color(0, 0.9, 1, 1)
+light_energy = 0.8
+omni_range = 3.0
+
+[node name="RotatingHologram" type="Node3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.55, -0.15)
+
+[node name="CoreOrb" type="MeshInstance3D" parent="Visuals/RotatingHologram"]
+mesh = SubResource("SphereMesh_core_orb")
+
+[node name="OrbitRingCyan" type="MeshInstance3D" parent="Visuals/RotatingHologram"]
+mesh = SubResource("TorusMesh_orbit_cyan")
+
+[node name="OrbitRingMagenta" type="MeshInstance3D" parent="Visuals/RotatingHologram"]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0.5, 0.612372, -0.612372, 0, 0.707107, 0.707107, 0, 0, 0)
+mesh = SubResource("TorusMesh_orbit_magenta")

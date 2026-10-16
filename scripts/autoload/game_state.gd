@@ -22,6 +22,9 @@ signal zone_unlocked(zone_id: String)
 signal campus_quest_updated(quest_id: String, status: String, current_count: int, target_count: int)
 signal campus_quest_completed(quest_id: String, reward_energy: float, reward_bonus_users: int)
 
+# Phase 8 (Tech-Tree & Research Lab) Signals
+signal tech_researched(tech_id: String)
+
 # --- State Variables ---
 var energy: float = 0.0
 var total_energy_earned: float = 0.0
@@ -37,6 +40,14 @@ var collectibles_collected: int = 0
 var unlocked_zones: Array[String] = []
 var campus_quests: Dictionary = {}
 var active_campus_quest_id: String = ""
+
+# Phase 8 (Tech-Tree & Research Lab) State Variables
+var researched_techs: Array[String] = []
+var item_inventory: Dictionary = {
+	"briefcase": 0,
+	"coffee": 0,
+	"usb_drive": 0
+}
 
 var base_click_power: float = 1.0
 var base_passive_rps: float = 0.0
@@ -177,6 +188,64 @@ const DEFAULT_UPGRADES: Dictionary = {
 	}
 }
 
+const TECH_DEFINITIONS: Dictionary = {
+	"tech_coffee_automation": {
+		"id": "tech_coffee_automation",
+		"name": "Coffee Automation",
+		"description": "+15% Avatar Run Speed & +10% Worker Production Frequency",
+		"cost": 500.0,
+		"energy_cost": 500.0,
+		"required_item": "",
+		"required_item_count": 0,
+		"item_cost": {},
+		"icon": "☕"
+	},
+	"tech_delivery_drone": {
+		"id": "tech_delivery_drone",
+		"name": "Delivery Drone",
+		"description": "Deploys autonomous campus delivery drone to gather collectibles",
+		"cost": 1500.0,
+		"energy_cost": 1500.0,
+		"required_item": "usb_drive",
+		"required_item_count": 3,
+		"item_cost": {"usb_drive": 3},
+		"icon": "🛸"
+	},
+	"tech_server_overclock": {
+		"id": "tech_server_overclock",
+		"name": "Server Overclocking",
+		"description": "+25% Global Passive RPS & Server Room Overclock Glow",
+		"cost": 4000.0,
+		"energy_cost": 4000.0,
+		"required_item": "",
+		"required_item_count": 0,
+		"item_cost": {},
+		"icon": "⚡"
+	},
+	"tech_quantum_ads": {
+		"id": "tech_quantum_ads",
+		"name": "Quantum Ads",
+		"description": "2x Base Click Power in 2D & +50% Angel Investor Spawn Chance",
+		"cost": 10000.0,
+		"energy_cost": 10000.0,
+		"required_item": "",
+		"required_item_count": 0,
+		"item_cost": {},
+		"icon": "🎯"
+	},
+	"tech_neural_cloud": {
+		"id": "tech_neural_cloud",
+		"name": "Neural Cloud",
+		"description": "Doubles Campus Item Multiplier from +5% to +10% per item",
+		"cost": 25000.0,
+		"energy_cost": 25000.0,
+		"required_item": "",
+		"required_item_count": 0,
+		"item_cost": {},
+		"icon": "🧠"
+	}
+}
+
 func _init() -> void:
 	reset_state()
 
@@ -203,6 +272,14 @@ func reset_state() -> void:
 	collectibles_collected = 0
 	unlocked_zones.clear()
 	campus_quests.clear()
+	active_campus_quest_id = ""
+	
+	researched_techs.clear()
+	item_inventory = {
+		"briefcase": 0,
+		"coffee": 0,
+		"usb_drive": 0
+	}
 	
 	upgrades.clear()
 	for up_id in DEFAULT_UPGRADES:
@@ -318,7 +395,8 @@ func recalculate_stats() -> void:
 			total_click += lvl * gain
 			
 	base_passive_rps = total_rps
-	base_click_power = total_click
+	var click_mult: float = 2.0 if is_tech_researched("tech_quantum_ads") else 1.0
+	base_click_power = total_click * click_mult
 	
 	if is_frenzy_active:
 		var tuning_level: int = int(upgrades.get("overdrive_tuning", {}).get("level", 0))
@@ -345,11 +423,11 @@ func get_bonus_multiplier() -> float:
 
 ## Returns passive boost multiplier from collected 3D campus items (+5% per item).
 func get_campus_item_multiplier() -> float:
-	return 1.0 + (float(collectibles_collected) * 0.05)
+	return (1.0 + (float(collectibles_collected) * 0.10)) if is_tech_researched("tech_neural_cloud") else (1.0 + (float(collectibles_collected) * 0.05))
 
 ## Returns passive RPS boosted by bonus users multiplier and campus item multiplier.
 func get_effective_passive_rps() -> float:
-	return base_passive_rps * get_bonus_multiplier() * get_campus_item_multiplier()
+	return base_passive_rps * get_bonus_multiplier() * get_campus_item_multiplier() * (1.25 if is_tech_researched("tech_server_overclock") else 1.0)
 
 ## Awards bonus users from daily quests or milestone rewards.
 func award_bonus_users(amount: int) -> void:
@@ -370,7 +448,8 @@ func award_bonus_users(amount: int) -> void:
 
 ## Computes effective avatar movement speed multiplier (1.0 + avatar_speed_level * 0.15).
 func get_effective_avatar_speed() -> float:
-	return 1.0 + float(avatar_speed_level) * 0.15
+	var speed_boost: float = 0.15 if is_tech_researched("tech_coffee_automation") else 0.0
+	return 1.0 + float(avatar_speed_level) * 0.15 + speed_boost
 
 ## Returns current idle progression / security clearance level (baseline 1).
 func get_idle_level() -> int:
@@ -386,6 +465,7 @@ func collect_3d_item(item_type: String, reward_amount: float = 50.0) -> void:
 	energy += reward
 	total_energy_earned += reward
 	collectibles_collected += 1
+	item_inventory[item_type] = int(item_inventory.get(item_type, 0)) + 1
 	energy_changed.emit(energy, reward)
 	rps_changed.emit(get_effective_passive_rps())
 	collectible_picked_up.emit(item_type, collectibles_collected)
@@ -513,6 +593,8 @@ func save_to_disk() -> void:
 		"active_campus_quest_id": active_campus_quest_id,
 		"unlocked_zones": unlocked_zones.duplicate(),
 		"campus_quests": campus_quests.duplicate(true),
+		"researched_techs": researched_techs.duplicate(),
+		"item_inventory": item_inventory.duplicate(),
 		"upgrades": {}
 	}
 	
@@ -582,6 +664,23 @@ func load_from_disk() -> bool:
 			if raw_quests[q_id] is Dictionary:
 				campus_quests[q_id] = raw_quests[q_id].duplicate(true)
 	
+	researched_techs.clear()
+	var raw_techs = data.get("researched_techs", [])
+	if raw_techs is Array:
+		for t in raw_techs:
+			if t is String and not t.is_empty() and not researched_techs.has(t):
+				researched_techs.append(t)
+				
+	item_inventory = {
+		"briefcase": 0,
+		"coffee": 0,
+		"usb_drive": 0
+	}
+	var raw_inv = data.get("item_inventory", {})
+	if raw_inv is Dictionary:
+		for k in raw_inv:
+			item_inventory[str(k)] = maxi(0, int(raw_inv[k]))
+	
 	var saved_upgrades = data.get("upgrades", {})
 	if saved_upgrades is Dictionary:
 		for up_id in saved_upgrades:
@@ -650,3 +749,98 @@ func format_number(value: float) -> String:
 		return "%.2f T" % (value / 1000000000000.0)
 	else:
 		return "%.2e" % value
+
+# ==============================================================================
+# Phase 8 Tech-Tree & Research Lab Methods
+# ==============================================================================
+
+## Returns true if the given technology ID has already been researched.
+func is_tech_researched(tech_id: String) -> bool:
+	return researched_techs.has(tech_id)
+
+## Evaluates whether requirements (energy cost and item prerequisites) are met to research a tech.
+func can_research_tech(tech_id: String) -> bool:
+	if not TECH_DEFINITIONS.has(tech_id):
+		return false
+	if is_tech_researched(tech_id):
+		return false
+	var def: Dictionary = TECH_DEFINITIONS[tech_id]
+	var cost: float = float(def.get("cost", def.get("energy_cost", 0.0)))
+	if energy < cost:
+		return false
+	var req_item: String = str(def.get("required_item", ""))
+	var req_count: int = int(def.get("required_item_count", 0))
+	if not req_item.is_empty() and req_count > 0:
+		if get_item_count(req_item) < req_count:
+			return false
+	return true
+
+## Purchases and completes research for a technology, deducting costs and updating stats.
+func research_tech(tech_id: String) -> bool:
+	if not can_research_tech(tech_id):
+		return false
+	var def: Dictionary = TECH_DEFINITIONS[tech_id]
+	var cost: float = float(def.get("cost", def.get("energy_cost", 0.0)))
+	energy -= cost
+	var req_item: String = str(def.get("required_item", ""))
+	var req_count: int = int(def.get("required_item_count", 0))
+	if not req_item.is_empty() and req_count > 0:
+		consume_items(req_item, req_count)
+	researched_techs.append(tech_id)
+	recalculate_stats()
+	energy_changed.emit(energy, -cost)
+	tech_researched.emit(tech_id)
+	if tech_id == "tech_coffee_automation":
+		avatar_stat_updated.emit("avatar_speed", get_effective_avatar_speed())
+	elif tech_id == "tech_server_overclock" or tech_id == "tech_neural_cloud":
+		rps_changed.emit(get_effective_passive_rps())
+	save_to_disk()
+	return true
+
+## Returns a duplicate of all registered technology definitions.
+func get_tech_definitions() -> Dictionary:
+	return TECH_DEFINITIONS.duplicate(true)
+
+## Returns the current inventory quantity for an item type (maps 'usb' to 'usb_drive').
+func get_item_count(item_type: String) -> int:
+	if item_type in ["usb", "usb_drive"]:
+		return int(item_inventory.get("usb_drive", 0)) + int(item_inventory.get("usb", 0))
+	return int(item_inventory.get(item_type, 0))
+
+## Checks if inventory contains at least count units of the specified item type.
+func has_items(item_type: String, count: int) -> bool:
+	return get_item_count(item_type) >= count
+
+## Consumes count units of an item type from inventory. Returns true if successful.
+func consume_items(item_type: String, count: int) -> bool:
+	if not has_items(item_type, count):
+		return false
+	var remaining: int = count
+	if item_type in ["usb", "usb_drive"]:
+		var usb_dr: int = int(item_inventory.get("usb_drive", 0))
+		var take_dr: int = mini(usb_dr, remaining)
+		item_inventory["usb_drive"] = usb_dr - take_dr
+		remaining -= take_dr
+		if remaining > 0:
+			var usb_raw: int = int(item_inventory.get("usb", 0))
+			item_inventory["usb"] = maxi(0, usb_raw - remaining)
+	else:
+		item_inventory[item_type] = maxi(0, int(item_inventory.get(item_type, 0)) - count)
+	return true
+
+## Adds energy directly (e.g. from incubator mini-workers).
+func add_energy(amount: float) -> void:
+	if amount <= 0.0:
+		return
+	energy += amount
+	total_energy_earned += amount
+	energy_changed.emit(energy, amount)
+
+## Returns worker production frequency multiplier (1.10x with tech_coffee_automation).
+func get_worker_production_multiplier() -> float:
+	return 1.10 if is_tech_researched("tech_coffee_automation") else 1.0
+
+## Returns angel investor spark spawn chance multiplier (1.5x with tech_quantum_ads).
+func get_angel_investor_spawn_chance_multiplier() -> float:
+	return 1.5 if is_tech_researched("tech_quantum_ads") else 1.0
+

@@ -97,6 +97,7 @@ var _cached_quest_style: StyleBoxFlat = null
 var _cached_gate_style: StyleBoxFlat = null
 var _cached_denied_style: StyleBoxFlat = null
 var _cached_collectible_style: StyleBoxFlat = null
+var _cached_research_style: StyleBoxFlat = null
 
 # ------------------------------------------------------------------------------
 # Lifecycle
@@ -230,6 +231,17 @@ func _setup_styles() -> void:
 	_cached_collectible_style.shadow_size = 12
 	_cached_collectible_style.anti_aliasing = true
 
+	# Dynamic Research Terminal style (cyber cyan / deep neon purple)
+	_cached_research_style = StyleBoxFlat.new()
+	_cached_research_style.bg_color = Color(0.18, 0.08, 0.32, 0.90)
+	_cached_research_style.border_color = Color(0.0, 0.90, 1.0, 0.98)
+	_cached_research_style.set_border_width_all(3)
+	_cached_research_style.set_corner_radius_all(50)
+	_cached_research_style.corner_detail = 24
+	_cached_research_style.shadow_color = Color(0.70, 0.20, 1.0, 0.55)
+	_cached_research_style.shadow_size = 12
+	_cached_research_style.anti_aliasing = true
+
 # ------------------------------------------------------------------------------
 # Input Isolation Shield (Tier 2 & 3)
 # ------------------------------------------------------------------------------
@@ -256,12 +268,16 @@ func register_interactable(node: Node3D, label_text: String = "Action [E]") -> v
 		active_interactables.append(node)
 	active_interactable = node
 	if label_text == "Action [E]" or label_text.is_empty():
-		if node is CharacterBody3D or node.has_method("interact"):
+		if node.has_method("open_research") or node.is_in_group("research_terminals"):
+			label_text = "Research [E]"
+		elif node is CharacterBody3D or node.has_method("interact"):
 			label_text = "Talk [E]"
 		elif node is StaticBody3D or node.has_method("attempt_unlock"):
 			label_text = "Unlock [E]"
 		elif node is Area3D or node.is_in_group("collectibles") or node.has_method("collect"):
 			label_text = "Collect [E]"
+	elif node.has_method("open_research") or node.is_in_group("research_terminals") or label_text == "Research [E]":
+		label_text = "Research [E]"
 	_update_action_button_visuals(label_text, true)
 	interactable_registered.emit(node, label_text)
 	interactable_changed.emit(node)
@@ -278,7 +294,9 @@ func unregister_interactable(node: Node3D) -> void:
 		else:
 			active_interactable = active_interactables.back()
 			var remaining_label = "Action [E]"
-			if active_interactable is CharacterBody3D or active_interactable.has_method("interact"):
+			if active_interactable.has_method("open_research") or active_interactable.is_in_group("research_terminals"):
+				remaining_label = "Research [E]"
+			elif active_interactable is CharacterBody3D or active_interactable.has_method("interact"):
 				remaining_label = "Talk [E]"
 			elif active_interactable is StaticBody3D or active_interactable.has_method("attempt_unlock"):
 				remaining_label = "Unlock [E]"
@@ -316,7 +334,9 @@ func trigger_action() -> void:
 
 	# Channel 1: Direct Method Invocation
 	if is_instance_valid(target):
-		if target.has_method("interact"):
+		if target.has_method("open_research"):
+			target.call("open_research")
+		elif target.has_method("interact"):
 			target.call("interact")
 		elif target.has_method("attempt_unlock"):
 			target.call("attempt_unlock")
@@ -387,7 +407,11 @@ func _update_action_button_visuals(label_text: String = "", is_active: bool = fa
 	# Context determination
 	var target = get_current_interactable()
 	if is_instance_valid(target):
-		if target.has_method("interact"):
+		if target.has_method("open_research") or target.is_in_group("research_terminals") or "Research" in text_to_set:
+			text_to_set = "Research [E]"
+			if _cached_research_style != null:
+				action_button.add_theme_stylebox_override("normal", _cached_research_style)
+		elif target.has_method("interact"):
 			var gs = get_node_or_null("/root/GameState")
 			var q_id: String = str(target.get("quest_id")) if target.get("quest_id") != null else ""
 			var q_status: String = ""
@@ -431,7 +455,9 @@ func _update_action_button_visuals(label_text: String = "", is_active: bool = fa
 				action_button.add_theme_stylebox_override("normal", _cached_npc_style)
 	else:
 		# Explicit label provided without object reference
-		if "Talk" in text_to_set and _cached_npc_style != null:
+		if "Research" in text_to_set and _cached_research_style != null:
+			action_button.add_theme_stylebox_override("normal", _cached_research_style)
+		elif "Talk" in text_to_set and _cached_npc_style != null:
 			action_button.add_theme_stylebox_override("normal", _cached_npc_style)
 		elif "Unlock" in text_to_set and _cached_gate_style != null:
 			action_button.add_theme_stylebox_override("normal", _cached_gate_style)

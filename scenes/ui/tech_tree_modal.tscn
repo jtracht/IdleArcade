@@ -1,0 +1,456 @@
+[gd_scene load_steps=5 format=3 uid="uid://ctechtreemodal08"]
+
+[ext_resource type="Script" path="res://scripts/ui/tech_tree_modal.gd" id="1_techtree"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_card"]
+bg_color = Color(0.0666667, 0.0901961, 0.141176, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.85, 1, 0.65)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_resource_bar"]
+bg_color = Color(0.0392157, 0.0588235, 0.0980392, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tech_card"]
+bg_color = Color(0.0470588, 0.0705882, 0.117647, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+
+[node name="TechTreeModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_techtree")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.04, 0.08, 0.82)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ModalCard" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(660, 880)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 10
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "🔬"
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "R&D TECH-TREE & FORSCHUNG"
+
+[node name="Spacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CloseButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 22
+text = "✕"
+
+[node name="HSeparator1" type="HSeparator" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="ResourceBar" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_resource_bar")
+
+[node name="ResourceHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/ResourceBar"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 20
+
+[node name="EnergyDisplayHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/ResourceBar/ResourceHBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 6
+
+[node name="EnergyIcon" type="Label" parent="CenterContainer/ModalCard/CardVBox/ResourceBar/ResourceHBox/EnergyDisplayHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "⚡"
+
+[node name="EnergyValueLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/ResourceBar/ResourceHBox/EnergyDisplayHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 15
+text = "⚡ 0 Energy"
+
+[node name="ResourceSpacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/ResourceBar/ResourceHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="USBDisplayHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/ResourceBar/ResourceHBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 6
+
+[node name="USBIcon" type="Label" parent="CenterContainer/ModalCard/CardVBox/ResourceBar/ResourceHBox/USBDisplayHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "💾"
+
+[node name="USBValueLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/ResourceBar/ResourceHBox/USBDisplayHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "💾 0 USB Sticks"
+
+[node name="HSeparator2" type="HSeparator" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="TechScroll" type="ScrollContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 0
+horizontal_scroll_mode = 0
+
+[node name="TechCardsVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TechScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_constants/separation = 12
+
+[node name="Card_tech_coffee_automation" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 76)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_tech_card")
+
+[node name="CardHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_coffee_automation"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 12
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_coffee_automation/CardHBox"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "☕"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InfoVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_coffee_automation/CardHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_coffee_automation/CardHBox/InfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "Coffee Automation"
+
+[node name="DescLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_coffee_automation/CardHBox/InfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "+15% Avatar Base Speed & +10% Worker Production Frequency"
+autowrap_mode = 2
+
+[node name="CostLabel_tech_coffee_automation" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_coffee_automation/CardHBox/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "Cost: ⚡ 500 Energy"
+
+[node name="Button_tech_coffee_automation" type="Button" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_coffee_automation/CardHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 14
+text = "Research"
+
+[node name="Card_tech_delivery_drone" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 76)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_tech_card")
+
+[node name="CardHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_delivery_drone"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 12
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_delivery_drone/CardHBox"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "🛸"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InfoVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_delivery_drone/CardHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_delivery_drone/CardHBox/InfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "Delivery Drone"
+
+[node name="DescLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_delivery_drone/CardHBox/InfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "Deploys autonomous campus delivery drone to gather collectibles"
+autowrap_mode = 2
+
+[node name="CostLabel_tech_delivery_drone" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_delivery_drone/CardHBox/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "Cost: ⚡ 1,500 Energy + 💾 3 USB"
+
+[node name="Button_tech_delivery_drone" type="Button" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_delivery_drone/CardHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 14
+text = "Research"
+
+[node name="Card_tech_server_overclock" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 76)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_tech_card")
+
+[node name="CardHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_server_overclock"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 12
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_server_overclock/CardHBox"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "⚡"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InfoVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_server_overclock/CardHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_server_overclock/CardHBox/InfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "Server Overclocking"
+
+[node name="DescLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_server_overclock/CardHBox/InfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "+25% Global Passive RPS & Server Room Overclock Glow"
+autowrap_mode = 2
+
+[node name="CostLabel_tech_server_overclock" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_server_overclock/CardHBox/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "Cost: ⚡ 4,000 Energy"
+
+[node name="Button_tech_server_overclock" type="Button" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_server_overclock/CardHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 14
+text = "Research"
+
+[node name="Card_tech_quantum_ads" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 76)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_tech_card")
+
+[node name="CardHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_quantum_ads"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 12
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_quantum_ads/CardHBox"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "🎯"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InfoVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_quantum_ads/CardHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_quantum_ads/CardHBox/InfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "Quantum Ads"
+
+[node name="DescLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_quantum_ads/CardHBox/InfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "2x Base Click Power in 2D & +50% Angel Investor Spawn Chance"
+autowrap_mode = 2
+
+[node name="CostLabel_tech_quantum_ads" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_quantum_ads/CardHBox/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "Cost: ⚡ 10,000 Energy"
+
+[node name="Button_tech_quantum_ads" type="Button" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_quantum_ads/CardHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 14
+text = "Research"
+
+[node name="Card_tech_neural_cloud" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 76)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_tech_card")
+
+[node name="CardHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_neural_cloud"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 12
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_neural_cloud/CardHBox"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "🧠"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InfoVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_neural_cloud/CardHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_neural_cloud/CardHBox/InfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "Neural Cloud"
+
+[node name="DescLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_neural_cloud/CardHBox/InfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "Doubles Campus Item Multiplier from +5% to +10% per item"
+autowrap_mode = 2
+
+[node name="CostLabel_tech_neural_cloud" type="Label" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_neural_cloud/CardHBox/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "Cost: ⚡ 25,000 Energy"
+
+[node name="Button_tech_neural_cloud" type="Button" parent="CenterContainer/ModalCard/CardVBox/TechScroll/TechCardsVBox/Card_tech_neural_cloud/CardHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 14
+text = "Research"

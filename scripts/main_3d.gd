@@ -28,8 +28,12 @@ class_name Main3D
 @onready var quest_tracker: Control = get_node_or_null("QuestLayer/QuestTracker")
 @onready var touch_controls_layer: CanvasLayer = get_node_or_null("TouchControlsLayer")
 @onready var touch_controls: Control = get_node_or_null("TouchControlsLayer/TouchControls")
+@onready var tech_lab_terminal: Node3D = get_node_or_null("TechLabTerminal")
+@onready var delivery_drone: CharacterBody3D = get_node_or_null("DeliveryDrone3D")
+@onready var server_overclock_glow: OmniLight3D = get_node_or_null("CampusLevel/ServerOverclockGlow")
 
 var _overlay_open: bool = false
+var _overclock_time: float = 0.0
 
 func _ready() -> void:
 	print("[Main3D] Initializing 3D Campus World...")
@@ -42,6 +46,7 @@ func _ready() -> void:
 	_setup_camera_rig()
 	_setup_hud_overlay()
 	_setup_touch_controls()
+	_setup_tech_tree_integrations()
 	_connect_game_state_signals()
 	_update_quick_hud()
 	
@@ -50,6 +55,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_update_camera_tracking(delta)
+	_update_overclock_glow_modulation(delta)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():
@@ -189,6 +195,8 @@ func _connect_game_state_signals() -> void:
 		gs.energy_changed.connect(_on_energy_changed)
 	if gs.has_signal("rps_changed"):
 		gs.rps_changed.connect(_on_rps_changed)
+	if gs.has_signal("tech_researched"):
+		gs.tech_researched.connect(_on_tech_researched)
 
 func _on_energy_changed(new_energy: float, _delta: float) -> void:
 	var gs = get_node_or_null("/root/GameState")
@@ -208,3 +216,59 @@ func _update_quick_hud() -> void:
 		quick_energy_label.text = gs.format_number(gs.energy) + " Users"
 	if quick_rps_label != null and gs.has_method("format_number") and gs.has_method("get_effective_passive_rps"):
 		quick_rps_label.text = "+" + gs.format_number(gs.get_effective_passive_rps()) + "/s"
+
+# --- Tech Tree & Server Room Overclock Integration ---
+
+func _setup_tech_tree_integrations() -> void:
+	if server_overclock_glow == null:
+		server_overclock_glow = find_child("ServerOverclockGlow", true, false)
+	
+	var gs = get_node_or_null("/root/GameState")
+	if gs != null and gs.has_method("is_tech_researched"):
+		if gs.is_tech_researched("tech_server_overclock"):
+			_set_server_overclock_glow_active(true)
+		else:
+			_set_server_overclock_glow_active(false)
+
+func _set_server_overclock_glow_active(active: bool) -> void:
+	if server_overclock_glow == null:
+		server_overclock_glow = find_child("ServerOverclockGlow", true, false)
+	if server_overclock_glow != null:
+		server_overclock_glow.light_energy = 1.8 if active else 0.0
+
+func _activate_server_overclock_glow() -> void:
+	if server_overclock_glow == null:
+		server_overclock_glow = find_child("ServerOverclockGlow", true, false)
+	if server_overclock_glow != null:
+		var tween = create_tween()
+		tween.tween_property(server_overclock_glow, "light_energy", 1.8, 1.2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+func _update_overclock_glow_modulation(delta: float) -> void:
+	if server_overclock_glow == null or server_overclock_glow.light_energy <= 0.01:
+		return
+	var gs = get_node_or_null("/root/GameState")
+	if gs != null and gs.has_method("is_tech_researched") and gs.is_tech_researched("tech_server_overclock"):
+		_overclock_time += delta
+		server_overclock_glow.light_energy = 1.8 + sin(_overclock_time * 3.0) * 0.25
+
+func is_server_overclock_glow_active() -> bool:
+	if server_overclock_glow == null:
+		server_overclock_glow = find_child("ServerOverclockGlow", true, false)
+	return server_overclock_glow != null and server_overclock_glow.light_energy > 0.1
+
+func _on_tech_researched(tech_id: String) -> void:
+	if tech_id == "tech_server_overclock":
+		_activate_server_overclock_glow()
+
+func open_tech_tree() -> void:
+	if hud_instance != null:
+		if hud_instance.has_method("open_tech_tree_modal"):
+			hud_instance.open_tech_tree_modal()
+		elif ResourceLoader.exists("res://scenes/ui/tech_tree_modal.tscn"):
+			var scene = load("res://scenes/ui/tech_tree_modal.tscn")
+			if scene != null and hud_instance.has_method("open_modal"):
+				hud_instance.open_modal(scene)
+		elif not is_hud_overlay_open():
+			open_hud_overlay()
+	elif not is_hud_overlay_open():
+		open_hud_overlay()

@@ -1,0 +1,299 @@
+[gd_scene load_steps=34 format=3 uid="uid://dm4deliverydrone01"]
+
+[ext_resource type="Script" path="res://scripts/delivery_drone_3d.gd" id="1_drone"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_root"]
+radius = 0.5
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_collect"]
+radius = 3.5
+
+[sub_resource type="StandardMaterial3D" id="Mat_HullBody"]
+albedo_color = Color(0.92, 0.94, 0.98, 1)
+metallic = 0.4
+roughness = 0.25
+
+[sub_resource type="SphereMesh" id="SphereMesh_hull"]
+material = SubResource("Mat_HullBody")
+radius = 0.32
+height = 0.45
+radial_segments = 10
+rings = 5
+
+[sub_resource type="StandardMaterial3D" id="Mat_VisorFace"]
+albedo_color = Color(0.05, 0.1, 0.15, 1)
+metallic = 0.9
+roughness = 0.1
+emission_enabled = true
+emission = Color(0, 0.7, 1, 1)
+emission_energy_multiplier = 0.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_visor"]
+material = SubResource("Mat_VisorFace")
+size = Vector3(0.28, 0.12, 0.18)
+
+[sub_resource type="StandardMaterial3D" id="Mat_SensorDome"]
+transparency = 1
+albedo_color = Color(0.1, 0.8, 1, 0.8)
+emission_enabled = true
+emission = Color(0.1, 0.8, 1, 1)
+emission_energy_multiplier = 1.2
+
+[sub_resource type="SphereMesh" id="SphereMesh_sensor"]
+material = SubResource("Mat_SensorDome")
+radius = 0.12
+height = 0.18
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="Mat_CargoBay"]
+albedo_color = Color(0.25, 0.28, 0.35, 1)
+metallic = 0.7
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_cargo"]
+material = SubResource("Mat_CargoBay")
+size = Vector3(0.32, 0.14, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="Mat_DroneArm"]
+albedo_color = Color(0.15, 0.16, 0.18, 1)
+metallic = 0.8
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_arm"]
+material = SubResource("Mat_DroneArm")
+size = Vector3(0.05, 0.04, 0.45)
+
+[sub_resource type="StandardMaterial3D" id="Mat_MotorPod"]
+albedo_color = Color(0.4, 0.44, 0.5, 1)
+metallic = 0.9
+roughness = 0.2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_motor"]
+material = SubResource("Mat_MotorPod")
+top_radius = 0.07
+bottom_radius = 0.07
+height = 0.08
+radial_segments = 8
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="Mat_RotorHub"]
+albedo_color = Color(0.2, 0.22, 0.25, 1)
+metallic = 0.8
+roughness = 0.2
+
+[sub_resource type="SphereMesh" id="SphereMesh_hub"]
+material = SubResource("Mat_RotorHub")
+radius = 0.035
+height = 0.07
+radial_segments = 6
+rings = 3
+
+[sub_resource type="StandardMaterial3D" id="Mat_RotorBlade"]
+transparency = 1
+albedo_color = Color(0.2, 0.8, 1, 0.7)
+metallic = 0.2
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_blade1"]
+material = SubResource("Mat_RotorBlade")
+size = Vector3(0.28, 0.01, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_blade2"]
+material = SubResource("Mat_RotorBlade")
+size = Vector3(0.04, 0.01, 0.28)
+
+[sub_resource type="StandardMaterial3D" id="Mat_LED_Green"]
+albedo_color = Color(0.1, 1, 0.3, 1)
+emission_enabled = true
+emission = Color(0.1, 1, 0.3, 1)
+emission_energy_multiplier = 1.5
+
+[sub_resource type="SphereMesh" id="SphereMesh_led_green"]
+material = SubResource("Mat_LED_Green")
+radius = 0.035
+height = 0.07
+radial_segments = 6
+rings = 3
+
+[sub_resource type="StandardMaterial3D" id="Mat_LED_Red"]
+albedo_color = Color(1, 0.2, 0.2, 1)
+emission_enabled = true
+emission = Color(1, 0.2, 0.2, 1)
+emission_energy_multiplier = 1.5
+
+[sub_resource type="SphereMesh" id="SphereMesh_led_red"]
+material = SubResource("Mat_LED_Red")
+radius = 0.035
+height = 0.07
+radial_segments = 6
+rings = 3
+
+[sub_resource type="StandardMaterial3D" id="Mat_LED_Cyan"]
+albedo_color = Color(0, 0.85, 1, 1)
+emission_enabled = true
+emission = Color(0, 0.85, 1, 1)
+emission_energy_multiplier = 1.5
+
+[sub_resource type="SphereMesh" id="SphereMesh_led_cyan"]
+material = SubResource("Mat_LED_Cyan")
+radius = 0.035
+height = 0.07
+radial_segments = 6
+rings = 3
+
+[sub_resource type="StandardMaterial3D" id="Mat_GroundShadow"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0, 0, 0, 0.35)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_shadow"]
+material = SubResource("Mat_GroundShadow")
+top_radius = 0.45
+bottom_radius = 0.45
+height = 0.01
+radial_segments = 8
+rings = 1
+
+[node name="DeliveryDrone3D" type="CharacterBody3D" groups=["delivery_drones"]]
+collision_layer = 1
+collision_mask = 1
+script = ExtResource("1_drone")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_root")
+
+[node name="CollectionArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 4
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CollectionArea"]
+shape = SubResource("SphereShape3D_collect")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="HullBody" type="MeshInstance3D" parent="Visuals"]
+mesh = SubResource("SphereMesh_hull")
+
+[node name="VisorFace" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, -0.22)
+mesh = SubResource("BoxMesh_visor")
+
+[node name="SensorDome" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.22, 0)
+mesh = SubResource("SphereMesh_sensor")
+
+[node name="CargoBay" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
+mesh = SubResource("BoxMesh_cargo")
+
+[node name="ArmFrontLeft" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, -0.22, 0.02, -0.22)
+mesh = SubResource("BoxMesh_arm")
+
+[node name="ArmFrontRight" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 0.22, 0.02, -0.22)
+mesh = SubResource("BoxMesh_arm")
+
+[node name="ArmBackLeft" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, -0.22, 0.02, 0.22)
+mesh = SubResource("BoxMesh_arm")
+
+[node name="ArmBackRight" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 0.22, 0.02, 0.22)
+mesh = SubResource("BoxMesh_arm")
+
+[node name="MotorPodFL" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.36, 0.04, -0.36)
+mesh = SubResource("CylinderMesh_motor")
+
+[node name="MotorPodFR" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.36, 0.04, -0.36)
+mesh = SubResource("CylinderMesh_motor")
+
+[node name="MotorPodBL" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.36, 0.04, 0.36)
+mesh = SubResource("CylinderMesh_motor")
+
+[node name="MotorPodBR" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.36, 0.04, 0.36)
+mesh = SubResource("CylinderMesh_motor")
+
+[node name="Rotors" type="Node3D" parent="Visuals"]
+
+[node name="RotorFL" type="Node3D" parent="Visuals/Rotors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.36, 0.09, -0.36)
+
+[node name="Hub" type="MeshInstance3D" parent="Visuals/Rotors/RotorFL"]
+mesh = SubResource("SphereMesh_hub")
+
+[node name="Blade1" type="MeshInstance3D" parent="Visuals/Rotors/RotorFL"]
+mesh = SubResource("BoxMesh_blade1")
+
+[node name="Blade2" type="MeshInstance3D" parent="Visuals/Rotors/RotorFL"]
+mesh = SubResource("BoxMesh_blade2")
+
+[node name="RotorFR" type="Node3D" parent="Visuals/Rotors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.36, 0.09, -0.36)
+
+[node name="Hub" type="MeshInstance3D" parent="Visuals/Rotors/RotorFR"]
+mesh = SubResource("SphereMesh_hub")
+
+[node name="Blade1" type="MeshInstance3D" parent="Visuals/Rotors/RotorFR"]
+mesh = SubResource("BoxMesh_blade1")
+
+[node name="Blade2" type="MeshInstance3D" parent="Visuals/Rotors/RotorFR"]
+mesh = SubResource("BoxMesh_blade2")
+
+[node name="RotorBL" type="Node3D" parent="Visuals/Rotors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.36, 0.09, 0.36)
+
+[node name="Hub" type="MeshInstance3D" parent="Visuals/Rotors/RotorBL"]
+mesh = SubResource("SphereMesh_hub")
+
+[node name="Blade1" type="MeshInstance3D" parent="Visuals/Rotors/RotorBL"]
+mesh = SubResource("BoxMesh_blade1")
+
+[node name="Blade2" type="MeshInstance3D" parent="Visuals/Rotors/RotorBL"]
+mesh = SubResource("BoxMesh_blade2")
+
+[node name="RotorBR" type="Node3D" parent="Visuals/Rotors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.36, 0.09, 0.36)
+
+[node name="Hub" type="MeshInstance3D" parent="Visuals/Rotors/RotorBR"]
+mesh = SubResource("SphereMesh_hub")
+
+[node name="Blade1" type="MeshInstance3D" parent="Visuals/Rotors/RotorBR"]
+mesh = SubResource("BoxMesh_blade1")
+
+[node name="Blade2" type="MeshInstance3D" parent="Visuals/Rotors/RotorBR"]
+mesh = SubResource("BoxMesh_blade2")
+
+[node name="NavLEDs" type="Node3D" parent="Visuals"]
+
+[node name="LED_FL" type="MeshInstance3D" parent="Visuals/NavLEDs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.36, 0, -0.42)
+mesh = SubResource("SphereMesh_led_green")
+
+[node name="LED_FR" type="MeshInstance3D" parent="Visuals/NavLEDs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.36, 0, -0.42)
+mesh = SubResource("SphereMesh_led_red")
+
+[node name="LED_BL" type="MeshInstance3D" parent="Visuals/NavLEDs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.36, 0, 0.42)
+mesh = SubResource("SphereMesh_led_cyan")
+
+[node name="LED_BR" type="MeshInstance3D" parent="Visuals/NavLEDs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.36, 0, 0.42)
+mesh = SubResource("SphereMesh_led_cyan")
+
+[node name="Spotlight" type="SpotLight3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, -0.15, 0)
+light_color = Color(0.2, 0.9, 1, 1)
+light_energy = 1.2
+spot_range = 4.5
+spot_angle = 35.0
+
+[node name="GroundShadow" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.75, 0)
+mesh = SubResource("CylinderMesh_shadow")
