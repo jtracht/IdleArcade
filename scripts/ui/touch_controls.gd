@@ -332,16 +332,17 @@ func register_interactable(node: Node3D, label_text: String = "Action [E]") -> v
 			label_text = "Unlock [E]"
 		elif node is Area3D or node.is_in_group("collectibles") or node.has_method("collect"):
 			label_text = "Collect [E]"
-	elif "Hack" in label_text or str(node.get("action_label")) == "Hack [E]":
-		label_text = "Hack [E]"
-	elif "Brew" in label_text or str(node.get("action_label")) == "Brew [E]":
-		label_text = "Brew [E]"
-	elif node.has_method("open_research") or node.is_in_group("research_terminals") or label_text == "Research [E]":
-		label_text = "Research [E]"
-	elif node.is_in_group("server_terminals") or node.has_method("activate_overclock") or "Overclock" in label_text:
-		label_text = "Overclock [E]"
-	elif node.is_in_group("pitch_stages") or node.has_method("pitch_investor") or "Pitch" in label_text:
-		label_text = "Pitch [E]"
+	else:
+		if "Overclock" in label_text:
+			label_text = "Overclock [E]"
+		elif "Hack" in label_text:
+			label_text = "Hack [E]"
+		elif "Brew" in label_text:
+			label_text = "Brew [E]"
+		elif "Pitch" in label_text:
+			label_text = "Pitch [E]"
+		elif "Research" in label_text:
+			label_text = "Research [E]"
 	_update_action_button_visuals(label_text, true)
 	interactable_registered.emit(node, label_text)
 	interactable_changed.emit(node)
@@ -485,7 +486,11 @@ func _update_action_button_visuals(label_text: String = "", is_active: bool = fa
 	# Context determination
 	var target = get_current_interactable()
 	if is_instance_valid(target):
-		if "Hack" in text_to_set or (target.is_in_group("server_terminals") and str(target.get("action_label")) == "Hack [E]") or target.has_method("start_cyber_sync") or target.has_method("start_hack_minigame"):
+		if "Overclock" in text_to_set:
+			text_to_set = "Overclock [E]"
+			if _cached_overclock_style != null:
+				action_button.add_theme_stylebox_override("normal", _cached_overclock_style)
+		elif "Hack" in text_to_set or (target.is_in_group("server_terminals") and str(target.get("action_label")) == "Hack [E]") or target.has_method("start_cyber_sync") or target.has_method("start_hack_minigame"):
 			text_to_set = "Hack [E]"
 			if _cached_hack_style != null:
 				action_button.add_theme_stylebox_override("normal", _cached_hack_style)
@@ -497,10 +502,6 @@ func _update_action_button_visuals(label_text: String = "", is_active: bool = fa
 			text_to_set = "Research [E]"
 			if _cached_research_style != null:
 				action_button.add_theme_stylebox_override("normal", _cached_research_style)
-		elif "Overclock" in text_to_set or target.is_in_group("server_terminals") or target.has_method("activate_overclock"):
-			text_to_set = "Overclock [E]"
-			if _cached_overclock_style != null:
-				action_button.add_theme_stylebox_override("normal", _cached_overclock_style)
 		elif "Pitch" in text_to_set or target.is_in_group("pitch_stages") or target.has_method("pitch_investor"):
 			text_to_set = "Pitch [E]"
 			if _cached_pitch_style != null:
