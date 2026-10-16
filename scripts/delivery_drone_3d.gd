@@ -205,6 +205,9 @@ func activate_drone() -> void:
 	visible = true
 	set_process(true)
 	set_physics_process(true)
+	var col = get_node_or_null("CollisionShape3D")
+	if col != null:
+		col.set_deferred("disabled", false)
 
 ## Deactivates drone into docked/idle sleep
 func deactivate_drone() -> void:
@@ -213,6 +216,9 @@ func deactivate_drone() -> void:
 	set_process(false)
 	set_physics_process(false)
 	velocity = Vector3.ZERO
+	var col = get_node_or_null("CollisionShape3D")
+	if col != null:
+		col.set_deferred("disabled", true)
 
 func is_active() -> bool:
 	return is_drone_active

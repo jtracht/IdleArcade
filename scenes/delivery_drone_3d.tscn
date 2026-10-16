@@ -156,12 +156,13 @@ radial_segments = 8
 rings = 1
 
 [node name="DeliveryDrone3D" type="CharacterBody3D" groups=["delivery_drones"]]
-collision_layer = 1
-collision_mask = 1
+collision_layer = 0
+collision_mask = 0
 script = ExtResource("1_drone")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("SphereShape3D_root")
+disabled = true
 
 [node name="CollectionArea" type="Area3D" parent="."]
 collision_layer = 0
