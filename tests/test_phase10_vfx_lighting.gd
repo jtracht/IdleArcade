@@ -412,7 +412,7 @@ func _test_section_5_settings_modal(gs: Node) -> void:
 			"5.6 ScreenShakeSlider updates GameState.screen_shake_intensity to 0.40")
 		if shake_label != null:
 			_assert_check("40" in shake_label.text,
-				"5.7 ScreenShakeValue label displays '40%' (got '%s')" % shake_label.text)
+				"5.7 ScreenShakeValue label displays '40%%' (got '%s')" % shake_label.text)
 
 	# Light Cycle Buttons Checks
 	var auto_btn = modal.get_node_or_null("%LightCycleAutoButton") as Button
@@ -488,9 +488,9 @@ func _test_section_6_screen_transition_and_shop_glow(gs: Node) -> void:
 	_assert_check(trans.is_transitioning() == false, "6.7 is_transitioning() initially false")
 
 	# Test two-phase wipe lifecycle
-	var midpoint_executed: bool = false
+	var tracker: Dictionary = {"midpoint": false}
 	var on_midpoint = func():
-		midpoint_executed = true
+		tracker["midpoint"] = true
 
 	trans.transition_wipe(on_midpoint, 0.1)
 	_assert_check(trans.is_transitioning() == true, "6.8 is_transitioning() true during wipe")
@@ -505,7 +505,7 @@ func _test_section_6_screen_transition_and_shop_glow(gs: Node) -> void:
 		await process_frame
 		wait_time += 0.016
 
-	_assert_check(midpoint_executed == true, "6.11 Midpoint callback executed while blacked out")
+	_assert_check(tracker["midpoint"] == true, "6.11 Midpoint callback executed while blacked out")
 	_assert_check(trans.is_transitioning() == false, "6.12 is_transitioning() resets to false on completion")
 	if rect != null:
 		_assert_check(rect.visible == false, "6.13 TransitionRect hidden upon transition completion")
@@ -526,20 +526,20 @@ func _test_section_6_screen_transition_and_shop_glow(gs: Node) -> void:
 		# When energy is 0, cards should not pulse
 		gs.energy = 0.0
 		hud._refresh_affordability(0.0)
-		_assert_check(hud.is_card_pulsing("viral_memes") == false,
-			"6.18 Card 'viral_memes' is NOT pulsing when energy is 0")
+		_assert_check(hud.is_card_pulsing("tier_1") == false,
+			"6.18 Card 'tier_1' is NOT pulsing when energy is 0")
 
 		# When energy is high, affordable cards pulse
 		gs.energy = 100000.0
 		hud._refresh_affordability(100000.0)
-		_assert_check(hud.is_card_pulsing("viral_memes") == true,
-			"6.19 Card 'viral_memes' pulses when energy exceeds cost")
+		_assert_check(hud.is_card_pulsing("tier_1") == true,
+			"6.19 Card 'tier_1' pulses when energy exceeds cost")
 
 		# When energy drops below cost, pulsing cleanly stops
 		gs.energy = 0.0
 		hud._refresh_affordability(0.0)
-		_assert_check(hud.is_card_pulsing("viral_memes") == false,
-			"6.20 Card 'viral_memes' stops pulsing when energy drops")
+		_assert_check(hud.is_card_pulsing("tier_1") == false,
+			"6.20 Card 'tier_1' stops pulsing when energy drops")
 
 		hud.queue_free()
 		await process_frame

@@ -276,7 +276,10 @@ func _apply_lighting() -> void:
 		env.background_color = state["bg_color"]
 
 	# 3. Modulate Emissive Campus Materials
-	var nf: float = state["night_factor"]
+	_update_material_emissions(state["night_factor"])
+
+## Modulates campus materials emission based on night factor [0.0, 1.0]
+func _update_material_emissions(nf: float) -> void:
 	var win_mult: float = lerpf(WINDOW_EMISSION_MIN, WINDOW_EMISSION_MAX, nf)
 	var neon_mult: float = lerpf(NEON_EMISSION_MIN, NEON_EMISSION_MAX, nf)
 	var server_mult: float = lerpf(SERVER_EMISSION_MIN, SERVER_EMISSION_MAX, nf)
