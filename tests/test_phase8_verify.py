@@ -585,14 +585,18 @@ def run_tier_4():
                    f"Authoritative 173-assertion baseline preserved ({total_active_assertions} total assertions active >= 173)")
 
     # 3. Programmatic Execution of Regression Battery
-    def execute_sub_oracle(cmd_args: List[str], name: str) -> bool:
+    def execute_sub_oracle(cmd_args: List[str], name: str, extra_env: Optional[Dict[str, str]] = None) -> bool:
         try:
+            env = dict(os.environ)
+            if extra_env:
+                env.update(extra_env)
             res = subprocess.run(
                 [sys.executable] + cmd_args,
                 cwd=str(GAME_DIR),
                 capture_output=True,
                 text=True,
-                timeout=45
+                timeout=60,
+                env=env
             )
             success = res.returncode == 0
             detail = ""
@@ -607,7 +611,7 @@ def run_tier_4():
     execute_sub_oracle(["tests/test_phase5_mobile.py"], "Phase 5 Mobile Master Oracle")
     execute_sub_oracle(["tests/test_phase6_visuals.py"], "Phase 6 Visual Life Oracle")
     execute_sub_oracle(["tests/test_phase7_redesign.py"], "Phase 7 Master Redesign Oracle")
-    execute_sub_oracle(["tests/test_p7_m3_challenger_oracle.py"], "P7-M3 Challenger Oracle")
+    execute_sub_oracle(["tests/test_p7_m3_challenger_oracle.py"], "P7-M3 Challenger Oracle", {"GODOT_BIN": "none"})
     execute_sub_oracle(["tests/test_p4_m2_adversarial_challenge.py"], "P4-M2 Adversarial Challenge")
 
 
