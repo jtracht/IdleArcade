@@ -212,7 +212,7 @@ func toggle_hud_overlay() -> void:
 		open_hud_overlay()
 
 func open_hud_overlay() -> void:
-	if screen_transition != null and not _overlay_open:
+	if screen_transition != null and not _overlay_open and DisplayServer.get_name() != "headless":
 		if screen_transition.has_method("is_transitioning") and screen_transition.is_transitioning():
 			return
 		screen_transition.transition_wipe(func():
@@ -239,7 +239,7 @@ func _apply_open_hud_overlay() -> void:
 	_update_quick_hud()
 
 func close_hud_overlay() -> void:
-	if screen_transition != null and _overlay_open:
+	if screen_transition != null and _overlay_open and DisplayServer.get_name() != "headless":
 		if screen_transition.has_method("is_transitioning") and screen_transition.is_transitioning():
 			return
 		screen_transition.transition_wipe(func():
