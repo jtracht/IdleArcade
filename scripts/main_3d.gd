@@ -31,6 +31,8 @@ class_name Main3D
 @onready var tech_lab_terminal: Node3D = get_node_or_null("TechLabTerminal")
 @onready var delivery_drone: CharacterBody3D = get_node_or_null("DeliveryDrone3D")
 @onready var server_overclock_glow: OmniLight3D = get_node_or_null("CampusLevel/ServerOverclockGlow")
+@onready var server_terminal: Node3D = get_node_or_null("ServerTerminal")
+@onready var pitch_stage: Node3D = get_node_or_null("PitchStage")
 
 var _overlay_open: bool = false
 var _overclock_time: float = 0.0
@@ -52,6 +54,11 @@ func _ready() -> void:
 	
 	# Snap camera to avatar immediately on spawn
 	snap_camera_to_avatar()
+	
+	# Start ambient Lo-Fi BGM for campus exploration
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("start_ambient_bgm"):
+		am.start_ambient_bgm()
 
 func _physics_process(delta: float) -> void:
 	_update_camera_tracking(delta)

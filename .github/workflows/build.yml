@@ -56,6 +56,7 @@ jobs:
           python3 $TARGET_DIR/tests/test_phase6_visuals.py
           python3 $TARGET_DIR/tests/test_phase7_redesign.py
           python3 $TARGET_DIR/tests/test_phase8_verify.py
+          python3 $TARGET_DIR/tests/test_phase9_verify.py
 
       - name: Run Godot Headless Phase 5 Mobile Tests
         run: |
@@ -88,6 +89,14 @@ jobs:
             TARGET_DIR="IdleArcade"
           fi
           godot --headless --path "$TARGET_DIR" -s tests/test_phase8_tech_tree.gd
+
+      - name: Run Godot Headless Phase 9 Audio & Stations Tests
+        run: |
+          TARGET_DIR="."
+          if [ -d "IdleArcade" ]; then
+            TARGET_DIR="IdleArcade"
+          fi
+          godot --headless --path "$TARGET_DIR" -s tests/test_phase9_audio_stations.gd
 
   export-web:
     name: Export Web

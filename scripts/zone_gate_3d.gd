@@ -165,6 +165,11 @@ func open_gate(animated: bool = true) -> void:
 			barrier_mesh.scale.y = 0.05
 			barrier_mesh.position.y = 0.05
 			
+	if animated:
+		var am = get_node_or_null("/root/AudioManager")
+		if am != null and am.has_method("play_sfx_gate_unlock"):
+			am.play_sfx_gate_unlock()
+			
 	gate_unlocked.emit(zone_id)
 
 func _on_global_zone_unlocked(unlocked_id: String) -> void:

@@ -208,6 +208,9 @@ func activate_drone() -> void:
 	var col = get_node_or_null("CollisionShape3D")
 	if col != null:
 		col.set_deferred("disabled", false)
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("play_sfx_drone_hum"):
+		am.play_sfx_drone_hum()
 
 ## Deactivates drone into docked/idle sleep
 func deactivate_drone() -> void:
@@ -219,6 +222,9 @@ func deactivate_drone() -> void:
 	var col = get_node_or_null("CollisionShape3D")
 	if col != null:
 		col.set_deferred("disabled", true)
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("stop_sfx_drone_hum"):
+		am.stop_sfx_drone_hum()
 
 func is_active() -> bool:
 	return is_drone_active

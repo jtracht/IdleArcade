@@ -1,0 +1,338 @@
+[gd_scene load_steps=5 format=3 uid="uid://csettingsmodal09"]
+
+[ext_resource type="Script" path="res://scripts/ui/settings_modal.gd" id="1_settings"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_card"]
+bg_color = Color(0.0666667, 0.0901961, 0.141176, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.85, 1, 0.65)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_setting_card"]
+bg_color = Color(0.0470588, 0.0705882, 0.117647, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.12, 0.22, 0.35, 0.75)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 14.0
+content_margin_top = 12.0
+content_margin_right = 14.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_toggle_btn"]
+bg_color = Color(0.08, 0.14, 0.22, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.85, 1, 0.4)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="SettingsModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_settings")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.04, 0.08, 0.82)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ModalCard" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(660, 820)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 12
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "⚙️"
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "⚙️ Settings // Audio & System"
+
+[node name="Spacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CloseButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 22
+text = "✕"
+
+[node name="HSeparator1" type="HSeparator" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="SettingsScroll" type="ScrollContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 0
+horizontal_scroll_mode = 0
+
+[node name="SettingsVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 0
+theme_override_constants/separation = 14
+
+[node name="MasterVolumeCard" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_setting_card")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/MasterVolumeCard"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/MasterVolumeCard/VBox"]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="Label" type="Label" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/MasterVolumeCard/VBox/HeaderHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "🔊 Master Lautstärke"
+
+[node name="Spacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/MasterVolumeCard/VBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="MasterVolumeValue" type="Label" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/MasterVolumeCard/VBox/HeaderHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "100%"
+
+[node name="MasterVolumeSlider" type="HSlider" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/MasterVolumeCard/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="MasterMuteToggle" type="Button" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/MasterVolumeCard/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+toggle_mode = true
+theme_override_font_sizes/font_size = 15
+text = "🔊 Master Ton: Aktiv"
+
+[node name="SFXVolumeCard" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_setting_card")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/SFXVolumeCard"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/SFXVolumeCard/VBox"]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="Label" type="Label" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/SFXVolumeCard/VBox/HeaderHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "🎮 SFX Lautstärke"
+
+[node name="Spacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/SFXVolumeCard/VBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="SFXVolumeValue" type="Label" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/SFXVolumeCard/VBox/HeaderHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "100%"
+
+[node name="SFXVolumeSlider" type="HSlider" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/SFXVolumeCard/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="SFXMuteToggle" type="Button" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/SFXVolumeCard/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+toggle_mode = true
+theme_override_font_sizes/font_size = 15
+text = "🎮 SFX Ton: Aktiv"
+
+[node name="MusicVolumeCard" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_setting_card")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/MusicVolumeCard"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/MusicVolumeCard/VBox"]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="Label" type="Label" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/MusicVolumeCard/VBox/HeaderHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "🎵 Musik Lautstärke"
+
+[node name="Spacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/MusicVolumeCard/VBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="MusicVolumeValue" type="Label" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/MusicVolumeCard/VBox/HeaderHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "80%"
+
+[node name="MusicVolumeSlider" type="HSlider" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/MusicVolumeCard/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+max_value = 1.0
+step = 0.01
+value = 0.8
+
+[node name="MusicMuteToggle" type="Button" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/MusicVolumeCard/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+toggle_mode = true
+theme_override_font_sizes/font_size = 15
+text = "🎵 Musik Ton: Aktiv"
+
+[node name="HapticsCard" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_setting_card")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/HapticsCard"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/HapticsCard/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "📳 Haptisches Feedback"
+
+[node name="HapticsToggle" type="Button" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/HapticsCard/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+toggle_mode = true
+button_pressed = true
+theme_override_font_sizes/font_size = 15
+text = "📳 Haptik Feedback: AN"
+
+[node name="BatterySaverCard" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_setting_card")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/BatterySaverCard"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/BatterySaverCard/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "🔋 Bildrate & Energiesparmodus"
+
+[node name="BatterySaverToggle" type="Button" parent="CenterContainer/ModalCard/CardVBox/SettingsScroll/SettingsVBox/BatterySaverCard/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+toggle_mode = true
+theme_override_font_sizes/font_size = 15
+text = "🔋 Energiesparmodus (30 FPS): AUS"

@@ -1,0 +1,212 @@
+[gd_scene load_steps=26 format=3 uid="uid://dm4serverterm01"]
+
+[ext_resource type="Script" path="res://scripts/server_terminal.gd" id="1_serverterm"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_root"]
+size = Vector3(1.3, 1.8, 0.9)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_area"]
+radius = 2.4
+
+[sub_resource type="StandardMaterial3D" id="Mat_RackChassis"]
+albedo_color = Color(0.1, 0.12, 0.16, 1)
+metallic = 0.8
+roughness = 0.35
+
+[sub_resource type="BoxMesh" id="BoxMesh_rack"]
+material = SubResource("Mat_RackChassis")
+size = Vector3(1.2, 1.8, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="Mat_ServerBlades"]
+albedo_color = Color(0.18, 0.2, 0.24, 1)
+metallic = 0.7
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_blades"]
+material = SubResource("Mat_ServerBlades")
+size = Vector3(1, 0.5, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="Mat_ConsoleDesk"]
+albedo_color = Color(0.14, 0.16, 0.2, 1)
+metallic = 0.85
+roughness = 0.25
+
+[sub_resource type="BoxMesh" id="BoxMesh_desk"]
+material = SubResource("Mat_ConsoleDesk")
+size = Vector3(1.1, 0.12, 0.45)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Keyboard"]
+albedo_color = Color(0.22, 0.24, 0.28, 1)
+metallic = 0.4
+roughness = 0.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_keyboard"]
+material = SubResource("Mat_Keyboard")
+size = Vector3(0.65, 0.04, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="Mat_CRTHousing"]
+albedo_color = Color(0.24, 0.26, 0.28, 1)
+metallic = 0.2
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_crt_housing"]
+material = SubResource("Mat_CRTHousing")
+size = Vector3(0.7, 0.55, 0.45)
+
+[sub_resource type="StandardMaterial3D" id="Mat_CRTBezel"]
+albedo_color = Color(0.04, 0.06, 0.05, 1)
+metallic = 0.1
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_crt_bezel"]
+material = SubResource("Mat_CRTBezel")
+size = Vector3(0.58, 0.44, 0.03)
+
+[sub_resource type="StandardMaterial3D" id="Mat_LEDPower"]
+albedo_color = Color(0.1, 1, 0.3, 1)
+emission_enabled = true
+emission = Color(0.1, 1, 0.3, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_led_power"]
+material = SubResource("Mat_LEDPower")
+size = Vector3(0.04, 0.03, 0.03)
+
+[sub_resource type="StandardMaterial3D" id="Mat_LEDData"]
+albedo_color = Color(0, 0.8, 1, 1)
+emission_enabled = true
+emission = Color(0, 0.8, 1, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_led_data"]
+material = SubResource("Mat_LEDData")
+size = Vector3(0.04, 0.03, 0.03)
+
+[sub_resource type="StandardMaterial3D" id="Mat_LEDOverclock"]
+albedo_color = Color(0, 0.9, 1, 1)
+emission_enabled = true
+emission = Color(0, 0.9, 1, 1)
+emission_energy_multiplier = 2.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_led_overclock"]
+material = SubResource("Mat_LEDOverclock")
+size = Vector3(0.05, 0.04, 0.03)
+
+[sub_resource type="StandardMaterial3D" id="Mat_LEDCooldown"]
+albedo_color = Color(1, 0.6, 0.1, 1)
+emission_enabled = true
+emission = Color(1, 0.6, 0.1, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_led_cooldown"]
+material = SubResource("Mat_LEDCooldown")
+size = Vector3(0.04, 0.03, 0.03)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Sparks"]
+albedo_color = Color(0, 0.92, 1, 1)
+emission_enabled = true
+emission = Color(0, 0.92, 1, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_spark_particle"]
+material = SubResource("Mat_Sparks")
+size = Vector3(0.03, 0.03, 0.03)
+
+[node name="ServerTerminal" type="StaticBody3D" groups=["interactables", "server_terminals", "terminals"]]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_serverterm")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("BoxShape3D_root")
+
+[node name="InteractionArea" type="Area3D" parent="."]
+collision_layer = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractionArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("SphereShape3D_area")
+
+[node name="PromptLabel3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
+visible = false
+billboard = 1
+text = "[E] Server Console"
+font_size = 28
+outline_size = 6
+outline_color = Color(0.05, 0.05, 0.1, 0.9)
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="RackChassis" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("BoxMesh_rack")
+
+[node name="ServerBladeUnits" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0.41)
+mesh = SubResource("BoxMesh_blades")
+
+[node name="ConsoleDesk" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0.95, 0.35)
+mesh = SubResource("BoxMesh_desk")
+
+[node name="KeyboardPlate" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 1.02, 0.38)
+mesh = SubResource("BoxMesh_keyboard")
+
+[node name="CRTMonitorHousing" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0.12)
+mesh = SubResource("BoxMesh_crt_housing")
+
+[node name="CRTScreenBezel" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0.35)
+mesh = SubResource("BoxMesh_crt_bezel")
+
+[node name="ScreenLabel3D" type="Label3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0.37)
+modulate = Color(0.1, 1, 0.4, 1)
+text = "SYS_ROOT // ONLINE
+CORE: 64T / 4.8 GHz
+RPS BOOST: READY
+[PRESS E TO OVERCLOCK]"
+font_size = 14
+outline_size = 2
+outline_color = Color(0.02, 0.1, 0.04, 0.9)
+
+[node name="StatusLEDs" type="Node3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.02, 0.52)
+
+[node name="LED_Power" type="MeshInstance3D" parent="Visuals/StatusLEDs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 0, 0)
+mesh = SubResource("BoxMesh_led_power")
+
+[node name="LED_Data" type="MeshInstance3D" parent="Visuals/StatusLEDs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0, 0)
+mesh = SubResource("BoxMesh_led_data")
+
+[node name="LED_Overclock" type="MeshInstance3D" parent="Visuals/StatusLEDs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0, 0)
+mesh = SubResource("BoxMesh_led_overclock")
+
+[node name="LED_Cooldown" type="MeshInstance3D" parent="Visuals/StatusLEDs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 0, 0)
+mesh = SubResource("BoxMesh_led_cooldown")
+
+[node name="TerminalOmniLight" type="OmniLight3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0.4)
+light_color = Color(0.1, 0.85, 1, 1)
+light_energy = 0.9
+omni_range = 3.5
+
+[node name="OverclockSparks" type="CPUParticles3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0.4)
+emitting = false
+amount = 24
+lifetime = 1.0
+mesh = SubResource("BoxMesh_spark_particle")
+direction = Vector3(0, 1, 0)
+spread = 45.0
+initial_velocity_min = 1.5
+initial_velocity_max = 3.0
+color = Color(0, 0.9, 1, 1)

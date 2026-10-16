@@ -40,6 +40,7 @@ var _speed_boost_multiplier: float = 1.0
 var _speed_boost_timer: float = 0.0
 var _anim_time: float = 0.0
 var _base_visual_y: float = 0.0
+var _footstep_accumulator: float = 0.0
 
 @onready var visuals: Node3D = $Visuals
 @onready var footstep_particles: CPUParticles3D = get_node_or_null("FootstepDust")
@@ -217,9 +218,18 @@ func _update_procedural_animation(delta: float, horizontal_vel: Vector3) -> void
 		if chibi_torso != null:
 			chibi_torso.position.y = 0.72 + sin(_anim_time * 2.0) * 0.02 * speed_ratio
 		
+		# Procedural footstep sound trigger
+		_footstep_accumulator += delta * walk_bob_frequency * speed_ratio
+		if _footstep_accumulator >= PI and is_on_floor():
+			_footstep_accumulator -= PI
+			var am = get_node_or_null("/root/AudioManager")
+			if am != null and am.has_method("play_sfx_footstep"):
+				am.play_sfx_footstep()
+		
 		if footstep_particles != null:
 			footstep_particles.emitting = true
 	else:
+		_footstep_accumulator = 0.0
 		_anim_time += delta * idle_breath_frequency
 		var breath_offset: float = sin(_anim_time) * idle_breath_amplitude
 		visuals.position.y = lerp(visuals.position.y, _base_visual_y + breath_offset, 6.0 * delta)

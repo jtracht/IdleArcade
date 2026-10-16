@@ -25,12 +25,27 @@ signal campus_quest_completed(quest_id: String, reward_energy: float, reward_bon
 # Phase 8 (Tech-Tree & Research Lab) Signals
 signal tech_researched(tech_id: String)
 
+# Phase 9 Audio Engine Signals
+signal audio_settings_changed(setting_name: String, value: Variant)
+
+# Phase 9 Campus Station Signals
+signal server_overclock_buff_started(multiplier: float, duration: float)
+signal server_overclock_buff_ended()
+
 # --- State Variables ---
 var energy: float = 0.0
 var total_energy_earned: float = 0.0
 var total_clicks: int = 0
 var sparks_collected: int = 0
 var bonus_users: int = 0
+
+# Phase 9 Audio Engine Settings
+var master_volume: float = 1.0     # Range: 0.0 to 1.0
+var music_volume: float = 0.8      # Range: 0.0 to 1.0
+var sfx_volume: float = 1.0        # Range: 0.0 to 1.0
+var master_muted: bool = false
+var music_muted: bool = false
+var sfx_muted: bool = false
 
 # Phase 4 (3D Open World & Meta-Progression) State Variables
 var avatar_speed_level: int = 0
@@ -48,6 +63,12 @@ var item_inventory: Dictionary = {
 	"coffee": 0,
 	"usb_drive": 0
 }
+
+# Phase 9 Server Room Overclock Buff State Variables
+var server_overclock_buff_timer: float = 0.0
+var server_overclock_buff_multiplier: float = 1.0
+var server_overclock_buff_active: bool = false
+var server_overclock_buff_remaining: float = 0.0
 
 var base_click_power: float = 1.0
 var base_passive_rps: float = 0.0
@@ -284,6 +305,20 @@ func reset_state() -> void:
 	upgrades.clear()
 	for up_id in DEFAULT_UPGRADES:
 		upgrades[up_id] = DEFAULT_UPGRADES[up_id].duplicate(true)
+		
+	# Phase 9 Audio Defaults
+	master_volume = 1.0
+	music_volume = 0.8
+	sfx_volume = 1.0
+	master_muted = false
+	music_muted = false
+	sfx_muted = false
+
+	# Phase 9 Server Overclock Buff Defaults
+	server_overclock_buff_timer = 0.0
+	server_overclock_buff_multiplier = 1.0
+	server_overclock_buff_active = false
+	server_overclock_buff_remaining = 0.0
 
 func _process(delta: float) -> void:
 	var safe_delta: float = maxf(0.0, delta)
@@ -309,6 +344,18 @@ func _process(delta: float) -> void:
 			var fill_pct: float = (frenzy_duration_remaining / 6.0) * 100.0
 			frenzy_updated.emit(frenzy_multiplier, fill_pct)
 
+	# Server overclock buff duration decay
+	if server_overclock_buff_timer > 0.0 or server_overclock_buff_active:
+		server_overclock_buff_timer -= safe_delta
+		server_overclock_buff_remaining = maxf(0.0, server_overclock_buff_timer)
+		if server_overclock_buff_timer <= 0.0:
+			server_overclock_buff_timer = 0.0
+			server_overclock_buff_remaining = 0.0
+			server_overclock_buff_active = false
+			server_overclock_buff_multiplier = 1.0
+			rps_changed.emit(get_effective_passive_rps())
+			server_overclock_buff_ended.emit()
+
 # --- Interface Contract Methods ---
 
 ## Registers an active core tap, updates frenzy, and rewards energy.
@@ -328,6 +375,9 @@ func tap_core() -> float:
 			frenzy_duration_remaining = 6.0
 			frenzy_meter = 0.0
 			frenzy_updated.emit(frenzy_multiplier, 100.0)
+			var am = get_node_or_null("/root/AudioManager")
+			if am != null and am.has_method("play_sfx_overdrive"):
+				am.play_sfx_overdrive()
 		else:
 			frenzy_updated.emit(frenzy_multiplier, frenzy_meter)
 	else:
@@ -425,9 +475,26 @@ func get_bonus_multiplier() -> float:
 func get_campus_item_multiplier() -> float:
 	return (1.0 + (float(collectibles_collected) * 0.10)) if is_tech_researched("tech_neural_cloud") else (1.0 + (float(collectibles_collected) * 0.05))
 
-## Returns passive RPS boosted by bonus users multiplier and campus item multiplier.
+## Returns passive RPS boosted by bonus users multiplier, campus item multiplier, tech research, and active server overclock buff.
 func get_effective_passive_rps() -> float:
-	return base_passive_rps * get_bonus_multiplier() * get_campus_item_multiplier() * (1.25 if is_tech_researched("tech_server_overclock") else 1.0)
+	return base_passive_rps * get_bonus_multiplier() * get_campus_item_multiplier() * (1.25 if is_tech_researched("tech_server_overclock") else 1.0) * (server_overclock_buff_multiplier if (server_overclock_buff_timer > 0.0 or server_overclock_buff_active) else 1.0)
+
+## Activates the Server Room Overclock temporary RPS boost event (+50% for 25s by default).
+func activate_server_overclock_buff(duration: float = 25.0, multiplier: float = 1.50) -> void:
+	server_overclock_buff_timer = duration
+	server_overclock_buff_remaining = duration
+	server_overclock_buff_multiplier = multiplier
+	server_overclock_buff_active = true
+	rps_changed.emit(get_effective_passive_rps())
+	server_overclock_buff_started.emit(multiplier, duration)
+
+## Directly awards energy (e.g. from grants, pitch stage, etc.) and emits energy_changed signal.
+func earn_energy(amount: float) -> void:
+	if amount <= 0.0:
+		return
+	energy += amount
+	total_energy_earned += amount
+	energy_changed.emit(energy, amount)
 
 ## Awards bonus users from daily quests or milestone rewards.
 func award_bonus_users(amount: int) -> void:
@@ -595,6 +662,14 @@ func save_to_disk() -> void:
 		"campus_quests": campus_quests.duplicate(true),
 		"researched_techs": researched_techs.duplicate(),
 		"item_inventory": item_inventory.duplicate(),
+		"audio_settings": {
+			"master_volume": master_volume,
+			"music_volume": music_volume,
+			"sfx_volume": sfx_volume,
+			"master_muted": master_muted,
+			"music_muted": music_muted,
+			"sfx_muted": sfx_muted
+		},
 		"upgrades": {}
 	}
 	
@@ -726,6 +801,20 @@ func load_from_disk() -> bool:
 		energy += offline_gain
 		total_energy_earned += offline_gain
 		
+	# Phase 9 Audio Settings Deserialization
+	var audio_data = data.get("audio_settings", {})
+	if audio_data is Dictionary and not audio_data.is_empty():
+		master_volume = clampf(float(audio_data.get("master_volume", 1.0)), 0.0, 1.0)
+		music_volume = clampf(float(audio_data.get("music_volume", 0.8)), 0.0, 1.0)
+		sfx_volume = clampf(float(audio_data.get("sfx_volume", 1.0)), 0.0, 1.0)
+		master_muted = bool(audio_data.get("master_muted", false))
+		music_muted = bool(audio_data.get("music_muted", false))
+		sfx_muted = bool(audio_data.get("sfx_muted", false))
+		
+		var am = get_node_or_null("/root/AudioManager")
+		if am != null and am.has_method("apply_settings"):
+			am.apply_settings(get_audio_settings())
+			
 	energy_changed.emit(energy, offline_gain)
 	rps_changed.emit(get_effective_passive_rps())
 	frenzy_updated.emit(frenzy_multiplier, 0.0)
@@ -790,6 +879,9 @@ func research_tech(tech_id: String) -> bool:
 	recalculate_stats()
 	energy_changed.emit(energy, -cost)
 	tech_researched.emit(tech_id)
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("play_sfx_research"):
+		am.play_sfx_research()
 	if tech_id == "tech_coffee_automation":
 		avatar_stat_updated.emit("avatar_speed", get_effective_avatar_speed())
 	elif tech_id == "tech_server_overclock" or tech_id == "tech_neural_cloud":
@@ -843,4 +935,68 @@ func get_worker_production_multiplier() -> float:
 ## Returns angel investor spark spawn chance multiplier (1.5x with tech_quantum_ads).
 func get_angel_investor_spawn_chance_multiplier() -> float:
 	return 1.5 if is_tech_researched("tech_quantum_ads") else 1.0
+
+# ==============================================================================
+# Phase 9 Audio Settings & Management Methods
+# ==============================================================================
+
+## Updates master volume (0.0 to 1.0) and persists state
+func set_master_volume(val: float) -> void:
+	master_volume = clampf(val, 0.0, 1.0)
+	audio_settings_changed.emit("master_volume", master_volume)
+	var audio = get_node_or_null("/root/AudioManager")
+	if audio != null and audio.has_method("set_master_volume"):
+		audio.set_master_volume(master_volume)
+
+## Updates music volume (0.0 to 1.0) and persists state
+func set_music_volume(val: float) -> void:
+	music_volume = clampf(val, 0.0, 1.0)
+	audio_settings_changed.emit("music_volume", music_volume)
+	var audio = get_node_or_null("/root/AudioManager")
+	if audio != null and audio.has_method("set_music_volume"):
+		audio.set_music_volume(music_volume)
+
+## Updates SFX volume (0.0 to 1.0) and persists state
+func set_sfx_volume(val: float) -> void:
+	sfx_volume = clampf(val, 0.0, 1.0)
+	audio_settings_changed.emit("sfx_volume", sfx_volume)
+	var audio = get_node_or_null("/root/AudioManager")
+	if audio != null and audio.has_method("set_sfx_volume"):
+		audio.set_sfx_volume(sfx_volume)
+
+## Toggles or sets master mute
+func set_master_muted(muted: bool) -> void:
+	master_muted = muted
+	audio_settings_changed.emit("master_muted", master_muted)
+	var audio = get_node_or_null("/root/AudioManager")
+	if audio != null and audio.has_method("set_master_mute"):
+		audio.set_master_mute(master_muted)
+
+## Toggles or sets music mute
+func set_music_muted(muted: bool) -> void:
+	music_muted = muted
+	audio_settings_changed.emit("music_muted", music_muted)
+	var audio = get_node_or_null("/root/AudioManager")
+	if audio != null and audio.has_method("set_music_mute"):
+		audio.set_music_mute(music_muted)
+
+## Toggles or sets SFX mute
+func set_sfx_muted(muted: bool) -> void:
+	sfx_muted = muted
+	audio_settings_changed.emit("sfx_muted", sfx_muted)
+	var audio = get_node_or_null("/root/AudioManager")
+	if audio != null and audio.has_method("set_sfx_mute"):
+		audio.set_sfx_mute(sfx_muted)
+
+## Returns current audio settings dictionary
+func get_audio_settings() -> Dictionary:
+	return {
+		"master_volume": master_volume,
+		"music_volume": music_volume,
+		"sfx_volume": sfx_volume,
+		"master_muted": master_muted,
+		"music_muted": music_muted,
+		"sfx_muted": sfx_muted
+	}
+
 

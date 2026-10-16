@@ -1,0 +1,254 @@
+[gd_scene load_steps=34 format=3 uid="uid://dm4pitchstage01"]
+
+[ext_resource type="Script" path="res://scripts/pitch_stage.gd" id="1_pitchstage"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_root"]
+size = Vector3(3.8, 0.4, 3)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_area"]
+radius = 3.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_OakWood"]
+albedo_color = Color(0.48, 0.32, 0.18, 1)
+roughness = 0.7
+
+[sub_resource type="BoxMesh" id="BoxMesh_planks"]
+material = SubResource("Mat_OakWood")
+size = Vector3(3.6, 0.35, 2.8)
+
+[sub_resource type="StandardMaterial3D" id="Mat_GoldBorder"]
+albedo_color = Color(0.85, 0.7, 0.15, 1)
+metallic = 0.8
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_border"]
+material = SubResource("Mat_GoldBorder")
+size = Vector3(3.7, 0.1, 2.9)
+
+[sub_resource type="StandardMaterial3D" id="Mat_TechNavy"]
+albedo_color = Color(0.08, 0.12, 0.22, 1)
+roughness = 0.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_backdrop"]
+material = SubResource("Mat_TechNavy")
+size = Vector3(3.2, 2.2, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Walnut"]
+albedo_color = Color(0.32, 0.2, 0.12, 1)
+roughness = 0.65
+
+[sub_resource type="BoxMesh" id="BoxMesh_podium"]
+material = SubResource("Mat_Walnut")
+size = Vector3(0.65, 1.05, 0.45)
+
+[sub_resource type="StandardMaterial3D" id="Mat_SilverMetal"]
+albedo_color = Color(0.7, 0.7, 0.75, 1)
+metallic = 0.9
+roughness = 0.2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_mic_stand"]
+material = SubResource("Mat_SilverMetal")
+top_radius = 0.015
+bottom_radius = 0.015
+height = 0.25
+radial_segments = 6
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="Mat_DarkChrome"]
+albedo_color = Color(0.2, 0.2, 0.25, 1)
+metallic = 0.8
+roughness = 0.3
+
+[sub_resource type="SphereMesh" id="SphereMesh_mic_head"]
+material = SubResource("Mat_DarkChrome")
+radius = 0.03
+height = 0.06
+radial_segments = 6
+rings = 3
+
+[sub_resource type="StandardMaterial3D" id="Mat_Skin"]
+albedo_color = Color(0.95, 0.78, 0.65, 1)
+roughness = 0.8
+
+[sub_resource type="SphereMesh" id="SphereMesh_investor_head"]
+material = SubResource("Mat_Skin")
+radius = 0.22
+height = 0.44
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="Mat_SilverHair"]
+albedo_color = Color(0.75, 0.75, 0.8, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_investor_hair"]
+material = SubResource("Mat_SilverHair")
+size = Vector3(0.38, 0.18, 0.38)
+
+[sub_resource type="StandardMaterial3D" id="Mat_GlossBlack"]
+albedo_color = Color(0.05, 0.05, 0.08, 1)
+metallic = 0.5
+roughness = 0.1
+
+[sub_resource type="BoxMesh" id="BoxMesh_investor_sunglasses"]
+material = SubResource("Mat_GlossBlack")
+size = Vector3(0.42, 0.12, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="Mat_NavySuit"]
+albedo_color = Color(0.12, 0.16, 0.28, 1)
+roughness = 0.7
+
+[sub_resource type="BoxMesh" id="BoxMesh_investor_torso"]
+material = SubResource("Mat_NavySuit")
+size = Vector3(0.55, 0.65, 0.35)
+
+[sub_resource type="StandardMaterial3D" id="Mat_GoldTie"]
+albedo_color = Color(1, 0.84, 0, 1)
+metallic = 0.85
+roughness = 0.25
+
+[sub_resource type="BoxMesh" id="BoxMesh_investor_tie"]
+material = SubResource("Mat_GoldTie")
+size = Vector3(0.1, 0.32, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_investor_arm_l"]
+material = SubResource("Mat_NavySuit")
+size = Vector3(0.14, 0.45, 0.14)
+
+[sub_resource type="BoxMesh" id="BoxMesh_investor_arm_r"]
+material = SubResource("Mat_NavySuit")
+size = Vector3(0.14, 0.45, 0.14)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Leather"]
+albedo_color = Color(0.35, 0.22, 0.14, 1)
+roughness = 0.45
+
+[sub_resource type="BoxMesh" id="BoxMesh_investor_briefcase"]
+material = SubResource("Mat_Leather")
+size = Vector3(0.42, 0.32, 0.16)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Confetti"]
+albedo_color = Color(1, 0.85, 0.2, 1)
+emission_enabled = true
+emission = Color(1, 0.85, 0.2, 1)
+emission_energy_multiplier = 1.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_confetti_particle"]
+material = SubResource("Mat_Confetti")
+size = Vector3(0.04, 0.04, 0.04)
+
+[node name="PitchStage" type="StaticBody3D" groups=["interactables", "pitch_stages", "stages"]]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_pitchstage")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+shape = SubResource("BoxShape3D_root")
+
+[node name="InteractionArea" type="Area3D" parent="."]
+collision_layer = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractionArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("SphereShape3D_area")
+
+[node name="PromptLabel3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.7, 0)
+visible = false
+billboard = 1
+text = "[E] Angel Investor Pitch"
+font_size = 28
+outline_size = 6
+outline_color = Color(0.1, 0.08, 0.02, 0.9)
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="StagePlanks" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.175, 0)
+mesh = SubResource("BoxMesh_planks")
+
+[node name="StageBorderFrame" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.32, 0)
+mesh = SubResource("BoxMesh_border")
+
+[node name="BackdropBoard" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, -1.25)
+mesh = SubResource("BoxMesh_backdrop")
+
+[node name="BackdropBannerLabel" type="Label3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -1.19)
+modulate = Color(1, 0.84, 0, 1)
+text = "UNICORN VENTURES
+ANGEL PITCH STAGE"
+font_size = 20
+outline_size = 3
+outline_color = Color(0.1, 0.08, 0, 0.9)
+
+[node name="Podium" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7, 0.85, 0.3)
+mesh = SubResource("BoxMesh_podium")
+
+[node name="MicStand" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7, 1.45, 0.3)
+mesh = SubResource("CylinderMesh_mic_stand")
+
+[node name="MicHead" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7, 1.58, 0.32)
+mesh = SubResource("SphereMesh_mic_head")
+
+[node name="StageSpotlight" type="SpotLight3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 0.573576, 0.819152, 0, -0.819152, 0.573576, 0, 4.2, 1.8)
+light_color = Color(1, 0.94, 0.78, 1)
+light_energy = 2.5
+spot_range = 10.0
+spot_angle = 38.0
+
+[node name="ChibiAngelInvestor" type="Node3D" parent="Visuals"]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.65, 0.35, -0.2)
+
+[node name="Head" type="MeshInstance3D" parent="Visuals/ChibiAngelInvestor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0)
+mesh = SubResource("SphereMesh_investor_head")
+
+[node name="Hair" type="MeshInstance3D" parent="Visuals/ChibiAngelInvestor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.32, -0.04)
+mesh = SubResource("BoxMesh_investor_hair")
+
+[node name="Sunglasses" type="MeshInstance3D" parent="Visuals/ChibiAngelInvestor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.18, 0.22)
+mesh = SubResource("BoxMesh_investor_sunglasses")
+
+[node name="TorsoSuit" type="MeshInstance3D" parent="Visuals/ChibiAngelInvestor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.65, 0)
+mesh = SubResource("BoxMesh_investor_torso")
+
+[node name="GoldTie" type="MeshInstance3D" parent="Visuals/ChibiAngelInvestor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.68, 0.19)
+mesh = SubResource("BoxMesh_investor_tie")
+
+[node name="LeftArm" type="MeshInstance3D" parent="Visuals/ChibiAngelInvestor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.35, 0.6, 0)
+mesh = SubResource("BoxMesh_investor_arm_l")
+
+[node name="RightArm" type="MeshInstance3D" parent="Visuals/ChibiAngelInvestor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.35, 0.6, 0)
+mesh = SubResource("BoxMesh_investor_arm_r")
+
+[node name="CashBriefcase" type="MeshInstance3D" parent="Visuals/ChibiAngelInvestor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 0.16, 0.22)
+mesh = SubResource("BoxMesh_investor_briefcase")
+
+[node name="ConfettiExplosion" type="CPUParticles3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+emitting = false
+amount = 60
+lifetime = 2.0
+one_shot = true
+explosiveness = 0.9
+mesh = SubResource("BoxMesh_confetti_particle")
+direction = Vector3(0, 1, 0)
+spread = 60.0
+initial_velocity_min = 3.0
+initial_velocity_max = 6.0
+color = Color(1, 0.85, 0.2, 1)

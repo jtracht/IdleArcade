@@ -86,6 +86,11 @@ func collect(collector: Node3D = null) -> void:
 		
 	collected.emit(item_type, reward_amount)
 	
+	# Trigger procedural pickup chime
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("play_sfx_pickup"):
+		am.play_sfx_pickup(item_type)
+	
 	# Pickup celebration animation
 	_play_pickup_animation()
 

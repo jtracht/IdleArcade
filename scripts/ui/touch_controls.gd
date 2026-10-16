@@ -98,6 +98,8 @@ var _cached_gate_style: StyleBoxFlat = null
 var _cached_denied_style: StyleBoxFlat = null
 var _cached_collectible_style: StyleBoxFlat = null
 var _cached_research_style: StyleBoxFlat = null
+var _cached_overclock_style: StyleBoxFlat = null
+var _cached_pitch_style: StyleBoxFlat = null
 
 # ------------------------------------------------------------------------------
 # Lifecycle
@@ -242,6 +244,28 @@ func _setup_styles() -> void:
 	_cached_research_style.shadow_size = 12
 	_cached_research_style.anti_aliasing = true
 
+	# Dynamic Overclock style (Electric Blue: Neon-Cyan border, deep navy bg, cyan glow)
+	_cached_overclock_style = StyleBoxFlat.new()
+	_cached_overclock_style.bg_color = Color(0.04, 0.20, 0.42, 0.90)
+	_cached_overclock_style.border_color = Color(0.0, 0.92, 1.0, 0.98)
+	_cached_overclock_style.set_border_width_all(3)
+	_cached_overclock_style.set_corner_radius_all(50)
+	_cached_overclock_style.corner_detail = 24
+	_cached_overclock_style.shadow_color = Color(0.0, 0.85, 1.0, 0.6)
+	_cached_overclock_style.shadow_size = 12
+	_cached_overclock_style.anti_aliasing = true
+
+	# Dynamic Pitch Stage style (Gold: Warm Gold border, dark gold bg, gold spotlight glow)
+	_cached_pitch_style = StyleBoxFlat.new()
+	_cached_pitch_style.bg_color = Color(0.38, 0.30, 0.05, 0.92)
+	_cached_pitch_style.border_color = Color(1.0, 0.84, 0.0, 1.0)
+	_cached_pitch_style.set_border_width_all(3)
+	_cached_pitch_style.set_corner_radius_all(50)
+	_cached_pitch_style.corner_detail = 24
+	_cached_pitch_style.shadow_color = Color(1.0, 0.80, 0.1, 0.6)
+	_cached_pitch_style.shadow_size = 12
+	_cached_pitch_style.anti_aliasing = true
+
 # ------------------------------------------------------------------------------
 # Input Isolation Shield (Tier 2 & 3)
 # ------------------------------------------------------------------------------
@@ -270,6 +294,10 @@ func register_interactable(node: Node3D, label_text: String = "Action [E]") -> v
 	if label_text == "Action [E]" or label_text.is_empty():
 		if node.has_method("open_research") or node.is_in_group("research_terminals"):
 			label_text = "Research [E]"
+		elif node.is_in_group("server_terminals") or node.has_method("activate_overclock") or node.get("action_label") == "Overclock [E]":
+			label_text = "Overclock [E]"
+		elif node.is_in_group("pitch_stages") or node.has_method("pitch_investor") or node.get("action_label") == "Pitch [E]":
+			label_text = "Pitch [E]"
 		elif node is CharacterBody3D or node.has_method("interact"):
 			label_text = "Talk [E]"
 		elif node is StaticBody3D or node.has_method("attempt_unlock"):
@@ -278,6 +306,10 @@ func register_interactable(node: Node3D, label_text: String = "Action [E]") -> v
 			label_text = "Collect [E]"
 	elif node.has_method("open_research") or node.is_in_group("research_terminals") or label_text == "Research [E]":
 		label_text = "Research [E]"
+	elif node.is_in_group("server_terminals") or node.has_method("activate_overclock") or "Overclock" in label_text:
+		label_text = "Overclock [E]"
+	elif node.is_in_group("pitch_stages") or node.has_method("pitch_investor") or "Pitch" in label_text:
+		label_text = "Pitch [E]"
 	_update_action_button_visuals(label_text, true)
 	interactable_registered.emit(node, label_text)
 	interactable_changed.emit(node)
@@ -296,6 +328,10 @@ func unregister_interactable(node: Node3D) -> void:
 			var remaining_label = "Action [E]"
 			if active_interactable.has_method("open_research") or active_interactable.is_in_group("research_terminals"):
 				remaining_label = "Research [E]"
+			elif active_interactable.is_in_group("server_terminals") or active_interactable.has_method("activate_overclock") or active_interactable.get("action_label") == "Overclock [E]":
+				remaining_label = "Overclock [E]"
+			elif active_interactable.is_in_group("pitch_stages") or active_interactable.has_method("pitch_investor") or active_interactable.get("action_label") == "Pitch [E]":
+				remaining_label = "Pitch [E]"
 			elif active_interactable is CharacterBody3D or active_interactable.has_method("interact"):
 				remaining_label = "Talk [E]"
 			elif active_interactable is StaticBody3D or active_interactable.has_method("attempt_unlock"):
@@ -411,6 +447,14 @@ func _update_action_button_visuals(label_text: String = "", is_active: bool = fa
 			text_to_set = "Research [E]"
 			if _cached_research_style != null:
 				action_button.add_theme_stylebox_override("normal", _cached_research_style)
+		elif "Overclock" in text_to_set or target.is_in_group("server_terminals") or target.has_method("activate_overclock"):
+			text_to_set = "Overclock [E]"
+			if _cached_overclock_style != null:
+				action_button.add_theme_stylebox_override("normal", _cached_overclock_style)
+		elif "Pitch" in text_to_set or target.is_in_group("pitch_stages") or target.has_method("pitch_investor"):
+			text_to_set = "Pitch [E]"
+			if _cached_pitch_style != null:
+				action_button.add_theme_stylebox_override("normal", _cached_pitch_style)
 		elif target.has_method("interact"):
 			var gs = get_node_or_null("/root/GameState")
 			var q_id: String = str(target.get("quest_id")) if target.get("quest_id") != null else ""
@@ -457,6 +501,10 @@ func _update_action_button_visuals(label_text: String = "", is_active: bool = fa
 		# Explicit label provided without object reference
 		if "Research" in text_to_set and _cached_research_style != null:
 			action_button.add_theme_stylebox_override("normal", _cached_research_style)
+		elif "Overclock" in text_to_set and _cached_overclock_style != null:
+			action_button.add_theme_stylebox_override("normal", _cached_overclock_style)
+		elif "Pitch" in text_to_set and _cached_pitch_style != null:
+			action_button.add_theme_stylebox_override("normal", _cached_pitch_style)
 		elif "Talk" in text_to_set and _cached_npc_style != null:
 			action_button.add_theme_stylebox_override("normal", _cached_npc_style)
 		elif "Unlock" in text_to_set and _cached_gate_style != null:

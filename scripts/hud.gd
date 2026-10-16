@@ -15,6 +15,7 @@ const LEADERBOARD_MODAL_SCENE: PackedScene = preload("res://scenes/ui/leaderboar
 const GUILD_MODAL_SCENE: PackedScene = preload("res://scenes/ui/guild_modal.tscn")
 const QUEST_MODAL_SCENE: PackedScene = preload("res://scenes/ui/quest_modal.tscn")
 const TECH_TREE_MODAL_SCENE: PackedScene = preload("res://scenes/ui/tech_tree_modal.tscn")
+const SETTINGS_MODAL_SCENE: PackedScene = preload("res://scenes/ui/settings_modal.tscn")
 
 @onready var status_indicator: Label = %StatusIndicator
 @onready var auth_button: Button = %AuthButton
@@ -23,6 +24,8 @@ const TECH_TREE_MODAL_SCENE: PackedScene = preload("res://scenes/ui/tech_tree_mo
 @onready var quest_button: Button = %QuestButton
 @onready var campus_button: Button = get_node_or_null("%CampusButton")
 @onready var tech_tree_button: Button = get_node_or_null("%TechTreeButton")
+@onready var settings_button: Button = get_node_or_null("%SettingsButton")
+
 @onready var burger_menu_button: Button = get_node_or_null("%BurgerMenuButton")
 @onready var nav_drawer: Control = get_node_or_null("%NavDrawer")
 @onready var close_nav_button: Button = get_node_or_null("%CloseNavButton")
@@ -373,6 +376,11 @@ func _bind_action_bar_buttons() -> void:
 			close_nav_drawer()
 			open_modal(TECH_TREE_MODAL_SCENE)
 		)
+	if settings_button != null:
+		settings_button.pressed.connect(func():
+			close_nav_drawer()
+			open_modal(SETTINGS_MODAL_SCENE)
+		)
 
 func _on_campus_button_pressed() -> void:
 	var main_3d = get_tree().root.find_child("Main3D", true, false)
@@ -385,6 +393,9 @@ func _on_campus_button_pressed() -> void:
 
 func open_tech_tree_modal() -> Control:
 	return open_modal(TECH_TREE_MODAL_SCENE)
+
+func open_settings_modal() -> Control:
+	return open_modal(SETTINGS_MODAL_SCENE)
 
 func open_modal(modal_scene: PackedScene) -> Control:
 	close_nav_drawer()
