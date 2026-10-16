@@ -35,6 +35,14 @@ jobs:
             keytool -genkeypair -v -keystore keystores/release.keystore -storepass android -alias genericreleasekey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=IdleArcade, OU=Development, O=IdleArcade, L=Berlin, ST=Berlin, C=DE" || true
           fi
 
+      - name: Import Godot Project Cache
+        run: |
+          TARGET_DIR="."
+          if [ -d "IdleArcade" ]; then
+            TARGET_DIR="IdleArcade"
+          fi
+          godot --headless --path "$TARGET_DIR" --editor --quit || true
+
       - name: Run Python CI/CD & E2E Verification
         run: |
           TARGET_DIR="."
@@ -48,14 +56,6 @@ jobs:
           python3 $TARGET_DIR/tests/test_phase6_visuals.py
           python3 $TARGET_DIR/tests/test_phase7_redesign.py
           python3 $TARGET_DIR/tests/test_phase8_verify.py
-
-      - name: Import Godot Project Cache
-        run: |
-          TARGET_DIR="."
-          if [ -d "IdleArcade" ]; then
-            TARGET_DIR="IdleArcade"
-          fi
-          godot --headless --path "$TARGET_DIR" --editor --quit || true
 
       - name: Run Godot Headless Phase 5 Mobile Tests
         run: |
