@@ -48,6 +48,14 @@ signal campaign_buff_ended(buff_type: String)
 signal unicorn_espresso_buff_started(duration: float, avatar_boost: float, worker_boost: float)
 signal unicorn_espresso_buff_ended()
 
+# Phase 12 IPO ("Going Public") Prestige & Trophy Signals
+signal ipo_completed(angel_shares_gained: int, total_angel_shares: int, multiplier: float)
+signal angel_shares_changed(total_shares: int, delta_shares: int)
+signal trophy_unlocked(trophy_id: String)
+signal daily_streak_updated(new_streak: int)
+signal daily_tasks_updated(tasks: Array)
+signal daily_task_claimed(task_id: String, reward_dict: Dictionary)
+
 # --- State Variables ---
 var energy: float = 0.0
 var total_energy_earned: float = 0.0
@@ -101,6 +109,19 @@ var campaign_speed_buff_multiplier: float = 1.0
 var unicorn_espresso_buff_active: bool = false
 var unicorn_espresso_buff_timer: float = 0.0
 var unicorn_espresso_buff_remaining: float = 0.0
+
+# Phase 12 IPO ("Going Public") Prestige Constants & State Variables
+const IPO_ENERGY_THRESHOLD: float = 1000000.0  # 1M Lifetime Energy
+
+var total_lifetime_energy: float = 0.0
+var angel_shares: int = 0
+var total_ipos_completed: int = 0
+var unlocked_trophies: Array[String] = []
+var daily_streak: int = 0
+var last_daily_challenge_date: String = ""
+var daily_board_streak: int = 0
+var daily_board_last_login_day: int = 0
+var daily_board_tasks: Array[Dictionary] = []
 
 var base_click_power: float = 1.0
 var base_passive_rps: float = 0.0
@@ -299,11 +320,87 @@ const TECH_DEFINITIONS: Dictionary = {
 	}
 }
 
+const DAILY_TASK_CATALOG: Dictionary = {
+	"task_hype": {
+		"id": "task_hype",
+		"title": "3x Viraler Hype",
+		"description": "Erreiche 3x Viralen Hype",
+		"target": 3,
+		"reward": {
+			"energy": 10000.0,
+			"description": "10.000 Energy"
+		}
+	},
+	"task_briefcases": {
+		"id": "task_briefcases",
+		"title": "5 Aktenkoffer per Drohne",
+		"description": "Sammle 5 Aktenkoffer per Drohne",
+		"target": 5,
+		"reward": {
+			"energy": 15000.0,
+			"angel_shares": 1,
+			"description": "15.000 Energy, 1 Angel Share"
+		}
+	},
+	"task_espresso": {
+		"id": "task_espresso",
+		"title": "1 Unicorn Espresso",
+		"description": "Braue 1 Unicorn Espresso",
+		"target": 1,
+		"reward": {
+			"energy": 20000.0,
+			"rps_buff": 2.0,
+			"duration": 45.0,
+			"description": "20.000 Energy, 2x RPS buff"
+		}
+	},
+	"task_server_hack": {
+		"id": "task_server_hack",
+		"title": "1 Cyber-Sync an Serverkonsole",
+		"description": "Führe 1 Cyber-Sync an Serverkonsole durch",
+		"target": 1,
+		"reward": {
+			"energy": 12000.0,
+			"description": "12.000 Energy"
+		}
+	},
+	"task_core_taps": {
+		"id": "task_core_taps",
+		"title": "50x Reactor Core",
+		"description": "Tippe 50x auf den Reactor Core",
+		"target": 50,
+		"reward": {
+			"energy": 8000.0,
+			"description": "8.000 Energy"
+		}
+	},
+	"task_buy_upgrades": {
+		"id": "task_buy_upgrades",
+		"title": "3 Upgrades kaufen",
+		"description": "Kaufe 3 beliebige Upgrades",
+		"target": 3,
+		"reward": {
+			"energy": 15000.0,
+			"description": "15.000 Energy"
+		}
+	}
+}
+
+const DAILY_TASK_KEYS: Array[String] = [
+	"task_hype",
+	"task_briefcases",
+	"task_espresso",
+	"task_server_hack",
+	"task_core_taps",
+	"task_buy_upgrades"
+]
+
 func _init() -> void:
 	reset_state()
 
 func _ready() -> void:
 	print("[GameState] Autoload singleton initialized.")
+	get_daily_tasks()
 
 ## Resets game state to default baseline values
 func reset_state() -> void:
@@ -367,6 +464,17 @@ func reset_state() -> void:
 	unicorn_espresso_buff_timer = 0.0
 	unicorn_espresso_buff_remaining = 0.0
 
+	# Phase 12 IPO ("Going Public") Prestige Defaults
+	total_lifetime_energy = 0.0
+	angel_shares = 0
+	total_ipos_completed = 0
+	unlocked_trophies.clear()
+	daily_streak = 0
+	last_daily_challenge_date = ""
+	daily_board_streak = 0
+	daily_board_last_login_day = 0
+	daily_board_tasks.clear()
+
 func _process(delta: float) -> void:
 	var safe_delta: float = maxf(0.0, delta)
 	var clamped_delta: float = minf(0.1, safe_delta)
@@ -377,6 +485,7 @@ func _process(delta: float) -> void:
 		var passive_gain: float = effective_rps * frenzy_multiplier * clamped_delta
 		energy += passive_gain
 		total_energy_earned += passive_gain
+		total_lifetime_energy += passive_gain
 		energy_changed.emit(energy, passive_gain)
 		
 	# Frenzy duration decay
@@ -434,11 +543,13 @@ func _process(delta: float) -> void:
 
 ## Registers an active core tap, updates frenzy, and rewards energy.
 func tap_core() -> float:
-	var earned: float = base_click_power * frenzy_multiplier
+	var earned: float = base_click_power * frenzy_multiplier * get_angel_share_multiplier()
 	energy += earned
 	total_energy_earned += earned
+	total_lifetime_energy += earned
 	total_clicks += 1
 	core_tapped.emit(total_clicks)
+	advance_daily_task("task_core_taps", 1)
 	
 	if not is_frenzy_active:
 		frenzy_meter = minf(100.0, frenzy_meter + 4.0)
@@ -449,6 +560,7 @@ func tap_core() -> float:
 			frenzy_duration_remaining = 6.0
 			frenzy_meter = 0.0
 			frenzy_updated.emit(frenzy_multiplier, 100.0)
+			advance_daily_task("task_hype", 1)
 			var am = get_node_or_null("/root/AudioManager")
 			if am != null and am.has_method("play_sfx_overdrive"):
 				am.play_sfx_overdrive()
@@ -463,9 +575,10 @@ func tap_core() -> float:
 
 ## Registers a bonus spark capture and rewards lump-sum energy.
 func collect_spark() -> float:
-	var earned: float = maxf(50.0, base_passive_rps * 25.0)
+	var earned: float = maxf(50.0, base_passive_rps * 25.0) * get_angel_share_multiplier()
 	energy += earned
 	total_energy_earned += earned
+	total_lifetime_energy += earned
 	sparks_collected += 1
 	spark_collected.emit(sparks_collected)
 	energy_changed.emit(energy, earned)
@@ -485,6 +598,7 @@ func buy_upgrade(upgrade_id: String) -> bool:
 	up["level"] = int(up["level"]) + 1
 	var next_cost: float = roundf(float(up["base_cost"]) * pow(float(up["cost_mult"]), float(up["level"])))
 	up["current_cost"] = next_cost
+	advance_daily_task("task_buy_upgrades", 1)
 	
 	recalculate_stats()
 	
@@ -553,7 +667,7 @@ func get_campus_item_multiplier() -> float:
 ## Returns passive RPS boosted by bonus users multiplier, campus item multiplier, tech research, active server overclock buff, and active campaign buff.
 func get_effective_passive_rps() -> float:
 	var camp_rps_mult: float = campaign_rps_buff_multiplier if campaign_rps_buff_timer > 0.0 else 1.0
-	return base_passive_rps * get_bonus_multiplier() * get_campus_item_multiplier() * (1.25 if is_tech_researched("tech_server_overclock") else 1.0) * (server_overclock_buff_multiplier if (server_overclock_buff_timer > 0.0 or server_overclock_buff_active) else 1.0) * camp_rps_mult
+	return base_passive_rps * get_bonus_multiplier() * get_campus_item_multiplier() * (1.25 if is_tech_researched("tech_server_overclock") else 1.0) * (server_overclock_buff_multiplier if (server_overclock_buff_timer > 0.0 or server_overclock_buff_active) else 1.0) * camp_rps_mult * get_angel_share_multiplier()
 
 ## Activates the Server Room Overclock temporary RPS boost event (+50% for 25s by default).
 func activate_server_overclock_buff(duration: float = 25.0, multiplier: float = 1.50) -> void:
@@ -561,6 +675,7 @@ func activate_server_overclock_buff(duration: float = 25.0, multiplier: float = 
 	server_overclock_buff_remaining = duration
 	server_overclock_buff_multiplier = multiplier
 	server_overclock_buff_active = true
+	advance_daily_task("task_server_hack", 1)
 	rps_changed.emit(get_effective_passive_rps())
 	server_overclock_buff_started.emit(multiplier, duration)
 
@@ -576,6 +691,7 @@ func get_campaign_chapter() -> int:
 func advance_campaign_chapter() -> void:
 	campaign_chapter += 1
 	campaign_chapter_changed.emit(campaign_chapter)
+	check_and_update_trophies()
 	save_to_disk()
 
 ## Returns true if the specified campaign quest has been completed.
@@ -600,6 +716,7 @@ func activate_unicorn_espresso_buff(duration: float = 60.0) -> void:
 	unicorn_espresso_buff_timer = duration
 	unicorn_espresso_buff_remaining = duration
 	unicorn_espresso_buff_active = true
+	advance_daily_task("task_espresso", 1)
 	unicorn_espresso_buff_started.emit(duration, 1.50, 1.20)
 
 ## Returns true if Unicorn Espresso buff is currently active.
@@ -629,6 +746,7 @@ func earn_energy(amount: float) -> void:
 		return
 	energy += amount
 	total_energy_earned += amount
+	total_lifetime_energy += amount
 	energy_changed.emit(energy, amount)
 
 ## Awards bonus users from daily quests or milestone rewards.
@@ -638,6 +756,7 @@ func award_bonus_users(amount: int) -> void:
 	bonus_users += amount
 	energy += float(amount)
 	total_energy_earned += float(amount)
+	total_lifetime_energy += float(amount)
 	recalculate_stats()
 	energy_changed.emit(energy, float(amount))
 	rps_changed.emit(get_effective_passive_rps())
@@ -668,6 +787,7 @@ func collect_3d_item(item_type: String, reward_amount: float = 50.0) -> void:
 	var reward: float = maxf(0.0, reward_amount)
 	energy += reward
 	total_energy_earned += reward
+	total_lifetime_energy += reward
 	collectibles_collected += 1
 	item_inventory[item_type] = int(item_inventory.get(item_type, 0)) + 1
 	energy_changed.emit(energy, reward)
@@ -677,6 +797,7 @@ func collect_3d_item(item_type: String, reward_amount: float = 50.0) -> void:
 	# Quest tracker auto-advancement
 	if item_type == "briefcase":
 		advance_campus_quest("quest_briefcases", 1)
+		advance_daily_task("task_briefcases", 1)
 	elif item_type == "coffee":
 		advance_campus_quest("quest_coffee", 1)
 	elif item_type == "usb_drive":
@@ -768,6 +889,7 @@ func complete_campus_quest(quest_id: String, reward_energy: float = 0.0, reward_
 	if reward_energy > 0.0:
 		energy += reward_energy
 		total_energy_earned += reward_energy
+		total_lifetime_energy += reward_energy
 		energy_changed.emit(energy, reward_energy)
 	if reward_bonus_users > 0:
 		bonus_users += reward_bonus_users
@@ -788,6 +910,7 @@ func complete_campus_quest(quest_id: String, reward_energy: float = 0.0, reward_
 		advance_campaign_chapter()
 	if campaign_completed_quests.has("quest_lab") and campaign_chapter == 3:
 		advance_campaign_chapter()
+	check_and_update_trophies()
 	save_to_disk()
 	return true
 
@@ -798,6 +921,15 @@ func save_to_disk() -> void:
 		"timestamp": int(Time.get_unix_time_from_system()),
 		"energy": energy,
 		"total_energy_earned": total_energy_earned,
+		"total_lifetime_energy": total_lifetime_energy,
+		"angel_shares": angel_shares,
+		"total_ipos_completed": total_ipos_completed,
+		"unlocked_trophies": unlocked_trophies.duplicate(),
+		"daily_streak": daily_streak,
+		"last_daily_challenge_date": last_daily_challenge_date,
+		"daily_board_streak": daily_board_streak,
+		"daily_board_last_login_day": daily_board_last_login_day,
+		"daily_board_tasks": daily_board_tasks.duplicate(true),
 		"total_clicks": total_clicks,
 		"sparks_collected": sparks_collected,
 		"bonus_users": bonus_users,
@@ -874,6 +1006,31 @@ func load_from_disk() -> bool:
 	
 	var raw_total_earned: float = float(data.get("total_energy_earned", energy))
 	total_energy_earned = energy if (is_nan(raw_total_earned) or is_inf(raw_total_earned)) else maxf(energy, raw_total_earned)
+	
+	var raw_lifetime: float = float(data.get("total_lifetime_energy", total_energy_earned))
+	total_lifetime_energy = total_energy_earned if (is_nan(raw_lifetime) or is_inf(raw_lifetime)) else maxf(total_energy_earned, raw_lifetime)
+	
+	angel_shares = maxi(0, int(data.get("angel_shares", 0)))
+	total_ipos_completed = maxi(0, int(data.get("total_ipos_completed", 0)))
+	
+	unlocked_trophies.clear()
+	var raw_trophies = data.get("unlocked_trophies", [])
+	if raw_trophies is Array:
+		for tr in raw_trophies:
+			if tr is String and not tr.is_empty() and not unlocked_trophies.has(tr):
+				unlocked_trophies.append(tr)
+				
+	daily_streak = maxi(0, int(data.get("daily_streak", 0)))
+	last_daily_challenge_date = str(data.get("last_daily_challenge_date", ""))
+	daily_board_streak = maxi(0, int(data.get("daily_board_streak", daily_streak)))
+	daily_streak = daily_board_streak
+	daily_board_last_login_day = int(data.get("daily_board_last_login_day", 0))
+	daily_board_tasks.clear()
+	var raw_board_tasks = data.get("daily_board_tasks", [])
+	if raw_board_tasks is Array:
+		for t in raw_board_tasks:
+			if t is Dictionary:
+				daily_board_tasks.append(t.duplicate(true))
 	
 	total_clicks = maxi(0, int(data.get("total_clicks", 0)))
 	sparks_collected = maxi(0, int(data.get("sparks_collected", 0)))
@@ -960,6 +1117,7 @@ func load_from_disk() -> bool:
 	if offline_gain > 0.0:
 		energy += offline_gain
 		total_energy_earned += offline_gain
+		total_lifetime_energy += offline_gain
 		
 	# Phase 9 Audio Settings Deserialization
 	var audio_data = data.get("audio_settings", {})
@@ -1027,6 +1185,7 @@ func load_from_disk() -> bool:
 		if not campaign_completed_quests.has("quest_briefcases"): campaign_completed_quests.append("quest_briefcases")
 
 	campaign_chapter_changed.emit(campaign_chapter)
+	check_and_update_trophies()
 			
 	energy_changed.emit(energy, offline_gain)
 	rps_changed.emit(get_effective_passive_rps())
@@ -1139,6 +1298,7 @@ func add_energy(amount: float) -> void:
 		return
 	energy += amount
 	total_energy_earned += amount
+	total_lifetime_energy += amount
 	energy_changed.emit(energy, amount)
 
 ## Returns worker production frequency multiplier (1.10x with tech_coffee_automation, scaled by 1.20x during Unicorn Espresso buff).
@@ -1243,5 +1403,278 @@ func set_light_cycle_mode(mode: String) -> void:
 ## Returns current light cycle mode
 func get_light_cycle_mode() -> String:
 	return light_cycle_mode
+
+# ==============================================================================
+# Phase 12 IPO ("Going Public") Prestige & Milestone Methods
+# ==============================================================================
+
+## Returns true if player meets threshold (1M lifetime energy or Unicorn Chapter 3)
+## and has at least 1 pending Angel Share to claim.
+func can_trigger_ipo() -> bool:
+	var threshold_met: bool = (total_lifetime_energy >= IPO_ENERGY_THRESHOLD) or (campaign_chapter >= 3)
+	return threshold_met and (calculate_pending_angel_shares() > 0)
+
+## Calculates additional Angel Shares to be awarded if IPO is triggered now.
+## Formula: floor(sqrt(total_lifetime_energy / 100000)) - angel_shares
+func calculate_pending_angel_shares() -> int:
+	if total_lifetime_energy < 100000.0:
+		return 0
+	var total_eligible: int = int(floor(sqrt(maxf(0.0, total_lifetime_energy) / 100000.0)))
+	return maxi(0, total_eligible - angel_shares)
+
+## Computes permanent global bonus multiplier (+2% per Angel Share).
+func get_angel_share_multiplier() -> float:
+	return 1.0 + (float(angel_shares) * 0.02)
+
+## Executes IPO Prestige Rebirth:
+## Awards pending Angel Shares, increments total_ipos_completed, unlocks trophy,
+## resets regular energy, building levels, and upgrades to 0, while preserving
+## angel shares, trophies, tech unlocks, campaign progress, and daily streak.
+func trigger_ipo() -> Dictionary:
+	if not can_trigger_ipo():
+		return {
+			"success": false,
+			"error": "Cannot trigger IPO: threshold not reached or 0 pending shares",
+			"shares_gained": 0,
+			"angel_shares_gained": 0,
+			"total_angel_shares": angel_shares,
+			"angel_shares": angel_shares,
+			"multiplier": get_angel_share_multiplier(),
+			"total_ipos_completed": total_ipos_completed
+		}
+		
+	var shares_gained: int = calculate_pending_angel_shares()
+	if shares_gained <= 0:
+		return {
+			"success": false,
+			"error": "No pending angel shares to claim",
+			"shares_gained": 0,
+			"angel_shares_gained": 0,
+			"total_angel_shares": angel_shares,
+			"angel_shares": angel_shares,
+			"multiplier": get_angel_share_multiplier(),
+			"total_ipos_completed": total_ipos_completed
+		}
+
+	# 1. Award Angel Shares and update stats
+	angel_shares += shares_gained
+	total_ipos_completed += 1
+	
+	# 2. Unlock Platin-Börsenbulle Trophy (Trophy #4)
+	unlock_trophy("trophy_platinum_bull")
+	
+	# 3. Reset regular energy currency
+	energy = 0.0
+	
+	# 4. Reset building levels & standard upgrades to baseline
+	for up_id in DEFAULT_UPGRADES:
+		if not upgrades.has(up_id):
+			upgrades[up_id] = DEFAULT_UPGRADES[up_id].duplicate(true)
+		else:
+			var base_cost: float = float(DEFAULT_UPGRADES[up_id]["base_cost"])
+			upgrades[up_id]["level"] = 0
+			upgrades[up_id]["current_cost"] = base_cost
+		
+	# 5. Clear active temporary buffs & timers
+	frenzy_meter = 0.0
+	is_frenzy_active = false
+	frenzy_multiplier = 1.0
+	frenzy_duration_remaining = 0.0
+	
+	server_overclock_buff_timer = 0.0
+	server_overclock_buff_multiplier = 1.0
+	server_overclock_buff_active = false
+	server_overclock_buff_remaining = 0.0
+	
+	campaign_rps_buff_timer = 0.0
+	campaign_rps_buff_multiplier = 1.0
+	campaign_speed_buff_timer = 0.0
+	campaign_speed_buff_multiplier = 1.0
+	
+	unicorn_espresso_buff_active = false
+	unicorn_espresso_buff_timer = 0.0
+	unicorn_espresso_buff_remaining = 0.0
+	
+	# 6. Recalculate stats from reset levels
+	recalculate_stats()
+	
+	# 7. Persist to disk
+	save_to_disk()
+	
+	# 8. Emit notification signals
+	energy_changed.emit(energy, 0.0)
+	rps_changed.emit(get_effective_passive_rps())
+	frenzy_updated.emit(frenzy_multiplier, 0.0)
+	angel_shares_changed.emit(angel_shares, shares_gained)
+	ipo_completed.emit(shares_gained, angel_shares, get_angel_share_multiplier())
+	
+	return {
+		"success": true,
+		"shares_gained": shares_gained,
+		"angel_shares_gained": shares_gained,
+		"total_angel_shares": angel_shares,
+		"angel_shares": angel_shares,
+		"multiplier": get_angel_share_multiplier(),
+		"total_ipos_completed": total_ipos_completed
+	}
+
+## Unlocks a milestone trophy if not already unlocked.
+func unlock_trophy(trophy_id: String) -> bool:
+	if trophy_id.is_empty() or unlocked_trophies.has(trophy_id):
+		return false
+	unlocked_trophies.append(trophy_id)
+	trophy_unlocked.emit(trophy_id)
+	save_to_disk()
+	return true
+
+## Checks if a trophy is unlocked.
+func is_trophy_unlocked(trophy_id: String) -> bool:
+	return unlocked_trophies.has(trophy_id)
+
+## Returns copy of unlocked trophies array.
+func get_unlocked_trophies() -> Array[String]:
+	return unlocked_trophies.duplicate()
+
+## Automatically checks campaign & prestige milestones to retroactively unlock trophies.
+func check_and_update_trophies() -> void:
+	if (campaign_chapter >= 2 or campaign_completed_quests.has("quest_briefcases")) and not unlocked_trophies.has("trophy_golden_briefcase"):
+		unlocked_trophies.append("trophy_golden_briefcase")
+		trophy_unlocked.emit("trophy_golden_briefcase")
+	if (campaign_chapter >= 3 or campaign_completed_quests.has("quest_server")) and not unlocked_trophies.has("trophy_server_matrix"):
+		unlocked_trophies.append("trophy_server_matrix")
+	if (campaign_chapter >= 4 or campaign_completed_quests.has("quest_lab")) and not unlocked_trophies.has("trophy_crystal_espresso"):
+		unlocked_trophies.append("trophy_crystal_espresso")
+	if total_ipos_completed > 0 and not unlocked_trophies.has("trophy_platinum_bull"):
+		unlocked_trophies.append("trophy_platinum_bull")
+		trophy_unlocked.emit("trophy_platinum_bull")
+
+# ==============================================================================
+# Phase 12 M4 Daily Challenge Board & Streak Engine Methods
+# ==============================================================================
+
+## Returns the array of 3 active daily tasks, rotating if the calendar day has advanced.
+func get_daily_tasks() -> Array[Dictionary]:
+	var current_day: int = int(Time.get_unix_time_from_system() / 86400)
+	if daily_board_tasks.is_empty() or daily_board_last_login_day == 0 or current_day != daily_board_last_login_day:
+		_rotate_daily_tasks(current_day)
+	return daily_board_tasks
+
+## Forces a refresh / rotation for a specified day (or current system day if < 0).
+func refresh_daily_tasks(forced_day: int = -1) -> Array[Dictionary]:
+	var target_day: int = forced_day if forced_day >= 0 else int(Time.get_unix_time_from_system() / 86400)
+	_rotate_daily_tasks(target_day)
+	return daily_board_tasks
+
+## Internal rotation logic using day index to deterministically pick 3 tasks and check streak continuity.
+func _rotate_daily_tasks(current_day: int) -> void:
+	if daily_board_last_login_day > 0:
+		if current_day == daily_board_last_login_day + 1:
+			# Consecutive day login: preserve existing streak
+			pass
+		elif current_day > daily_board_last_login_day + 1:
+			# Missed one or more days: reset streak to 0
+			daily_board_streak = 0
+			daily_streak = 0
+			daily_streak_updated.emit(daily_board_streak)
+	
+	daily_board_last_login_day = current_day
+	daily_board_tasks.clear()
+	
+	var offset: int = posmod(current_day, DAILY_TASK_KEYS.size())
+	for i in range(3):
+		var key: String = DAILY_TASK_KEYS[(offset + i) % DAILY_TASK_KEYS.size()]
+		var template: Dictionary = DAILY_TASK_CATALOG[key]
+		daily_board_tasks.append({
+			"id": key,
+			"title": template["title"],
+			"description": template["description"],
+			"target": int(template["target"]),
+			"current": 0,
+			"is_completed": false,
+			"is_claimed": false,
+			"reward": template["reward"].duplicate(true)
+		})
+	daily_tasks_updated.emit(daily_board_tasks)
+	save_to_disk()
+
+## Advances progress on an active daily task by amount (default 1).
+func advance_daily_task(task_id: String, amount: int = 1) -> void:
+	if amount <= 0:
+		return
+	if daily_board_tasks.is_empty():
+		get_daily_tasks()
+	var updated: bool = false
+	for task in daily_board_tasks:
+		if task.get("id") == task_id:
+			var target_val: int = int(task.get("target", 1))
+			var current_val: int = int(task.get("current", 0))
+			if current_val < target_val:
+				task["current"] = mini(target_val, current_val + amount)
+				if task["current"] >= target_val:
+					task["is_completed"] = true
+				updated = true
+			break
+	if updated:
+		daily_tasks_updated.emit(daily_board_tasks)
+		save_to_disk()
+
+## Claims reward for a completed daily task, pays out reward, and updates streak if all 3 are claimed.
+func claim_daily_task(task_id: String) -> Dictionary:
+	if daily_board_tasks.is_empty():
+		get_daily_tasks()
+	var found_task: Dictionary = {}
+	for task in daily_board_tasks:
+		if task.get("id") == task_id:
+			found_task = task
+			break
+	if found_task.is_empty():
+		return {"success": false, "error": "Task not found"}
+	if not found_task.get("is_completed", false):
+		return {"success": false, "error": "Task not completed yet"}
+	if found_task.get("is_claimed", false):
+		return {"success": false, "error": "Task already claimed"}
+		
+	found_task["is_claimed"] = true
+	var reward: Dictionary = found_task.get("reward", {})
+	
+	# Payout rewards
+	if reward.has("energy"):
+		earn_energy(float(reward["energy"]))
+	if reward.has("angel_shares"):
+		angel_shares += int(reward["angel_shares"])
+		angel_shares_changed.emit(angel_shares, int(reward["angel_shares"]))
+	if reward.has("rps_buff"):
+		activate_campaign_rps_buff(float(reward.get("rps_buff", 2.0)), float(reward.get("duration", 45.0)))
+	if reward.has("speed_buff"):
+		activate_campaign_speed_buff(float(reward.get("speed_buff", 1.5)), float(reward.get("duration", 30.0)))
+		
+	# Check if all 3 tasks are claimed
+	var all_claimed: bool = true
+	for t in daily_board_tasks:
+		if not t.get("is_claimed", false):
+			all_claimed = false
+			break
+	if all_claimed:
+		daily_board_streak += 1
+		daily_streak = daily_board_streak
+		daily_streak_updated.emit(daily_board_streak)
+		
+	daily_task_claimed.emit(task_id, reward)
+	daily_tasks_updated.emit(daily_board_tasks)
+	save_to_disk()
+	
+	return {
+		"success": true,
+		"task_id": task_id,
+		"reward": reward,
+		"streak": daily_board_streak,
+		"all_claimed": all_claimed
+	}
+
+## Returns the current daily streak counter.
+func get_daily_streak() -> int:
+	return daily_board_streak
+
+
 
 

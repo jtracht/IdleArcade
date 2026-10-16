@@ -102,6 +102,7 @@ var _cached_overclock_style: StyleBoxFlat = null
 var _cached_pitch_style: StyleBoxFlat = null
 var _cached_hack_style: StyleBoxFlat = null
 var _cached_brew_style: StyleBoxFlat = null
+var _cached_ipo_bell_style: StyleBoxFlat = null
 
 # ------------------------------------------------------------------------------
 # Lifecycle
@@ -290,6 +291,17 @@ func _setup_styles() -> void:
 	_cached_brew_style.shadow_size = 14
 	_cached_brew_style.anti_aliasing = true
 
+	# Dynamic IPO Bell style (Platin / Gold Shine: deep dark gold bg, brilliant gold border, spotlight glow)
+	_cached_ipo_bell_style = StyleBoxFlat.new()
+	_cached_ipo_bell_style.bg_color = Color(0.25, 0.22, 0.10, 0.92)
+	_cached_ipo_bell_style.border_color = Color(1.0, 0.88, 0.35, 1.0)
+	_cached_ipo_bell_style.set_border_width_all(3)
+	_cached_ipo_bell_style.set_corner_radius_all(50)
+	_cached_ipo_bell_style.corner_detail = 24
+	_cached_ipo_bell_style.shadow_color = Color(1.0, 0.85, 0.25, 0.65)
+	_cached_ipo_bell_style.shadow_size = 14
+	_cached_ipo_bell_style.anti_aliasing = true
+
 # ------------------------------------------------------------------------------
 # Input Isolation Shield (Tier 2 & 3)
 # ------------------------------------------------------------------------------
@@ -407,7 +419,11 @@ func trigger_action() -> void:
 
 	# Channel 1: Direct Method Invocation
 	if is_instance_valid(target):
-		if target.has_method("open_research"):
+		if target.has_method("ring_bell"):
+			target.call("ring_bell")
+		elif target.has_method("ring_ipo_bell"):
+			target.call("ring_ipo_bell")
+		elif target.has_method("open_research"):
 			target.call("open_research")
 		elif target.has_method("start_cyber_sync"):
 			target.call("start_cyber_sync")
@@ -486,7 +502,11 @@ func _update_action_button_visuals(label_text: String = "", is_active: bool = fa
 	# Context determination
 	var target = get_current_interactable()
 	if is_instance_valid(target):
-		if "Overclock" in text_to_set:
+		if "IPO" in text_to_set or target.is_in_group("ipo_bells") or target.has_method("ring_bell") or target.has_method("ring_ipo_bell") or str(target.get("action_label")) == "IPO Bell [E]":
+			text_to_set = "IPO Bell [E]"
+			if _cached_ipo_bell_style != null:
+				action_button.add_theme_stylebox_override("normal", _cached_ipo_bell_style)
+		elif "Overclock" in text_to_set:
 			text_to_set = "Overclock [E]"
 			if _cached_overclock_style != null:
 				action_button.add_theme_stylebox_override("normal", _cached_overclock_style)
@@ -550,7 +570,9 @@ func _update_action_button_visuals(label_text: String = "", is_active: bool = fa
 				action_button.add_theme_stylebox_override("normal", _cached_npc_style)
 	else:
 		# Explicit label provided without object reference
-		if "Hack" in text_to_set and _cached_hack_style != null:
+		if "IPO" in text_to_set and _cached_ipo_bell_style != null:
+			action_button.add_theme_stylebox_override("normal", _cached_ipo_bell_style)
+		elif "Hack" in text_to_set and _cached_hack_style != null:
 			action_button.add_theme_stylebox_override("normal", _cached_hack_style)
 		elif "Brew" in text_to_set and _cached_brew_style != null:
 			action_button.add_theme_stylebox_override("normal", _cached_brew_style)

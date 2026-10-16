@@ -1,0 +1,394 @@
+[gd_scene load_steps=9 format=3 uid="uid://cipomodal120"]
+
+[ext_resource type="Script" path="res://scripts/ui/ipo_modal.gd" id="1_ipomodal"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_card"]
+bg_color = Color(0.06, 0.08, 0.14, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.85, 0.25, 0.85)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 20.0
+content_margin_top = 18.0
+content_margin_right = 20.0
+content_margin_bottom = 18.0
+shadow_color = Color(0, 0, 0, 0.65)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_metric_card"]
+bg_color = Color(0.04, 0.06, 0.11, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.28, 0.42, 0.6)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_threshold_card"]
+bg_color = Color(0.2, 0.14, 0.04, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.75, 0.25, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_trigger_button"]
+bg_color = Color(0.78, 0.58, 0.12, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.9, 0.4, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(1, 0.8, 0.2, 0.5)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_confirm_box"]
+bg_color = Color(0.16, 0.05, 0.05, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.95, 0.35, 0.35, 0.9)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 14.0
+content_margin_top = 12.0
+content_margin_right = 14.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_confirm_yes"]
+bg_color = Color(0.12, 0.55, 0.24, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.35, 1, 0.5, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_confirm_cancel"]
+bg_color = Color(0.22, 0.22, 0.25, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.65, 0.65, 0.7, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_close_btn"]
+bg_color = Color(0.12, 0.15, 0.22, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.45, 0.55, 0.6)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="IPOModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_ipomodal")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.04, 0.08, 0.88)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ModalCard" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(660, 880)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 12
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "🔔"
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.25, 1)
+theme_override_font_sizes/font_size = 18
+text = "BÖRSENGANG // INITIAL PUBLIC OFFERING"
+
+[node name="Spacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CloseButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_close_btn")
+text = "✕"
+
+[node name="DescriptionLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
+theme_override_font_sizes/font_size = 14
+text = "Führe dein Startup an die Börse! Dein Unternehmen wird mit Angel Shares bewertet, die dir permanente Multiplikatoren für alle zukünftigen Durchläufe verleihen."
+autowrap_mode = 3
+
+[node name="HSeparator1" type="HSeparator" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="MetricsContainer" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 10
+
+[node name="ValuationPanel" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_metric_card")
+
+[node name="ValuationHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer/ValuationPanel"]
+layout_mode = 2
+
+[node name="ValuationTitle" type="Label" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer/ValuationPanel/ValuationHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "🏢 Unternehmensbewertung:"
+
+[node name="Spacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer/ValuationPanel/ValuationHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="ValuationLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer/ValuationPanel/ValuationHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "⚡ 0"
+
+[node name="PendingSharesPanel" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_metric_card")
+
+[node name="SharesHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer/PendingSharesPanel"]
+layout_mode = 2
+
+[node name="PendingTitle" type="Label" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer/PendingSharesPanel/SharesHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "👼 Zu beanspruchende Angel Shares:"
+
+[node name="Spacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer/PendingSharesPanel/SharesHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="PendingSharesLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer/PendingSharesPanel/SharesHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.25, 1)
+theme_override_font_sizes/font_size = 16
+text = "👼 +0 Aktien"
+
+[node name="OwnedSharesPanel" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_metric_card")
+
+[node name="OwnedHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer/OwnedSharesPanel"]
+layout_mode = 2
+
+[node name="OwnedTitle" type="Label" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer/OwnedSharesPanel/OwnedHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "💼 Bereits im Portfolio:"
+
+[node name="Spacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer/OwnedSharesPanel/OwnedHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="OwnedSharesLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer/OwnedSharesPanel/OwnedHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.9, 0.8, 1)
+theme_override_font_sizes/font_size = 16
+text = "0 Aktien (+0%)"
+
+[node name="BonusMultiplierPanel" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_metric_card")
+
+[node name="BonusHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer/BonusMultiplierPanel"]
+layout_mode = 2
+
+[node name="BonusTitle" type="Label" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer/BonusMultiplierPanel/BonusHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "🚀 Permanenter Bonus (+2%/Share):"
+
+[node name="Spacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer/BonusMultiplierPanel/BonusHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="FutureBonusLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/MetricsContainer/BonusMultiplierPanel/BonusHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 1, 0.5, 1)
+theme_override_font_sizes/font_size = 16
+text = "+0% Gesamterlös"
+
+[node name="ThresholdBox" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_threshold_card")
+
+[node name="ThresholdLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/ThresholdBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.75, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "IPO erfordert 1.000.000 Lifetime Energy (Unicorn Status)."
+autowrap_mode = 3
+
+[node name="ActionArea" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 10
+
+[node name="TriggerIPOButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/ActionArea"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_trigger_button")
+text = "🔔 BÖRSENGANG STARTEN"
+
+[node name="ConfirmBox" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/ActionArea"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_confirm_box")
+
+[node name="ConfirmVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/ActionArea/ConfirmBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 10
+
+[node name="ConfirmWarningLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/ActionArea/ConfirmBox/ConfirmVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.35, 1)
+theme_override_font_sizes/font_size = 14
+text = "⚠️ ACHTUNG: Reset regulärer Energie & Upgrades! Bist du sicher?"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ConfirmButtonsHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/ActionArea/ConfirmBox/ConfirmVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 12
+
+[node name="ConfirmYesButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/ActionArea/ConfirmBox/ConfirmVBox/ConfirmButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_confirm_yes")
+text = "✓ JA, BÖRSENGANG AUSFÜHREN!"
+
+[node name="ConfirmCancelButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/ActionArea/ConfirmBox/ConfirmVBox/ConfirmButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_confirm_cancel")
+text = "✕ ABBRECHEN"
+
+[node name="SlideToConfirm" type="HSlider" parent="CenterContainer/ModalCard/CardVBox/ActionArea/ConfirmBox/ConfirmVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 0
+step = 1.0

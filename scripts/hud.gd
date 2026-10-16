@@ -16,8 +16,12 @@ const GUILD_MODAL_SCENE: PackedScene = preload("res://scenes/ui/guild_modal.tscn
 const QUEST_MODAL_SCENE: PackedScene = preload("res://scenes/ui/quest_modal.tscn")
 const TECH_TREE_MODAL_SCENE: PackedScene = preload("res://scenes/ui/tech_tree_modal.tscn")
 const SETTINGS_MODAL_SCENE: PackedScene = preload("res://scenes/ui/settings_modal.tscn")
+const IPO_MODAL_SCENE: PackedScene = preload("res://scenes/ui/ipo_modal.tscn")
+const DAILY_BOARD_MODAL_SCENE: PackedScene = preload("res://scenes/ui/daily_board_modal.tscn")
 
 @onready var status_indicator: Label = %StatusIndicator
+@onready var streak_badge: Control = get_node_or_null("%StreakBadge")
+@onready var streak_badge_label: Label = get_node_or_null("%StreakBadgeLabel")
 @onready var auth_button: Button = %AuthButton
 @onready var leaderboard_button: Button = %LeaderboardButton
 @onready var guild_button: Button = %GuildButton
@@ -25,6 +29,7 @@ const SETTINGS_MODAL_SCENE: PackedScene = preload("res://scenes/ui/settings_moda
 @onready var campus_button: Button = get_node_or_null("%CampusButton")
 @onready var tech_tree_button: Button = get_node_or_null("%TechTreeButton")
 @onready var settings_button: Button = get_node_or_null("%SettingsButton")
+@onready var ipo_button: Button = get_node_or_null("%IPOButton")
 
 @onready var burger_menu_button: Button = get_node_or_null("%BurgerMenuButton")
 @onready var campaign_badge: PanelContainer = get_node_or_null("%CampaignBadge")
@@ -179,6 +184,8 @@ func _connect_game_state_signals() -> void:
 		GameState.campaign_quest_completed.connect(_on_campaign_quest_completed)
 	if GameState.has_signal("campaign_choice_selected"):
 		GameState.campaign_choice_selected.connect(_on_campaign_choice_selected)
+	if GameState.has_signal("daily_streak_updated"):
+		GameState.daily_streak_updated.connect(_on_daily_streak_updated)
 
 func _refresh_all_ui() -> void:
 	if GameState == null:
@@ -188,7 +195,15 @@ func _refresh_all_ui() -> void:
 	_on_rps_changed(GameState.base_passive_rps)
 	_on_frenzy_updated(GameState.frenzy_multiplier, GameState.frenzy_meter)
 	_update_campaign_badge()
+	_update_streak_badge(GameState.get_daily_streak() if GameState.has_method("get_daily_streak") else int(GameState.get("daily_board_streak")))
 	_refresh_all_upgrade_buttons()
+
+func _on_daily_streak_updated(new_streak: int) -> void:
+	_update_streak_badge(new_streak)
+
+func _update_streak_badge(streak: int) -> void:
+	if streak_badge_label != null:
+		streak_badge_label.text = "🔥 %d" % streak
 
 func _on_energy_changed(total_energy: float, _delta_amount: float) -> void:
 	if energy_label:
@@ -508,6 +523,21 @@ func _bind_action_bar_buttons() -> void:
 			close_nav_drawer()
 			open_modal(SETTINGS_MODAL_SCENE)
 		)
+	if ipo_button != null:
+		ipo_button.pressed.connect(func():
+			close_nav_drawer()
+			open_ipo_modal()
+		)
+	if streak_badge != null:
+		if streak_badge is Button:
+			streak_badge.pressed.connect(func():
+				open_daily_board_modal()
+			)
+		else:
+			streak_badge.gui_input.connect(func(event: InputEvent):
+				if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+					open_daily_board_modal()
+			)
 
 func _on_campus_button_pressed() -> void:
 	var main_3d = get_tree().root.find_child("Main3D", true, false)
@@ -523,6 +553,12 @@ func open_tech_tree_modal() -> Control:
 
 func open_settings_modal() -> Control:
 	return open_modal(SETTINGS_MODAL_SCENE)
+
+func open_ipo_modal() -> Control:
+	return open_modal(IPO_MODAL_SCENE)
+
+func open_daily_board_modal() -> Control:
+	return open_modal(DAILY_BOARD_MODAL_SCENE)
 
 func open_modal(modal_scene: PackedScene) -> Control:
 	close_nav_drawer()

@@ -1,0 +1,392 @@
+[gd_scene load_steps=8 format=3 uid="uid://cdailyboardmodal120"]
+
+[ext_resource type="Script" path="res://scripts/ui/daily_board_modal.gd" id="1_dailyboardmodal"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_card"]
+bg_color = Color(0.06, 0.08, 0.14, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.65, 0.1, 0.85)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 20.0
+content_margin_top = 18.0
+content_margin_right = 20.0
+content_margin_bottom = 18.0
+shadow_color = Color(0, 0, 0, 0.65)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_streak_banner"]
+bg_color = Color(0.18, 0.11, 0.04, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.65, 0.1, 0.9)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_task_card"]
+bg_color = Color(0.05, 0.07, 0.12, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.32, 0.48, 0.65)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 14.0
+content_margin_top = 12.0
+content_margin_right = 14.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_claim_btn"]
+bg_color = Color(0.15, 0.45, 0.25, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.35, 0.85, 0.45, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_close_btn"]
+bg_color = Color(0.16, 0.2, 0.3, 0.8)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.45, 0.6, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="DailyBoardModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_dailyboardmodal")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.04, 0.08, 0.88)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ModalCard" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(660, 820)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 12
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 10
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "📋"
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+theme_override_font_sizes/font_size = 18
+text = "TÄGLICHE CHALLENGES // DAILY BOARD"
+
+[node name="HeaderSpacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CloseButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_close_btn")
+text = "✕"
+
+[node name="StreakBanner" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_streak_banner")
+
+[node name="StreakVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/StreakBanner"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="StreakHeaderLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/StreakBanner/StreakVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.65, 0.1, 1)
+theme_override_font_sizes/font_size = 22
+text = "🔥 0 TAGE STREAK"
+
+[node name="StreakSubLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/StreakBanner/StreakVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 0.85)
+theme_override_font_sizes/font_size = 13
+text = "Schließe alle 3 täglichen Aufgaben ab, um deinen Streak zu erhöhen!"
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="TasksContainer" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 12
+
+[node name="Task1Panel" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TasksContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_task_card")
+
+[node name="Task1HBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task1Panel"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 12
+
+[node name="Task1InfoVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task1Panel/Task1HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_constants/separation = 4
+
+[node name="Task1Title" type="Label" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task1Panel/Task1HBox/Task1InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "3x Viraler Hype"
+
+[node name="Task1Desc" type="Label" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task1Panel/Task1HBox/Task1InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.78, 0.88, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "Erreiche 3x Viralen Hype"
+autowrap_mode = 2
+
+[node name="Task1Progress" type="Label" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task1Panel/Task1HBox/Task1InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Fortschritt: 0 / 3"
+
+[node name="Task1ProgressBar" type="ProgressBar" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task1Panel/Task1HBox/Task1InfoVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+max_value = 3.0
+show_percentage = false
+
+[node name="Task1Reward" type="Label" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task1Panel/Task1HBox/Task1InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+theme_override_font_sizes/font_size = 12
+text = "Belohnung: 10.000 Energy"
+
+[node name="Task1ClaimButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task1Panel/Task1HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 56)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_claim_btn")
+disabled = true
+text = "IN ARBEIT"
+
+[node name="Task2Panel" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TasksContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_task_card")
+
+[node name="Task2HBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task2Panel"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 12
+
+[node name="Task2InfoVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task2Panel/Task2HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_constants/separation = 4
+
+[node name="Task2Title" type="Label" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task2Panel/Task2HBox/Task2InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "5 Aktenkoffer per Drohne"
+
+[node name="Task2Desc" type="Label" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task2Panel/Task2HBox/Task2InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.78, 0.88, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "Sammle 5 Aktenkoffer per Drohne"
+autowrap_mode = 2
+
+[node name="Task2Progress" type="Label" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task2Panel/Task2HBox/Task2InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Fortschritt: 0 / 5"
+
+[node name="Task2ProgressBar" type="ProgressBar" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task2Panel/Task2HBox/Task2InfoVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+max_value = 5.0
+show_percentage = false
+
+[node name="Task2Reward" type="Label" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task2Panel/Task2HBox/Task2InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+theme_override_font_sizes/font_size = 12
+text = "Belohnung: 15.000 Energy, 1 Angel Share"
+
+[node name="Task2ClaimButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task2Panel/Task2HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 56)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_claim_btn")
+disabled = true
+text = "IN ARBEIT"
+
+[node name="Task3Panel" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TasksContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_task_card")
+
+[node name="Task3HBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task3Panel"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 12
+
+[node name="Task3InfoVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task3Panel/Task3HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_constants/separation = 4
+
+[node name="Task3Title" type="Label" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task3Panel/Task3HBox/Task3InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "1 Unicorn Espresso"
+
+[node name="Task3Desc" type="Label" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task3Panel/Task3HBox/Task3InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.78, 0.88, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "Braue 1 Unicorn Espresso"
+autowrap_mode = 2
+
+[node name="Task3Progress" type="Label" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task3Panel/Task3HBox/Task3InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Fortschritt: 0 / 1"
+
+[node name="Task3ProgressBar" type="ProgressBar" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task3Panel/Task3HBox/Task3InfoVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+max_value = 1.0
+show_percentage = false
+
+[node name="Task3Reward" type="Label" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task3Panel/Task3HBox/Task3InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+theme_override_font_sizes/font_size = 12
+text = "Belohnung: 20.000 Energy, 2x RPS buff"
+
+[node name="Task3ClaimButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/TasksContainer/Task3Panel/Task3HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 56)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_claim_btn")
+disabled = true
+text = "IN ARBEIT"
+
+[node name="FooterSpacer" type="Control" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="FooterLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.6, 0.7, 0.75)
+theme_override_font_sizes/font_size = 12
+text = "🕒 Aufgaben rotieren täglich um 00:00 UTC // Streak steigt bei Abschluss aller 3 Aufgaben"
+horizontal_alignment = 1

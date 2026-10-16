@@ -52,6 +52,7 @@ var _wav_drone_hum: AudioStreamWAV = null
 var _wav_overdrive: AudioStreamWAV = null
 var _wav_ambient_bgm: AudioStreamWAV = null
 var _wav_confetti: AudioStreamWAV = null
+var _wav_bell: AudioStreamWAV = null
 
 # Footstep throttle tracking
 var _last_footstep_msec: int = -10000
@@ -349,6 +350,10 @@ func stop_ambient_bgm() -> void:
 func play_sfx_confetti() -> void:
 	_play_sfx_stream(_wav_confetti, "confetti")
 
+## 10. Resonant ceremonial IPO bell chime.
+func play_sfx_bell() -> void:
+	_play_sfx_stream(_wav_bell, "bell")
+
 # ------------------------------------------------------------------------------
 # Decoupled Signal Bindings
 # ------------------------------------------------------------------------------
@@ -423,6 +428,7 @@ func _prebake_sound_streams() -> void:
 	_wav_overdrive = _synth_overdrive()
 	_wav_ambient_bgm = _synth_ambient_bgm()
 	_wav_confetti = _synth_confetti()
+	_wav_bell = _synth_bell()
 
 ## Encodes normalized float samples [-1.0, 1.0] into an AudioStreamWAV resource.
 func _create_wav_stream(samples: PackedFloat32Array, sample_rate: int = SAMPLE_RATE, loop: bool = false) -> AudioStreamWAV:
@@ -684,4 +690,30 @@ func _synth_confetti() -> AudioStreamWAV:
 		var combined: float = 0.35 * pop + 0.65 * (sparkle_sum / 2.0)
 		samples[i] = clampf(combined * 0.85, -1.0, 1.0)
 	return _create_wav_stream(samples, SAMPLE_RATE, false)
+
+# 10. Resonant Ceremonial IPO Bell Chime (1.25s)
+# Combines D5 (587.33 Hz), A5 (880.00 Hz), D6 (1174.66 Hz), and transient click (2349 Hz)
+func _synth_bell() -> AudioStreamWAV:
+	var count: int = int(SAMPLE_RATE * 1.25)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var f_d5: float = 587.33
+	var f_a5: float = 880.00
+	var f_d6: float = 1174.66
+	var f_click: float = 2349.00
+	for i in range(count):
+		var t: float = float(i) / float(SAMPLE_RATE)
+		# Fast strike click transient
+		var click: float = sin(2.0 * PI * f_click * t) * exp(-t * 80.0)
+		# Sustained resonant bell harmonics with exponential decay over 1.25s
+		var tone_d5: float = sin(2.0 * PI * f_d5 * t) * exp(-t * 3.8)
+		var tone_a5: float = sin(2.0 * PI * f_a5 * t) * exp(-t * 4.2)
+		var tone_d6: float = sin(2.0 * PI * f_d6 * t) * exp(-t * 4.8)
+		# Rapid initial attack envelope to prevent clicks
+		var attack: float = 1.0 - exp(-t * 350.0)
+		var chord: float = (tone_d5 + 0.70 * tone_a5 + 0.50 * tone_d6) / 2.20
+		var combined: float = 0.20 * click + 0.80 * chord * attack
+		samples[i] = clampf(combined * 0.90, -1.0, 1.0)
+	return _create_wav_stream(samples, SAMPLE_RATE, false)
+
 

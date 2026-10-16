@@ -1,0 +1,384 @@
+[gd_scene load_steps=34 format=3 uid="uid://dm4trophyshowcase01"]
+
+[ext_resource type="Script" path="res://scripts/trophy_showcase_3d.gd" id="1_trophyshowcase"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_root"]
+size = Vector3(3.8, 1.2, 1.2)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_area"]
+radius = 2.5
+
+[sub_resource type="StandardMaterial3D" id="Mat_DarkWood"]
+albedo_color = Color(0.18, 0.14, 0.1, 1)
+roughness = 0.7
+
+[sub_resource type="BoxMesh" id="BoxMesh_table_base"]
+material = SubResource("Mat_DarkWood")
+size = Vector3(3.6, 0.8, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_GoldBorder"]
+albedo_color = Color(0.85, 0.7, 0.2, 1)
+metallic = 0.85
+roughness = 0.25
+
+[sub_resource type="BoxMesh" id="BoxMesh_table_trim"]
+material = SubResource("Mat_GoldBorder")
+size = Vector3(3.7, 0.08, 1.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_front_plaque"]
+material = SubResource("Mat_GoldBorder")
+size = Vector3(1.8, 0.2, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="Mat_BlackMarble"]
+albedo_color = Color(0.12, 0.12, 0.14, 1)
+roughness = 0.5
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pedestal_col"]
+material = SubResource("Mat_BlackMarble")
+top_radius = 0.16
+bottom_radius = 0.18
+height = 0.25
+radial_segments = 8
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="Mat_AcrylicDisc"]
+albedo_color = Color(0.7, 0.85, 0.95, 0.7)
+metallic = 0.1
+roughness = 0.1
+transparency = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_acrylic_disc"]
+material = SubResource("Mat_AcrylicDisc")
+top_radius = 0.2
+bottom_radius = 0.2
+height = 0.04
+radial_segments = 8
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="Mat_Gold24K"]
+albedo_color = Color(1, 0.85, 0.2, 1)
+metallic = 0.95
+roughness = 0.15
+emission_enabled = true
+emission = Color(1, 0.85, 0.2, 1)
+emission_energy_multiplier = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_briefcase_body"]
+material = SubResource("Mat_Gold24K")
+size = Vector3(0.28, 0.2, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_briefcase_handle"]
+material = SubResource("Mat_Gold24K")
+size = Vector3(0.1, 0.06, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_briefcase_latch"]
+material = SubResource("Mat_Gold24K")
+size = Vector3(0.03, 0.04, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="Mat_MatrixGreen"]
+albedo_color = Color(0.08, 0.3, 0.12, 1)
+metallic = 0.7
+roughness = 0.2
+emission_enabled = true
+emission = Color(0.1, 1, 0.35, 1)
+emission_energy_multiplier = 2
+
+[sub_resource type="BoxMesh" id="BoxMesh_server_stand"]
+material = SubResource("Mat_MatrixGreen")
+size = Vector3(0.22, 0.04, 0.14)
+
+[sub_resource type="BoxMesh" id="BoxMesh_server_plate"]
+material = SubResource("Mat_MatrixGreen")
+size = Vector3(0.2, 0.25, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_server_core"]
+material = SubResource("Mat_MatrixGreen")
+size = Vector3(0.12, 0.12, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="Mat_CrystalCyan"]
+albedo_color = Color(0.3, 0.8, 1, 0.85)
+metallic = 0.1
+roughness = 0.05
+transparency = 1
+emission_enabled = true
+emission = Color(0.3, 0.8, 1, 1)
+emission_energy_multiplier = 1.6
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_chalice_base"]
+material = SubResource("Mat_CrystalCyan")
+top_radius = 0.1
+bottom_radius = 0.12
+height = 0.03
+radial_segments = 8
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_chalice_stem"]
+material = SubResource("Mat_CrystalCyan")
+top_radius = 0.025
+bottom_radius = 0.025
+height = 0.12
+radial_segments = 8
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_chalice_cup"]
+material = SubResource("Mat_CrystalCyan")
+top_radius = 0.12
+bottom_radius = 0.04
+height = 0.14
+radial_segments = 8
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="Mat_PlatinumMirror"]
+albedo_color = Color(0.92, 0.94, 0.98, 1)
+metallic = 0.98
+roughness = 0.1
+emission_enabled = true
+emission = Color(0.85, 0.9, 1, 1)
+emission_energy_multiplier = 0.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_bull_torso"]
+material = SubResource("Mat_PlatinumMirror")
+size = Vector3(0.26, 0.14, 0.14)
+
+[sub_resource type="PrismMesh" id="PrismMesh_bull_head"]
+material = SubResource("Mat_PlatinumMirror")
+size = Vector3(0.12, 0.12, 0.1)
+
+[sub_resource type="PrismMesh" id="PrismMesh_bull_horn"]
+material = SubResource("Mat_PlatinumMirror")
+size = Vector3(0.04, 0.1, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bull_leg"]
+material = SubResource("Mat_PlatinumMirror")
+size = Vector3(0.04, 0.1, 0.04)
+
+[node name="TrophyShowcase3D" type="StaticBody3D" groups=["interactables", "trophy_showcase"]]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_trophyshowcase")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+shape = SubResource("BoxShape3D_root")
+
+[node name="InteractionArea" type="Area3D" parent="."]
+collision_layer = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractionArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+shape = SubResource("SphereShape3D_area")
+
+[node name="PromptLabel3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
+visible = false
+billboard = 1
+text = "🏆 [E] Milestone Trophy Showcase"
+font_size = 28
+outline_size = 5
+outline_color = Color(0.1, 0.08, 0.02, 0.9)
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Table" type="Node3D" parent="Visuals"]
+
+[node name="TableBase" type="MeshInstance3D" parent="Visuals/Table"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+mesh = SubResource("BoxMesh_table_base")
+
+[node name="TableTopTrim" type="MeshInstance3D" parent="Visuals/Table"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.84, 0)
+mesh = SubResource("BoxMesh_table_trim")
+
+[node name="FrontPlaque" type="MeshInstance3D" parent="Visuals/Table"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0.51)
+mesh = SubResource("BoxMesh_front_plaque")
+
+[node name="PlaqueLabel" type="Label3D" parent="Visuals/Table"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0.525)
+text = "CAMPUS HALL OF FAME"
+font_size = 16
+outline_size = 2
+
+[node name="Pedestals" type="Node3D" parent="Visuals"]
+
+[node name="Pedestal_Briefcase" type="Node3D" parent="Visuals/Pedestals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.35, 0.88, 0)
+
+[node name="Column" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Briefcase"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.125, 0)
+mesh = SubResource("CylinderMesh_pedestal_col")
+
+[node name="Disc" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Briefcase"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.27, 0)
+mesh = SubResource("CylinderMesh_acrylic_disc")
+
+[node name="StatusLabel" type="Label3D" parent="Visuals/Pedestals/Pedestal_Briefcase"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+billboard = 1
+text = "🏆 MVP Briefcase
+[Chapter 1]"
+font_size = 14
+outline_size = 3
+
+[node name="Spot" type="OmniLight3D" parent="Visuals/Pedestals/Pedestal_Briefcase"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+light_color = Color(1, 0.85, 0.2, 1)
+light_energy = 1
+omni_range = 1.8
+
+[node name="TrophyMount" type="Node3D" parent="Visuals/Pedestals/Pedestal_Briefcase"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.38, 0)
+
+[node name="BriefcaseBody" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Briefcase/TrophyMount"]
+mesh = SubResource("BoxMesh_briefcase_body")
+
+[node name="BriefcaseHandle" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Briefcase/TrophyMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.13, 0)
+mesh = SubResource("BoxMesh_briefcase_handle")
+
+[node name="LatchLeft" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Briefcase/TrophyMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, 0.04, 0.052)
+mesh = SubResource("BoxMesh_briefcase_latch")
+
+[node name="LatchRight" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Briefcase/TrophyMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08, 0.04, 0.052)
+mesh = SubResource("BoxMesh_briefcase_latch")
+
+[node name="Pedestal_Server" type="Node3D" parent="Visuals/Pedestals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 0.88, 0)
+
+[node name="Column" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Server"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.125, 0)
+mesh = SubResource("CylinderMesh_pedestal_col")
+
+[node name="Disc" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Server"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.27, 0)
+mesh = SubResource("CylinderMesh_acrylic_disc")
+
+[node name="StatusLabel" type="Label3D" parent="Visuals/Pedestals/Pedestal_Server"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+billboard = 1
+text = "🏆 Cyber-Sync Plaque
+[Chapter 2]"
+font_size = 14
+outline_size = 3
+
+[node name="Spot" type="OmniLight3D" parent="Visuals/Pedestals/Pedestal_Server"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+light_color = Color(0.1, 1, 0.35, 1)
+light_energy = 1.2
+omni_range = 1.8
+
+[node name="TrophyMount" type="Node3D" parent="Visuals/Pedestals/Pedestal_Server"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.38, 0)
+
+[node name="Stand" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Server/TrophyMount"]
+mesh = SubResource("BoxMesh_server_stand")
+
+[node name="PlaquePlate" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Server/TrophyMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14, 0)
+mesh = SubResource("BoxMesh_server_plate")
+
+[node name="Core" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Server/TrophyMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14, 0.02)
+mesh = SubResource("BoxMesh_server_core")
+
+[node name="Pedestal_Chalice" type="Node3D" parent="Visuals/Pedestals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 0.88, 0)
+
+[node name="Column" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Chalice"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.125, 0)
+mesh = SubResource("CylinderMesh_pedestal_col")
+
+[node name="Disc" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Chalice"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.27, 0)
+mesh = SubResource("CylinderMesh_acrylic_disc")
+
+[node name="StatusLabel" type="Label3D" parent="Visuals/Pedestals/Pedestal_Chalice"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+billboard = 1
+text = "🏆 Unicorn Chalice
+[Chapter 3]"
+font_size = 14
+outline_size = 3
+
+[node name="Spot" type="OmniLight3D" parent="Visuals/Pedestals/Pedestal_Chalice"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+light_color = Color(0.3, 0.8, 1, 1)
+light_energy = 1.2
+omni_range = 1.8
+
+[node name="TrophyMount" type="Node3D" parent="Visuals/Pedestals/Pedestal_Chalice"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.38, 0)
+
+[node name="ChaliceBase" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Chalice/TrophyMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.015, 0)
+mesh = SubResource("CylinderMesh_chalice_base")
+
+[node name="ChaliceStem" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Chalice/TrophyMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09, 0)
+mesh = SubResource("CylinderMesh_chalice_stem")
+
+[node name="ChaliceCup" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Chalice/TrophyMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.22, 0)
+mesh = SubResource("CylinderMesh_chalice_cup")
+
+[node name="Pedestal_Bull" type="Node3D" parent="Visuals/Pedestals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35, 0.88, 0)
+
+[node name="Column" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Bull"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.125, 0)
+mesh = SubResource("CylinderMesh_pedestal_col")
+
+[node name="Disc" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Bull"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.27, 0)
+mesh = SubResource("CylinderMesh_acrylic_disc")
+
+[node name="StatusLabel" type="Label3D" parent="Visuals/Pedestals/Pedestal_Bull"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+billboard = 1
+text = "🏆 Platinum Bull
+[First IPO]"
+font_size = 14
+outline_size = 3
+
+[node name="Spot" type="OmniLight3D" parent="Visuals/Pedestals/Pedestal_Bull"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+light_color = Color(0.92, 0.94, 0.98, 1)
+light_energy = 1.5
+omni_range = 1.8
+
+[node name="TrophyMount" type="Node3D" parent="Visuals/Pedestals/Pedestal_Bull"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.38, 0)
+
+[node name="BullTorso" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Bull/TrophyMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+mesh = SubResource("BoxMesh_bull_torso")
+
+[node name="BullHead" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Bull/TrophyMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16, 0.18, 0)
+mesh = SubResource("PrismMesh_bull_head")
+
+[node name="HornLeft" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Bull/TrophyMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16, 0.27, 0.05)
+mesh = SubResource("PrismMesh_bull_horn")
+
+[node name="HornRight" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Bull/TrophyMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16, 0.27, -0.05)
+mesh = SubResource("PrismMesh_bull_horn")
+
+[node name="LegFL" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Bull/TrophyMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, 0.05, 0.05)
+mesh = SubResource("BoxMesh_bull_leg")
+
+[node name="LegFR" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Bull/TrophyMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, 0.05, -0.05)
+mesh = SubResource("BoxMesh_bull_leg")
+
+[node name="LegBL" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Bull/TrophyMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.09, 0.05, 0.05)
+mesh = SubResource("BoxMesh_bull_leg")
+
+[node name="LegBR" type="MeshInstance3D" parent="Visuals/Pedestals/Pedestal_Bull/TrophyMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.09, 0.05, -0.05)
+mesh = SubResource("BoxMesh_bull_leg")

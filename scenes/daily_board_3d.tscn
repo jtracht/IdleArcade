@@ -1,0 +1,169 @@
+[gd_scene load_steps=18 format=3 uid="uid://dm4dailyboard3d01"]
+
+[ext_resource type="Script" path="res://scripts/daily_board_3d.gd" id="1_dailyboard"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_root"]
+size = Vector3(1.8, 2.2, 0.6)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_area"]
+radius = 3.2
+
+[sub_resource type="StandardMaterial3D" id="Mat_WoodDark"]
+albedo_color = Color(0.35, 0.22, 0.12, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_post"]
+material = SubResource("Mat_WoodDark")
+size = Vector3(0.12, 2.2, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_crossbar"]
+material = SubResource("Mat_WoodDark")
+size = Vector3(1.5, 0.08, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="Mat_WoodFrame"]
+albedo_color = Color(0.48, 0.32, 0.18, 1)
+roughness = 0.7
+
+[sub_resource type="BoxMesh" id="BoxMesh_frame"]
+material = SubResource("Mat_WoodFrame")
+size = Vector3(1.5, 1.1, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Chalkboard"]
+albedo_color = Color(0.14, 0.18, 0.16, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_chalkboard"]
+material = SubResource("Mat_Chalkboard")
+size = Vector3(1.38, 0.98, 0.09)
+
+[sub_resource type="BoxMesh" id="BoxMesh_canopy"]
+material = SubResource("Mat_WoodDark")
+size = Vector3(1.65, 0.06, 0.28)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Parchment"]
+albedo_color = Color(0.94, 0.92, 0.82, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_note"]
+material = SubResource("Mat_Parchment")
+size = Vector3(0.36, 0.45, 0.01)
+
+[sub_resource type="StandardMaterial3D" id="Mat_RedPin"]
+albedo_color = Color(0.9, 0.18, 0.18, 1)
+metallic = 0.6
+roughness = 0.3
+
+[sub_resource type="SphereMesh" id="SphereMesh_pin"]
+material = SubResource("Mat_RedPin")
+radius = 0.02
+height = 0.04
+radial_segments = 6
+rings = 2
+
+[sub_resource type="StandardMaterial3D" id="Mat_GoldPin"]
+albedo_color = Color(1.0, 0.75, 0.15, 1)
+metallic = 0.8
+roughness = 0.2
+
+[sub_resource type="SphereMesh" id="SphereMesh_gold_pin"]
+material = SubResource("Mat_GoldPin")
+radius = 0.02
+height = 0.04
+radial_segments = 6
+rings = 2
+
+[node name="DailyBoard3D" type="StaticBody3D" groups=["daily_boards", "interactables", "stations"]]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_dailyboard")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+shape = SubResource("BoxShape3D_root")
+
+[node name="InteractionArea" type="Area3D" parent="."]
+collision_layer = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractionArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+shape = SubResource("SphereShape3D_area")
+
+[node name="PromptLabel3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+visible = false
+billboard = 1
+text = "📋 [E] Daily Challenge Board"
+font_size = 28
+outline_size = 5
+outline_color = Color(0.1, 0.08, 0.02, 0.9)
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Posts" type="Node3D" parent="Visuals"]
+
+[node name="PostLeft" type="MeshInstance3D" parent="Visuals/Posts"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7, 1.1, 0)
+mesh = SubResource("BoxMesh_post")
+
+[node name="PostRight" type="MeshInstance3D" parent="Visuals/Posts"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, 1.1, 0)
+mesh = SubResource("BoxMesh_post")
+
+[node name="CrossbarBottom" type="MeshInstance3D" parent="Visuals/Posts"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+mesh = SubResource("BoxMesh_crossbar")
+
+[node name="Frame" type="Node3D" parent="Visuals"]
+
+[node name="BoardFrame" type="MeshInstance3D" parent="Visuals/Frame"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0)
+mesh = SubResource("BoxMesh_frame")
+
+[node name="ChalkboardPlate" type="MeshInstance3D" parent="Visuals/Frame"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0.005)
+mesh = SubResource("BoxMesh_chalkboard")
+
+[node name="RoofCanopy" type="MeshInstance3D" parent="Visuals/Frame"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.05, 0.05)
+mesh = SubResource("BoxMesh_canopy")
+
+[node name="HeaderLabel3D" type="Label3D" parent="Visuals/Frame"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.84, 0.06)
+text = "📋 DAILY CHALLENGES"
+font_size = 14
+outline_size = 3
+outline_color = Color(0.12, 0.1, 0.06, 0.95)
+
+[node name="PaperNotes" type="Node3D" parent="Visuals"]
+
+[node name="Note1" type="MeshInstance3D" parent="Visuals/PaperNotes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 1.35, 0.055)
+mesh = SubResource("BoxMesh_note")
+
+[node name="Note2" type="MeshInstance3D" parent="Visuals/PaperNotes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0.055)
+mesh = SubResource("BoxMesh_note")
+
+[node name="Note3" type="MeshInstance3D" parent="Visuals/PaperNotes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 1.35, 0.055)
+mesh = SubResource("BoxMesh_note")
+
+[node name="PinPosts" type="Node3D" parent="Visuals"]
+
+[node name="Pin1" type="MeshInstance3D" parent="Visuals/PinPosts"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 1.55, 0.065)
+mesh = SubResource("SphereMesh_pin")
+
+[node name="Pin2" type="MeshInstance3D" parent="Visuals/PinPosts"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.55, 0.065)
+mesh = SubResource("SphereMesh_gold_pin")
+
+[node name="Pin3" type="MeshInstance3D" parent="Visuals/PinPosts"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 1.55, 0.065)
+mesh = SubResource("SphereMesh_pin")
+
+[node name="BoardLight" type="OmniLight3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0.35)
+light_color = Color(1, 0.9, 0.65, 1)
+light_energy = 1.0
+omni_range = 3.5

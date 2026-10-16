@@ -1,0 +1,232 @@
+[gd_scene load_steps=24 format=3 uid="uid://dm4ipobell3d01"]
+
+[ext_resource type="Script" path="res://scripts/ipo_bell_3d.gd" id="1_ipobell"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_root"]
+size = Vector3(1.2, 2.4, 1.2)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_area"]
+radius = 2.5
+
+[sub_resource type="StandardMaterial3D" id="Mat_DarkStone"]
+albedo_color = Color(0.2, 0.2, 0.22, 1)
+roughness = 0.75
+
+[sub_resource type="BoxMesh" id="BoxMesh_subbase"]
+material = SubResource("Mat_DarkStone")
+size = Vector3(1, 0.2, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_MarbleSlate"]
+albedo_color = Color(0.26, 0.27, 0.3, 1)
+roughness = 0.65
+
+[sub_resource type="BoxMesh" id="BoxMesh_column"]
+material = SubResource("Mat_MarbleSlate")
+size = Vector3(0.6, 1.2, 0.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_capital"]
+material = SubResource("Mat_DarkStone")
+size = Vector3(0.8, 0.15, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Brass"]
+albedo_color = Color(0.85, 0.72, 0.2, 1)
+metallic = 0.85
+roughness = 0.25
+
+[sub_resource type="BoxMesh" id="BoxMesh_plaque"]
+material = SubResource("Mat_Brass")
+size = Vector3(0.45, 0.25, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="Mat_CastIron"]
+albedo_color = Color(0.15, 0.15, 0.18, 1)
+metallic = 0.8
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_arm"]
+material = SubResource("Mat_CastIron")
+size = Vector3(0.1, 0.65, 0.1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_crossbar"]
+material = SubResource("Mat_CastIron")
+top_radius = 0.035
+bottom_radius = 0.035
+height = 0.75
+radial_segments = 8
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="Mat_Bronze"]
+albedo_color = Color(0.9, 0.75, 0.28, 1)
+metallic = 0.9
+roughness = 0.2
+
+[sub_resource type="SphereMesh" id="SphereMesh_crown"]
+material = SubResource("Mat_Bronze")
+radius = 0.18
+height = 0.18
+radial_segments = 8
+rings = 3
+is_hemisphere = true
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_body"]
+material = SubResource("Mat_Bronze")
+top_radius = 0.18
+bottom_radius = 0.28
+height = 0.32
+radial_segments = 10
+rings = 2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_lip"]
+material = SubResource("Mat_Bronze")
+top_radius = 0.28
+bottom_radius = 0.35
+height = 0.08
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_clapper_rod"]
+material = SubResource("Mat_CastIron")
+top_radius = 0.015
+bottom_radius = 0.015
+height = 0.35
+radial_segments = 6
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_clapper_ball"]
+material = SubResource("Mat_Bronze")
+radius = 0.045
+height = 0.09
+radial_segments = 6
+rings = 3
+
+[sub_resource type="StandardMaterial3D" id="Mat_Velvet"]
+albedo_color = Color(0.75, 0.08, 0.12, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_cord"]
+material = SubResource("Mat_Velvet")
+size = Vector3(0.02, 0.7, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="Mat_GoldSnippet"]
+albedo_color = Color(1, 0.85, 0.2, 1)
+metallic = 0.9
+roughness = 0.2
+emission_enabled = true
+emission = Color(1, 0.85, 0.2, 1)
+emission_energy_multiplier = 1.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_gold_particle"]
+material = SubResource("Mat_GoldSnippet")
+size = Vector3(0.05, 0.05, 0.01)
+
+[node name="IpoBell3D" type="StaticBody3D" groups=["interactables", "ipo_bells", "stations"]]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_ipobell")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+shape = SubResource("BoxShape3D_root")
+
+[node name="InteractionArea" type="Area3D" parent="."]
+collision_layer = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractionArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+shape = SubResource("SphereShape3D_area")
+
+[node name="PromptLabel3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.7, 0)
+visible = false
+billboard = 1
+text = "🔔 [E] Ring IPO Bell"
+font_size = 28
+outline_size = 5
+outline_color = Color(0.1, 0.08, 0.02, 0.9)
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Pedestal" type="Node3D" parent="Visuals"]
+
+[node name="SubBase" type="MeshInstance3D" parent="Visuals/Pedestal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+mesh = SubResource("BoxMesh_subbase")
+
+[node name="Column" type="MeshInstance3D" parent="Visuals/Pedestal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+mesh = SubResource("BoxMesh_column")
+
+[node name="Capital" type="MeshInstance3D" parent="Visuals/Pedestal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.475, 0)
+mesh = SubResource("BoxMesh_capital")
+
+[node name="BrassPlaque" type="MeshInstance3D" parent="Visuals/Pedestal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0.31)
+mesh = SubResource("BoxMesh_plaque")
+
+[node name="PlaqueLabel" type="Label3D" parent="Visuals/Pedestal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0.325)
+text = "IPO BELL
+CEREMONIAL"
+font_size = 14
+outline_size = 2
+
+[node name="Yoke" type="Node3D" parent="Visuals"]
+
+[node name="LeftArm" type="MeshInstance3D" parent="Visuals/Yoke"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.35, 1.825, 0)
+mesh = SubResource("BoxMesh_arm")
+
+[node name="RightArm" type="MeshInstance3D" parent="Visuals/Yoke"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.35, 1.825, 0)
+mesh = SubResource("BoxMesh_arm")
+
+[node name="Crossbar" type="MeshInstance3D" parent="Visuals/Yoke"]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 2.1, 0)
+mesh = SubResource("CylinderMesh_crossbar")
+
+[node name="BellPivot" type="Node3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+
+[node name="BellCrown" type="MeshInstance3D" parent="Visuals/BellPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.22, 0)
+mesh = SubResource("SphereMesh_crown")
+
+[node name="BellBody" type="MeshInstance3D" parent="Visuals/BellPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0)
+mesh = SubResource("CylinderMesh_body")
+
+[node name="FlaredLip" type="MeshInstance3D" parent="Visuals/BellPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
+mesh = SubResource("CylinderMesh_lip")
+
+[node name="ClapperRod" type="MeshInstance3D" parent="Visuals/BellPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
+mesh = SubResource("CylinderMesh_clapper_rod")
+
+[node name="ClapperBall" type="MeshInstance3D" parent="Visuals/BellPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.33, 0)
+mesh = SubResource("SphereMesh_clapper_ball")
+
+[node name="PullCord" type="MeshInstance3D" parent="Visuals/BellPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.18, -0.45, 0)
+mesh = SubResource("BoxMesh_cord")
+
+[node name="BellLight" type="OmniLight3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+light_color = Color(1, 0.9, 0.5, 1)
+light_energy = 1.2
+omni_range = 4.0
+
+[node name="GoldParticles" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+emitting = false
+amount = 40
+lifetime = 1.8
+one_shot = true
+explosiveness = 0.85
+mesh = SubResource("BoxMesh_gold_particle")
+direction = Vector3(0, 1, 0)
+spread = 55.0
+initial_velocity_min = 3.5
+initial_velocity_max = 6.5
+color = Color(1, 0.85, 0.2, 1)

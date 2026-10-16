@@ -1,4 +1,4 @@
-[gd_scene load_steps=43 format=3 uid="uid://dm4main3d001scene"]
+[gd_scene load_steps=46 format=3 uid="uid://dm4main3d001scene"]
 
 [ext_resource type="Script" path="res://scripts/main_3d.gd" id="1_main3d"]
 [ext_resource type="PackedScene" uid="uid://c8avatar3d001scene" path="res://scenes/avatar_3d.tscn" id="2_avatar"]
@@ -18,6 +18,9 @@
 [ext_resource type="PackedScene" uid="uid://dm4daynight01scene" path="res://scenes/day_night_cycle.tscn" id="16_daynight"]
 [ext_resource type="PackedScene" uid="uid://dm4transition01scene" path="res://scenes/ui/screen_transition.tscn" id="17_transition"]
 [ext_resource type="PackedScene" uid="uid://dm4coffeemach01" path="res://scenes/coffee_machine_3d.tscn" id="18_coffeemach"]
+[ext_resource type="PackedScene" uid="uid://dm4ipobell3d01" path="res://scenes/ipo_bell_3d.tscn" id="19_ipobell"]
+[ext_resource type="PackedScene" uid="uid://dm4trophyshowcase01" path="res://scenes/trophy_showcase_3d.tscn" id="20_trophyshowcase"]
+[ext_resource type="PackedScene" uid="uid://dm4dailyboard3d01" path="res://scenes/daily_board_3d.tscn" id="21_dailyboard"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -567,3 +570,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 18)
 
 [node name="CoffeeMachine3D" parent="." instance=ExtResource("18_coffeemach")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19, 0, 4)
+
+[node name="IpoBell3D" parent="." instance=ExtResource("19_ipobell")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 12)
+
+[node name="TrophyShowcase3D" parent="." instance=ExtResource("20_trophyshowcase")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 12)
+
+[node name="DailyBoard3D" parent="." instance=ExtResource("21_dailyboard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 8)
+
+
