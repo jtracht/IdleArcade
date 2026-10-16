@@ -1,0 +1,221 @@
+[gd_scene load_steps=6 format=3 uid="uid://dm4espressobrew01"]
+
+[ext_resource type="Script" path="res://scripts/ui/espresso_brew_minigame.gd" id="1_brew"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_card"]
+bg_color = Color(0.08, 0.06, 0.05, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.96, 0.64, 0.28, 0.95)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 20.0
+content_margin_top = 18.0
+content_margin_right = 20.0
+content_margin_bottom = 18.0
+shadow_color = Color(0, 0, 0, 0.7)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_inner_card"]
+bg_color = Color(0.04, 0.03, 0.02, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.22, 0.12, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 14.0
+content_margin_top = 12.0
+content_margin_right = 14.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pump_btn"]
+bg_color = Color(0.32, 0.16, 0.08, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.96, 0.64, 0.28, 0.98)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.85, 0.45, 0.15, 0.5)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_close_btn"]
+bg_color = Color(0.18, 0.12, 0.1, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.6, 0.4, 0.3, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="EspressoBrewMinigame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_brew")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.03, 0.02, 0.01, 0.82)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="CardPanel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(520, 520)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/CardPanel"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 14
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/CardPanel/CardVBox"]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/CardPanel/CardVBox/HeaderHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.96, 0.75, 0.35, 1)
+theme_override_font_sizes/font_size = 20
+text = "☕ SUPER-ESPRESSO BREW LAB ☕"
+horizontal_alignment = 1
+
+[node name="CloseButton" type="Button" parent="CenterContainer/CardPanel/CardVBox/HeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_close_btn")
+text = "✕"
+
+[node name="SubtitleLabel" type="Label" parent="CenterContainer/CardPanel/CardVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.8, 0.75, 1)
+theme_override_font_sizes/font_size = 13
+text = "Maintain pressure in the Sweet Spot (62-84 bar) for 3.0s to brew Unicorn Espresso!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="PressureCard" type="PanelContainer" parent="CenterContainer/CardPanel/CardVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_inner_card")
+
+[node name="PressureVBox" type="VBoxContainer" parent="CenterContainer/CardPanel/CardVBox/PressureCard"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 6
+
+[node name="PressureLabel" type="Label" parent="CenterContainer/CardPanel/CardVBox/PressureCard/PressureVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.75, 0.3, 1)
+theme_override_font_sizes/font_size = 15
+text = "PRESSURE: 20.0 BAR (LOW - PUMP NOW!)"
+horizontal_alignment = 1
+
+[node name="PressureProgressBar" type="ProgressBar" parent="CenterContainer/CardPanel/CardVBox/PressureCard/PressureVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+mouse_filter = 0
+step = 0.1
+value = 20.0
+show_percentage = true
+
+[node name="SweetSpotHint" type="Label" parent="CenterContainer/CardPanel/CardVBox/PressureCard/PressureVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.64, 0.28, 1)
+theme_override_font_sizes/font_size = 12
+text = "◄--- [62.0 - 84.0 BAR GOLDEN EXTRACTION ZONE] ---►"
+horizontal_alignment = 1
+
+[node name="ExtractionCard" type="PanelContainer" parent="CenterContainer/CardPanel/CardVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_inner_card")
+
+[node name="ExtractionVBox" type="VBoxContainer" parent="CenterContainer/CardPanel/CardVBox/ExtractionCard"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 6
+
+[node name="ExtractionLabel" type="Label" parent="CenterContainer/CardPanel/CardVBox/ExtractionCard/ExtractionVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "Extraction Progress: 0% (0.0s / 3.0s)"
+horizontal_alignment = 1
+
+[node name="ExtractionProgressBar" type="ProgressBar" parent="CenterContainer/CardPanel/CardVBox/ExtractionCard/ExtractionVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+mouse_filter = 0
+max_value = 3.0
+step = 0.05
+show_percentage = false
+
+[node name="StatusLabel" type="Label" parent="CenterContainer/CardPanel/CardVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.75, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "Tap PUMP [E] to build extraction pressure!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ActionCenter" type="CenterContainer" parent="CenterContainer/CardPanel/CardVBox"]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="PumpButton" type="Button" parent="CenterContainer/CardPanel/CardVBox/ActionCenter"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 60)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_colors/font_color = Color(1, 0.92, 0.8, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_pump_btn")
+text = "PUMP [E]"

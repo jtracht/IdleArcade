@@ -37,6 +37,17 @@ signal level_up(new_level: int)
 signal screen_shake_changed(new_intensity: float)
 signal light_cycle_mode_changed(new_mode: String)
 
+# Phase 11 Narrative Story-Kampagne Signals
+signal campaign_chapter_changed(chapter: int)
+signal campaign_quest_completed(quest_id: String, chapter: int)
+signal campaign_choice_selected(chapter: int, choice_id: String, reward_type: String)
+signal campaign_buff_started(buff_type: String, multiplier: float, duration: float)
+signal campaign_buff_ended(buff_type: String)
+
+# Phase 11 Super-Espresso Brew Lab Signals
+signal unicorn_espresso_buff_started(duration: float, avatar_boost: float, worker_boost: float)
+signal unicorn_espresso_buff_ended()
+
 # --- State Variables ---
 var energy: float = 0.0
 var total_energy_earned: float = 0.0
@@ -76,6 +87,20 @@ var server_overclock_buff_timer: float = 0.0
 var server_overclock_buff_multiplier: float = 1.0
 var server_overclock_buff_active: bool = false
 var server_overclock_buff_remaining: float = 0.0
+
+# Phase 11 Narrative Story-Kampagne ("The Unicorn Journey") State Variables
+var campaign_chapter: int = 1
+var campaign_completed_quests: Array[String] = []
+var campaign_choices: Dictionary = {}
+var campaign_rps_buff_timer: float = 0.0
+var campaign_rps_buff_multiplier: float = 1.0
+var campaign_speed_buff_timer: float = 0.0
+var campaign_speed_buff_multiplier: float = 1.0
+
+# Phase 11 Super-Espresso Brew Lab Buff State Variables
+var unicorn_espresso_buff_active: bool = false
+var unicorn_espresso_buff_timer: float = 0.0
+var unicorn_espresso_buff_remaining: float = 0.0
 
 var base_click_power: float = 1.0
 var base_passive_rps: float = 0.0
@@ -328,6 +353,20 @@ func reset_state() -> void:
 	server_overclock_buff_active = false
 	server_overclock_buff_remaining = 0.0
 
+	# Phase 11 Narrative Story-Kampagne Defaults
+	campaign_chapter = 1
+	campaign_completed_quests.clear()
+	campaign_choices.clear()
+	campaign_rps_buff_timer = 0.0
+	campaign_rps_buff_multiplier = 1.0
+	campaign_speed_buff_timer = 0.0
+	campaign_speed_buff_multiplier = 1.0
+
+	# Phase 11 Super-Espresso Brew Lab Buff Defaults
+	unicorn_espresso_buff_active = false
+	unicorn_espresso_buff_timer = 0.0
+	unicorn_espresso_buff_remaining = 0.0
+
 func _process(delta: float) -> void:
 	var safe_delta: float = maxf(0.0, delta)
 	var clamped_delta: float = minf(0.1, safe_delta)
@@ -363,6 +402,33 @@ func _process(delta: float) -> void:
 			server_overclock_buff_multiplier = 1.0
 			rps_changed.emit(get_effective_passive_rps())
 			server_overclock_buff_ended.emit()
+
+	# Phase 11 Campaign RPS buff duration decay
+	if campaign_rps_buff_timer > 0.0:
+		campaign_rps_buff_timer -= safe_delta
+		if campaign_rps_buff_timer <= 0.0:
+			campaign_rps_buff_timer = 0.0
+			campaign_rps_buff_multiplier = 1.0
+			rps_changed.emit(get_effective_passive_rps())
+			campaign_buff_ended.emit("rps")
+
+	# Phase 11 Campaign avatar speed buff duration decay
+	if campaign_speed_buff_timer > 0.0:
+		campaign_speed_buff_timer -= safe_delta
+		if campaign_speed_buff_timer <= 0.0:
+			campaign_speed_buff_timer = 0.0
+			campaign_speed_buff_multiplier = 1.0
+			campaign_buff_ended.emit("speed")
+
+	# Phase 11 Super-Espresso Brew Lab buff duration decay
+	if unicorn_espresso_buff_timer > 0.0 or unicorn_espresso_buff_active:
+		unicorn_espresso_buff_timer -= safe_delta
+		unicorn_espresso_buff_remaining = maxf(0.0, unicorn_espresso_buff_timer)
+		if unicorn_espresso_buff_timer <= 0.0:
+			unicorn_espresso_buff_timer = 0.0
+			unicorn_espresso_buff_remaining = 0.0
+			unicorn_espresso_buff_active = false
+			unicorn_espresso_buff_ended.emit()
 
 # --- Interface Contract Methods ---
 
@@ -484,9 +550,10 @@ func get_bonus_multiplier() -> float:
 func get_campus_item_multiplier() -> float:
 	return (1.0 + (float(collectibles_collected) * 0.10)) if is_tech_researched("tech_neural_cloud") else (1.0 + (float(collectibles_collected) * 0.05))
 
-## Returns passive RPS boosted by bonus users multiplier, campus item multiplier, tech research, and active server overclock buff.
+## Returns passive RPS boosted by bonus users multiplier, campus item multiplier, tech research, active server overclock buff, and active campaign buff.
 func get_effective_passive_rps() -> float:
-	return base_passive_rps * get_bonus_multiplier() * get_campus_item_multiplier() * (1.25 if is_tech_researched("tech_server_overclock") else 1.0) * (server_overclock_buff_multiplier if (server_overclock_buff_timer > 0.0 or server_overclock_buff_active) else 1.0)
+	var camp_rps_mult: float = campaign_rps_buff_multiplier if campaign_rps_buff_timer > 0.0 else 1.0
+	return base_passive_rps * get_bonus_multiplier() * get_campus_item_multiplier() * (1.25 if is_tech_researched("tech_server_overclock") else 1.0) * (server_overclock_buff_multiplier if (server_overclock_buff_timer > 0.0 or server_overclock_buff_active) else 1.0) * camp_rps_mult
 
 ## Activates the Server Room Overclock temporary RPS boost event (+50% for 25s by default).
 func activate_server_overclock_buff(duration: float = 25.0, multiplier: float = 1.50) -> void:
@@ -496,6 +563,65 @@ func activate_server_overclock_buff(duration: float = 25.0, multiplier: float = 
 	server_overclock_buff_active = true
 	rps_changed.emit(get_effective_passive_rps())
 	server_overclock_buff_started.emit(multiplier, duration)
+
+# ==============================================================================
+# Phase 11 Narrative Story-Kampagne Methods ("The Unicorn Journey")
+# ==============================================================================
+
+## Returns current narrative campaign chapter (1: Seed Stage, 2: Series A, 3: Unicorn Status).
+func get_campaign_chapter() -> int:
+	return campaign_chapter
+
+## Advances campaign to next chapter.
+func advance_campaign_chapter() -> void:
+	campaign_chapter += 1
+	campaign_chapter_changed.emit(campaign_chapter)
+	save_to_disk()
+
+## Returns true if the specified campaign quest has been completed.
+func is_campaign_quest_completed(quest_id: String) -> bool:
+	return campaign_completed_quests.has(quest_id)
+
+## Activates temporary passive RPS multiplier from campaign choice or event.
+func activate_campaign_rps_buff(multiplier: float, duration: float) -> void:
+	campaign_rps_buff_multiplier = multiplier
+	campaign_rps_buff_timer = duration
+	rps_changed.emit(get_effective_passive_rps())
+	campaign_buff_started.emit("rps", multiplier, duration)
+
+## Activates temporary avatar speed multiplier from campaign choice or event.
+func activate_campaign_speed_buff(multiplier: float, duration: float) -> void:
+	campaign_speed_buff_multiplier = multiplier
+	campaign_speed_buff_timer = duration
+	campaign_buff_started.emit("speed", multiplier, duration)
+
+## Activates Unicorn Espresso buff (+50% avatar speed, +20% worker production) for duration seconds.
+func activate_unicorn_espresso_buff(duration: float = 60.0) -> void:
+	unicorn_espresso_buff_timer = duration
+	unicorn_espresso_buff_remaining = duration
+	unicorn_espresso_buff_active = true
+	unicorn_espresso_buff_started.emit(duration, 1.50, 1.20)
+
+## Returns true if Unicorn Espresso buff is currently active.
+func is_unicorn_espresso_active() -> bool:
+	return unicorn_espresso_buff_active and (unicorn_espresso_buff_timer > 0.0 or unicorn_espresso_buff_remaining > 0.0)
+
+## Records player's narrative choice for a chapter and distributes the immediate bonus.
+func record_campaign_choice(chapter: int, choice_id: String, reward_type: String, reward_value: float, duration: float = 0.0) -> void:
+	chapter = clampi(chapter, 1, 3)
+	var already_chosen: bool = campaign_choices.has(str(chapter)) or campaign_choices.has(chapter)
+	campaign_choices[str(chapter)] = choice_id
+	campaign_choices[chapter] = choice_id
+	if not already_chosen:
+		match reward_type.to_lower():
+			"energy", "users", "bonus_users":
+				earn_energy(reward_value)
+			"rps", "rps_buff":
+				activate_campaign_rps_buff(reward_value, duration)
+			"speed", "speed_buff":
+				activate_campaign_speed_buff(reward_value, duration)
+	campaign_choice_selected.emit(chapter, choice_id, reward_type)
+	save_to_disk()
 
 ## Directly awards energy (e.g. from grants, pitch stage, etc.) and emits energy_changed signal.
 func earn_energy(amount: float) -> void:
@@ -522,10 +648,12 @@ func award_bonus_users(amount: int) -> void:
 # Phase 4 3D Meta-Progression & Interaction Methods
 # ==============================================================================
 
-## Computes effective avatar movement speed multiplier (1.0 + avatar_speed_level * 0.15).
+## Computes effective avatar movement speed multiplier (1.0 + avatar_speed_level * 0.15) with tech & campaign buffs.
 func get_effective_avatar_speed() -> float:
 	var speed_boost: float = 0.15 if is_tech_researched("tech_coffee_automation") else 0.0
-	return 1.0 + float(avatar_speed_level) * 0.15 + speed_boost
+	var base_speed: float = 1.0 + float(avatar_speed_level) * 0.15 + speed_boost
+	var campaign_mult: float = campaign_speed_buff_multiplier if campaign_speed_buff_timer > 0.0 else 1.0
+	return base_speed * campaign_mult
 
 ## Returns current idle progression / security clearance level (baseline 1).
 func get_idle_level() -> int:
@@ -646,6 +774,20 @@ func complete_campus_quest(quest_id: String, reward_energy: float = 0.0, reward_
 		bonus_users_changed.emit(bonus_users, reward_bonus_users)
 	campus_quest_completed.emit(quest_id, reward_energy, reward_bonus_users)
 	campus_quest_updated.emit(quest_id, "completed", int(q["current_count"]), int(q["target_count"]))
+	if not campaign_completed_quests.has(quest_id):
+		campaign_completed_quests.append(quest_id)
+		campaign_quest_completed.emit(quest_id, campaign_chapter)
+		if (quest_id == "quest_briefcases" and campaign_chapter == 1) or \
+		   (quest_id == "quest_server" and campaign_chapter == 2) or \
+		   (quest_id == "quest_lab" and campaign_chapter == 3):
+			advance_campaign_chapter()
+	
+	if campaign_completed_quests.has("quest_briefcases") and campaign_chapter == 1:
+		advance_campaign_chapter()
+	if campaign_completed_quests.has("quest_server") and campaign_chapter == 2:
+		advance_campaign_chapter()
+	if campaign_completed_quests.has("quest_lab") and campaign_chapter == 3:
+		advance_campaign_chapter()
 	save_to_disk()
 	return true
 
@@ -667,6 +809,9 @@ func save_to_disk() -> void:
 		"pickup_radius_level": pickup_radius_level,
 		"collectibles_collected": collectibles_collected,
 		"active_campus_quest_id": active_campus_quest_id,
+		"campaign_chapter": campaign_chapter,
+		"campaign_completed_quests": campaign_completed_quests.duplicate(),
+		"campaign_choices": campaign_choices.duplicate(true),
 		"unlocked_zones": unlocked_zones.duplicate(),
 		"campus_quests": campus_quests.duplicate(true),
 		"researched_techs": researched_techs.duplicate(),
@@ -850,6 +995,38 @@ func load_from_disk() -> bool:
 		loaded_light_mode = "auto"
 	light_cycle_mode = loaded_light_mode
 	light_cycle_mode_changed.emit(light_cycle_mode)
+
+	# Phase 11 Narrative Story-Kampagne Deserialization
+	campaign_chapter = maxi(1, int(data.get("campaign_chapter", 1)))
+	campaign_completed_quests.clear()
+	var raw_camp_quests = data.get("campaign_completed_quests", [])
+	if raw_camp_quests is Array:
+		for cq in raw_camp_quests:
+			if cq is String and not cq.is_empty():
+				campaign_completed_quests.append(cq)
+	campaign_choices.clear()
+	var raw_camp_choices = data.get("campaign_choices", {})
+	if raw_camp_choices is Dictionary:
+		for k in raw_camp_choices:
+			campaign_choices[str(k)] = raw_camp_choices[k]
+			if str(k).is_valid_int():
+				campaign_choices[int(str(k))] = raw_camp_choices[k]
+
+	# Reconcile legacy savegames where campus_quests may already be completed
+	if campus_quests.get("quest_lab", {}).get("status") == "completed":
+		campaign_chapter = maxi(campaign_chapter, 4)
+		if not campaign_completed_quests.has("quest_lab"): campaign_completed_quests.append("quest_lab")
+		if not campaign_completed_quests.has("quest_server"): campaign_completed_quests.append("quest_server")
+		if not campaign_completed_quests.has("quest_briefcases"): campaign_completed_quests.append("quest_briefcases")
+	elif campus_quests.get("quest_server", {}).get("status") == "completed":
+		campaign_chapter = maxi(campaign_chapter, 3)
+		if not campaign_completed_quests.has("quest_server"): campaign_completed_quests.append("quest_server")
+		if not campaign_completed_quests.has("quest_briefcases"): campaign_completed_quests.append("quest_briefcases")
+	elif campus_quests.get("quest_briefcases", {}).get("status") == "completed":
+		campaign_chapter = maxi(campaign_chapter, 2)
+		if not campaign_completed_quests.has("quest_briefcases"): campaign_completed_quests.append("quest_briefcases")
+
+	campaign_chapter_changed.emit(campaign_chapter)
 			
 	energy_changed.emit(energy, offline_gain)
 	rps_changed.emit(get_effective_passive_rps())
@@ -964,9 +1141,11 @@ func add_energy(amount: float) -> void:
 	total_energy_earned += amount
 	energy_changed.emit(energy, amount)
 
-## Returns worker production frequency multiplier (1.10x with tech_coffee_automation).
+## Returns worker production frequency multiplier (1.10x with tech_coffee_automation, scaled by 1.20x during Unicorn Espresso buff).
 func get_worker_production_multiplier() -> float:
-	return 1.10 if is_tech_researched("tech_coffee_automation") else 1.0
+	var tech_mult: float = 1.10 if is_tech_researched("tech_coffee_automation") else 1.0
+	var espresso_mult: float = 1.20 if (unicorn_espresso_buff_active or unicorn_espresso_buff_timer > 0.0) else 1.0
+	return tech_mult * espresso_mult
 
 ## Returns angel investor spark spawn chance multiplier (1.5x with tech_quantum_ads).
 func get_angel_investor_spawn_chance_multiplier() -> float:

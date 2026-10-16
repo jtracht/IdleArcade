@@ -1,0 +1,216 @@
+[gd_scene load_steps=24 format=3 uid="uid://dm4coffeemach01"]
+
+[ext_resource type="Script" path="res://scripts/coffee_machine_3d.gd" id="1_coffee"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_root"]
+size = Vector3(1.3, 1.6, 0.8)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_area"]
+radius = 2.4
+
+[sub_resource type="StandardMaterial3D" id="Mat_WoodCounter"]
+albedo_color = Color(0.18, 0.14, 0.12, 1)
+metallic = 0.05
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_counter"]
+material = SubResource("Mat_WoodCounter")
+size = Vector3(1.2, 0.85, 0.7)
+
+[sub_resource type="StandardMaterial3D" id="Mat_MachineBody"]
+albedo_color = Color(0.24, 0.22, 0.2, 1)
+metallic = 0.7
+roughness = 0.35
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+material = SubResource("Mat_MachineBody")
+size = Vector3(0.85, 0.75, 0.55)
+
+[sub_resource type="StandardMaterial3D" id="Mat_CopperBoiler"]
+albedo_color = Color(0.85, 0.45, 0.22, 1)
+metallic = 0.9
+roughness = 0.2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_boiler"]
+material = SubResource("Mat_CopperBoiler")
+top_radius = 0.22
+bottom_radius = 0.22
+height = 0.45
+radial_segments = 16
+
+[sub_resource type="StandardMaterial3D" id="Mat_BrassGauge"]
+albedo_color = Color(0.9, 0.75, 0.3, 1)
+metallic = 0.85
+roughness = 0.25
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_gauge"]
+material = SubResource("Mat_BrassGauge")
+top_radius = 0.08
+bottom_radius = 0.08
+height = 0.04
+radial_segments = 12
+
+[sub_resource type="StandardMaterial3D" id="Mat_RedNeedle"]
+albedo_color = Color(0.95, 0.1, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_needle"]
+material = SubResource("Mat_RedNeedle")
+size = Vector3(0.01, 0.06, 0.01)
+
+[sub_resource type="StandardMaterial3D" id="Mat_ChromeGroup"]
+albedo_color = Color(0.8, 0.82, 0.85, 1)
+metallic = 0.95
+roughness = 0.15
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_grouphead"]
+material = SubResource("Mat_ChromeGroup")
+top_radius = 0.09
+bottom_radius = 0.09
+height = 0.06
+radial_segments = 12
+
+[sub_resource type="StandardMaterial3D" id="Mat_DarkWoodHandle"]
+albedo_color = Color(0.12, 0.08, 0.05, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_handle"]
+material = SubResource("Mat_DarkWoodHandle")
+size = Vector3(0.04, 0.04, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="Mat_DripTray"]
+albedo_color = Color(0.65, 0.65, 0.68, 1)
+metallic = 0.85
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_driptray"]
+material = SubResource("Mat_DripTray")
+size = Vector3(0.55, 0.04, 0.26)
+
+[sub_resource type="StandardMaterial3D" id="Mat_GlowingCup"]
+albedo_color = Color(0.95, 0.95, 1, 1)
+emission_enabled = true
+emission = Color(0.95, 0.65, 0.25, 1)
+emission_energy_multiplier = 1.2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_cup"]
+material = SubResource("Mat_GlowingCup")
+top_radius = 0.045
+bottom_radius = 0.035
+height = 0.06
+radial_segments = 10
+
+[sub_resource type="StandardMaterial3D" id="Mat_Steam"]
+transparency = 1
+albedo_color = Color(0.9, 0.9, 0.95, 0.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_steam"]
+material = SubResource("Mat_Steam")
+size = Vector3(0.04, 0.04, 0.04)
+
+[node name="CoffeeMachine3D" type="StaticBody3D" groups=["coffee_machines", "interactables", "stations"]]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_coffee")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("BoxShape3D_root")
+
+[node name="InteractionArea" type="Area3D" parent="."]
+collision_layer = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractionArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("SphereShape3D_area")
+
+[node name="PromptLabel3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
+visible = false
+billboard = 1
+text = "[E] Super-Espresso Brew Lab"
+font_size = 28
+outline_size = 6
+outline_color = Color(0.08, 0.05, 0.02, 0.9)
+
+[node name="StatusLabel3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.05, 0)
+billboard = 1
+text = "[READY TO BREW]"
+font_size = 20
+outline_size = 4
+outline_color = Color(0.05, 0.03, 0.01, 0.9)
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="BaseCounter" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.425, 0)
+mesh = SubResource("BoxMesh_counter")
+
+[node name="MachineBody" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.225, 0)
+mesh = SubResource("BoxMesh_body")
+
+[node name="CopperBoiler" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, -0.05)
+mesh = SubResource("CylinderMesh_boiler")
+
+[node name="PressureGauge" type="Node3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0.28)
+
+[node name="GaugeBezel" type="MeshInstance3D" parent="Visuals/PressureGauge"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("CylinderMesh_gauge")
+
+[node name="NeedleRoot" type="Node3D" parent="Visuals/PressureGauge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.025)
+
+[node name="Needle" type="MeshInstance3D" parent="Visuals/PressureGauge/NeedleRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+mesh = SubResource("BoxMesh_needle")
+
+[node name="GroupHead" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0.24)
+mesh = SubResource("CylinderMesh_grouphead")
+
+[node name="PortafilterHandle" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(0.984808, 0, -0.173648, 0, 1, 0, 0.173648, 0, 0.984808, 0.02, 1.05, 0.38)
+mesh = SubResource("BoxMesh_handle")
+
+[node name="DripTray" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.87, 0.22)
+mesh = SubResource("BoxMesh_driptray")
+
+[node name="CupLeft" type="Node3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, 0.92, 0.22)
+
+[node name="CupMesh" type="MeshInstance3D" parent="Visuals/CupLeft"]
+mesh = SubResource("CylinderMesh_cup")
+
+[node name="CupLight" type="OmniLight3D" parent="Visuals/CupLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0)
+light_color = Color(1, 0.8, 0.4, 1)
+light_energy = 0.8
+omni_range = 1.2
+
+[node name="CupRight" type="Node3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 0.92, 0.22)
+
+[node name="CupMesh" type="MeshInstance3D" parent="Visuals/CupRight"]
+mesh = SubResource("CylinderMesh_cup")
+
+[node name="CupLight" type="OmniLight3D" parent="Visuals/CupRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0)
+light_color = Color(1, 0.8, 0.4, 1)
+light_energy = 0.8
+omni_range = 1.2
+
+[node name="SteamParticles" type="CPUParticles3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0.22)
+amount = 16
+lifetime = 1.0
+mesh = SubResource("BoxMesh_steam")
+direction = Vector3(0, 1, 0)
+spread = 20.0
+initial_velocity_min = 0.5
+initial_velocity_max = 1.2
+color = Color(0.95, 0.92, 0.88, 0.7)

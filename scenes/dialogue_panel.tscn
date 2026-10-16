@@ -27,6 +27,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 0
 script = ExtResource("1_dialogue")
 
 [node name="DimBackdrop" type="ColorRect" parent="."]
@@ -36,6 +37,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 0
 color = Color(0, 0, 0, 0.45)
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
@@ -45,39 +47,47 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 0
 
 [node name="CardPanel" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(460, 320)
+custom_minimum_size = Vector2(500, 480)
 layout_mode = 2
+mouse_filter = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
 [node name="VBox" type="VBoxContainer" parent="CenterContainer/CardPanel"]
 layout_mode = 2
+mouse_filter = 0
 theme_override_constants/separation = 14
 
 [node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/CardPanel/VBox"]
 layout_mode = 2
+mouse_filter = 0
 theme_override_constants/separation = 12
 
 [node name="AvatarBadge" type="ColorRect" parent="CenterContainer/CardPanel/VBox/HeaderHBox"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(42, 42)
 layout_mode = 2
+mouse_filter = 0
 color = Color(0.2, 0.7, 1, 1)
 
 [node name="TitleVBox" type="VBoxContainer" parent="CenterContainer/CardPanel/VBox/HeaderHBox"]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 0
 
 [node name="NPCNameLabel" type="Label" parent="CenterContainer/CardPanel/VBox/HeaderHBox/TitleVBox"]
 unique_name_in_owner = true
 layout_mode = 2
+mouse_filter = 0
 theme_override_font_sizes/font_size = 18
 text = "NPC Name"
 
 [node name="NPCTitleLabel" type="Label" parent="CenterContainer/CardPanel/VBox/HeaderHBox/TitleVBox"]
 unique_name_in_owner = true
 layout_mode = 2
+mouse_filter = 0
 theme_override_colors/font_color = Color(0.65, 0.75, 0.85, 1)
 theme_override_font_sizes/font_size = 13
 text = "NPC Role"
@@ -89,13 +99,46 @@ layout_mode = 2
 unique_name_in_owner = true
 custom_minimum_size = Vector2(400, 50)
 layout_mode = 2
+mouse_filter = 0
 theme_override_font_sizes/font_size = 14
 text = "Dialogue content goes here."
 autowrap_mode = 3
 
+[node name="ChoiceContainer" type="VBoxContainer" parent="CenterContainer/CardPanel/VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="ChoiceButton1" type="Button" parent="CenterContainer/CardPanel/VBox/ChoiceContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 0
+theme_override_font_sizes/font_size = 14
+text = "Choice 1"
+
+[node name="ChoiceButton2" type="Button" parent="CenterContainer/CardPanel/VBox/ChoiceContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 0
+theme_override_font_sizes/font_size = 14
+text = "Choice 2"
+
+[node name="ChoiceButton3" type="Button" parent="CenterContainer/CardPanel/VBox/ChoiceContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 0
+theme_override_font_sizes/font_size = 14
+text = "Choice 3"
+
 [node name="QuestBox" type="VBoxContainer" parent="CenterContainer/CardPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
+mouse_filter = 0
 theme_override_constants/separation = 6
 
 [node name="HSeparator2" type="HSeparator" parent="CenterContainer/CardPanel/VBox/QuestBox"]
@@ -104,6 +147,7 @@ layout_mode = 2
 [node name="QuestTitleLabel" type="Label" parent="CenterContainer/CardPanel/VBox/QuestBox"]
 unique_name_in_owner = true
 layout_mode = 2
+mouse_filter = 0
 theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
 theme_override_font_sizes/font_size = 15
 text = "📜 Quest: Objective"
@@ -111,6 +155,7 @@ text = "📜 Quest: Objective"
 [node name="QuestDescLabel" type="Label" parent="CenterContainer/CardPanel/VBox/QuestBox"]
 unique_name_in_owner = true
 layout_mode = 2
+mouse_filter = 0
 theme_override_colors/font_color = Color(0.7, 0.75, 0.8, 1)
 theme_override_font_sizes/font_size = 13
 text = "Quest description."
@@ -118,17 +163,20 @@ autowrap_mode = 3
 
 [node name="ProgressRewardHBox" type="HBoxContainer" parent="CenterContainer/CardPanel/VBox/QuestBox"]
 layout_mode = 2
+mouse_filter = 0
 
 [node name="QuestProgressLabel" type="Label" parent="CenterContainer/CardPanel/VBox/QuestBox/ProgressRewardHBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 0
 theme_override_font_sizes/font_size = 13
 text = "Status: Available (0/1)"
 
 [node name="QuestRewardLabel" type="Label" parent="CenterContainer/CardPanel/VBox/QuestBox/ProgressRewardHBox"]
 unique_name_in_owner = true
 layout_mode = 2
+mouse_filter = 0
 theme_override_colors/font_color = Color(0.3, 1, 0.5, 1)
 theme_override_font_sizes/font_size = 13
 text = "Reward: +100 Users"
@@ -136,27 +184,32 @@ text = "Reward: +100 Users"
 [node name="Spacer" type="Control" parent="CenterContainer/CardPanel/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
+mouse_filter = 0
 
 [node name="ButtonHBox" type="HBoxContainer" parent="CenterContainer/CardPanel/VBox"]
 layout_mode = 2
+mouse_filter = 0
 theme_override_constants/separation = 12
 alignment = 2
 
 [node name="AcceptButton" type="Button" parent="CenterContainer/CardPanel/VBox/ButtonHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(130, 36)
+custom_minimum_size = Vector2(140, 56)
 layout_mode = 2
+mouse_filter = 0
 text = "Accept Quest"
 
 [node name="CompleteButton" type="Button" parent="CenterContainer/CardPanel/VBox/ButtonHBox"]
 unique_name_in_owner = true
 visible = false
-custom_minimum_size = Vector2(140, 36)
+custom_minimum_size = Vector2(160, 56)
 layout_mode = 2
+mouse_filter = 0
 text = "Claim Reward! 🎉"
 
 [node name="CloseButton" type="Button" parent="CenterContainer/CardPanel/VBox/ButtonHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(90, 36)
+custom_minimum_size = Vector2(120, 56)
 layout_mode = 2
+mouse_filter = 0
 text = "Close [Esc]"

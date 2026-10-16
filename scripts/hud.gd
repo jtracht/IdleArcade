@@ -27,6 +27,10 @@ const SETTINGS_MODAL_SCENE: PackedScene = preload("res://scenes/ui/settings_moda
 @onready var settings_button: Button = get_node_or_null("%SettingsButton")
 
 @onready var burger_menu_button: Button = get_node_or_null("%BurgerMenuButton")
+@onready var campaign_badge: PanelContainer = get_node_or_null("%CampaignBadge")
+@onready var chapter_title_label: Label = get_node_or_null("%ChapterTitleLabel")
+@onready var story_mission_label: Label = get_node_or_null("%StoryMissionLabel")
+@onready var badge_progress_label: Label = get_node_or_null("%BadgeProgressLabel")
 @onready var nav_drawer: Control = get_node_or_null("%NavDrawer")
 @onready var close_nav_button: Button = get_node_or_null("%CloseNavButton")
 @onready var nav_backdrop: Button = get_node_or_null("%NavDrawerBackdrop")
@@ -169,6 +173,12 @@ func _connect_game_state_signals() -> void:
 		GameState.upgrade_purchased.connect(_on_upgrade_purchased)
 	if GameState.has_signal("level_up"):
 		GameState.level_up.connect(_on_level_up)
+	if GameState.has_signal("campaign_chapter_changed"):
+		GameState.campaign_chapter_changed.connect(_on_campaign_chapter_changed)
+	if GameState.has_signal("campaign_quest_completed"):
+		GameState.campaign_quest_completed.connect(_on_campaign_quest_completed)
+	if GameState.has_signal("campaign_choice_selected"):
+		GameState.campaign_choice_selected.connect(_on_campaign_choice_selected)
 
 func _refresh_all_ui() -> void:
 	if GameState == null:
@@ -177,6 +187,7 @@ func _refresh_all_ui() -> void:
 	_on_energy_changed(GameState.energy, 0.0)
 	_on_rps_changed(GameState.base_passive_rps)
 	_on_frenzy_updated(GameState.frenzy_multiplier, GameState.frenzy_meter)
+	_update_campaign_badge()
 	_refresh_all_upgrade_buttons()
 
 func _on_energy_changed(total_energy: float, _delta_amount: float) -> void:
@@ -232,6 +243,54 @@ func _on_upgrade_purchased(upgrade_id: String, new_level: int, current_cost: flo
 
 func _on_level_up(_new_level: int) -> void:
 	_trigger_level_up_confetti()
+
+func _on_campaign_chapter_changed(chapter: int) -> void:
+	_update_campaign_badge(chapter)
+
+func _on_campaign_quest_completed(_quest_id: String, _chapter: int) -> void:
+	_update_campaign_badge()
+
+func _on_campaign_choice_selected(_chapter: int, _choice_id: String, _reward_type: String) -> void:
+	_update_campaign_badge()
+
+func _update_campaign_badge(chapter: int = -1) -> void:
+	if campaign_badge == null:
+		return
+	var ch: int = chapter
+	if ch <= 0:
+		ch = GameState.campaign_chapter if (GameState != null and "campaign_chapter" in GameState) else 1
+	ch = clampi(ch, 1, 3)
+
+	var titles: Dictionary = {
+		1: "🦄 CHAPTER 1: SEED STAGE",
+		2: "🦄 CHAPTER 2: SERIES A",
+		3: "🦄 CHAPTER 3: UNICORN STATUS"
+	}
+	
+	if chapter_title_label != null:
+		chapter_title_label.text = titles.get(ch, "🦄 CHAPTER 1: SEED STAGE")
+		
+	if badge_progress_label != null:
+		badge_progress_label.text = "[%d / 3]" % ch
+
+	if story_mission_label != null:
+		if GameState != null and GameState.has_method("get_active_story_mission_text"):
+			story_mission_label.text = GameState.get_active_story_mission_text()
+		else:
+			var missions: Dictionary = {
+				1: "Deploy MVP with CEO Alex",
+				2: "Scale Campus with Architekt Bob",
+				3: "Brew Super-Espresso with Dr. Lisa"
+			}
+			var mission_text: String = missions.get(ch, "Deploy MVP with CEO Alex")
+			if GameState != null and "campaign_completed_quests" in GameState:
+				if ch == 1 and GameState.campaign_completed_quests.has("quest_briefcases"):
+					mission_text = "MVP Launched! Meet Architekt Bob"
+				elif ch == 2 and GameState.campaign_completed_quests.has("quest_server"):
+					mission_text = "Server Overclocked! Meet Dr. Lisa"
+				elif ch == 3 and GameState.campaign_completed_quests.has("quest_lab"):
+					mission_text = "Unicorn Journey Complete!"
+			story_mission_label.text = mission_text
 
 func _trigger_level_up_confetti() -> void:
 	var now = Time.get_ticks_msec()

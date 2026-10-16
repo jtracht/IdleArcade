@@ -58,6 +58,7 @@ jobs:
           python3 $TARGET_DIR/tests/test_phase8_verify.py
           python3 $TARGET_DIR/tests/test_phase9_verify.py
           python3 $TARGET_DIR/tests/test_phase10_verify.py
+          python3 $TARGET_DIR/tests/test_phase11_verify.py
 
       - name: Run Godot Headless Phase 5 Mobile Tests
         run: |
@@ -106,6 +107,14 @@ jobs:
             TARGET_DIR="IdleArcade"
           fi
           godot --headless --path "$TARGET_DIR" -s tests/test_phase10_vfx_lighting.gd
+
+      - name: Run Godot Headless Phase 11 Story & Minigames Tests
+        run: |
+          TARGET_DIR="."
+          if [ -d "IdleArcade" ]; then
+            TARGET_DIR="IdleArcade"
+          fi
+          godot --headless --path "$TARGET_DIR" -s tests/test_phase11_story_minigames.gd
 
   export-web:
     name: Export Web

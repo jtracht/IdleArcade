@@ -1,0 +1,313 @@
+[gd_scene load_steps=8 format=3 uid="uid://cybersync001scene"]
+
+[ext_resource type="Script" path="res://scripts/ui/cyber_sync_minigame.gd" id="1_cybersync"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_bg"]
+bg_color = Color(0.04, 0.07, 0.05, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.1, 1, 0.4, 0.95)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.7)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_node_card"]
+bg_color = Color(0.06, 0.1, 0.08, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.15, 0.8, 0.4, 0.6)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_track_bg"]
+bg_color = Color(0.02, 0.04, 0.03, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.3, 0.25, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_target_zone"]
+bg_color = Color(0.1, 1, 0.4, 0.25)
+border_width_left = 2
+border_width_right = 2
+border_color = Color(0.1, 1, 0.4, 0.9)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sync_btn"]
+bg_color = Color(0.06, 0.22, 0.12, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.15, 1, 0.45, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.1, 0.95, 0.35, 0.4)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_close_btn"]
+bg_color = Color(0.15, 0.08, 0.08, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.8, 0.3, 0.3, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="CyberSyncMinigame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_cybersync")
+
+[node name="DimBackdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.04, 0.03, 0.85)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="ModalCard" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(380, 480)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal_bg")
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/ModalCard"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="MainVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/MarginContainer"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 12
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/MarginContainer/MainVBox"]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.1, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 18
+text = "[ CYBER-SYNC TERMINAL ]"
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/HeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+mouse_filter = 0
+theme_override_colors/font_color = Color(0.9, 0.6, 0.6, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_close_btn")
+text = "X"
+
+[node name="SubtitleLabel" type="Label" parent="CenterContainer/ModalCard/MarginContainer/MainVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 0.7, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "Rhythm Override // Align 3 Data Nodes to Overclock Server"
+autowrap_mode = 2
+
+[node name="HSeparator1" type="HSeparator" parent="CenterContainer/ModalCard/MarginContainer/MainVBox"]
+layout_mode = 2
+
+[node name="NodesHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/MarginContainer/MainVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 10
+
+[node name="NodePanel0" type="PanelContainer" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/NodesHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_node_card")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/NodesHBox/NodePanel0"]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="NodeLabel0" type="Label" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/NodesHBox/NodePanel0/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.9, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+text = "NODE 01"
+horizontal_alignment = 1
+
+[node name="NodeStatus0" type="Label" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/NodesHBox/NodePanel0/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 11
+text = "ACTIVE"
+horizontal_alignment = 1
+
+[node name="NodePanel1" type="PanelContainer" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/NodesHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_node_card")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/NodesHBox/NodePanel1"]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="NodeLabel1" type="Label" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/NodesHBox/NodePanel1/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.9, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+text = "NODE 02"
+horizontal_alignment = 1
+
+[node name="NodeStatus1" type="Label" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/NodesHBox/NodePanel1/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 0.8)
+theme_override_font_sizes/font_size = 11
+text = "LOCKED"
+horizontal_alignment = 1
+
+[node name="NodePanel2" type="PanelContainer" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/NodesHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_node_card")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/NodesHBox/NodePanel2"]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="NodeLabel2" type="Label" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/NodesHBox/NodePanel2/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.9, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+text = "NODE 03"
+horizontal_alignment = 1
+
+[node name="NodeStatus2" type="Label" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/NodesHBox/NodePanel2/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 0.8)
+theme_override_font_sizes/font_size = 11
+text = "LOCKED"
+horizontal_alignment = 1
+
+[node name="HSeparator2" type="HSeparator" parent="CenterContainer/ModalCard/MarginContainer/MainVBox"]
+layout_mode = 2
+
+[node name="TimingTrackContainer" type="Control" parent="CenterContainer/ModalCard/MarginContainer/MainVBox"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 0
+
+[node name="TrackBackground" type="Panel" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/TimingTrackContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_track_bg")
+
+[node name="TargetZone" type="Panel" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/TimingTrackContainer"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -30.0
+offset_right = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_target_zone")
+
+[node name="PulseIndicator" type="ColorRect" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/TimingTrackContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(14, 46)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_top = 5.0
+offset_right = 14.0
+offset_bottom = -5.0
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.1, 1, 0.45, 1)
+
+[node name="FeedbackLabel" type="Label" parent="CenterContainer/ModalCard/MarginContainer/MainVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 13
+text = "READY TO HACK // HIT [SYNC NOW] WHEN TARGET IS ALIGNED"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="HSeparator3" type="HSeparator" parent="CenterContainer/ModalCard/MarginContainer/MainVBox"]
+layout_mode = 2
+
+[node name="SyncHitButton" type="Button" parent="CenterContainer/ModalCard/MarginContainer/MainVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 0
+theme_override_colors/font_color = Color(0.15, 1, 0.45, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_sync_btn")
+text = "[ SYNC NOW ]"

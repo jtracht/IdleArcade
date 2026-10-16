@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://dm4serverterm01"]
+[gd_scene load_steps=29 format=3 uid="uid://dm4serverterm01"]
 
 [ext_resource type="Script" path="res://scripts/server_terminal.gd" id="1_serverterm"]
 
@@ -112,6 +112,16 @@ emission_energy_multiplier = 3.0
 material = SubResource("Mat_Sparks")
 size = Vector3(0.03, 0.03, 0.03)
 
+[sub_resource type="StandardMaterial3D" id="Mat_MatrixSparks"]
+albedo_color = Color(0.1, 1, 0.4, 1)
+emission_enabled = true
+emission = Color(0.1, 1, 0.4, 1)
+emission_energy_multiplier = 3.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_matrix_spark"]
+material = SubResource("Mat_MatrixSparks")
+size = Vector3(0.035, 0.035, 0.035)
+
 [node name="ServerTerminal" type="StaticBody3D" groups=["interactables", "server_terminals", "terminals"]]
 collision_layer = 1
 collision_mask = 0
@@ -136,6 +146,15 @@ text = "[E] Server Console"
 font_size = 28
 outline_size = 6
 outline_color = Color(0.05, 0.05, 0.1, 0.9)
+
+[node name="StatusLabel3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.55, 0)
+billboard = 1
+text = "[E] Hack Terminal [READY]"
+font_size = 20
+outline_size = 5
+outline_color = Color(0.02, 0.1, 0.04, 0.9)
+modulate = Color(0.1, 1, 0.4, 1)
 
 [node name="Visuals" type="Node3D" parent="."]
 
@@ -210,3 +229,15 @@ spread = 45.0
 initial_velocity_min = 1.5
 initial_velocity_max = 3.0
 color = Color(0, 0.9, 1, 1)
+
+[node name="MatrixSparks" type="CPUParticles3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0.4)
+emitting = false
+amount = 32
+lifetime = 1.2
+mesh = SubResource("BoxMesh_matrix_spark")
+direction = Vector3(0, 1, 0)
+spread = 50.0
+initial_velocity_min = 1.8
+initial_velocity_max = 3.6
+color = Color(0.1, 1, 0.4, 1)

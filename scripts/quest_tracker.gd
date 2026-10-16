@@ -14,24 +14,52 @@ class_name QuestTrackerUI
 var _active_quest_id: String = ""
 var _quest_definitions: Dictionary = {
 	"quest_briefcases": {
+		"chapter": 1,
 		"title": "Collect 3 Briefcases",
 		"hint": "Search the Lobby and Courtyard",
-		"target": 3
+		"target": 3,
+		"is_story": true
 	},
 	"quest_coffee": {
 		"title": "Courtyard Coffee Boost",
 		"hint": "Grab a hot coffee in Courtyard",
-		"target": 1
+		"target": 1,
+		"is_story": false
 	},
 	"quest_server": {
+		"chapter": 2,
 		"title": "Unlock Server Room",
 		"hint": "Reach Level 2 or pay 100 Users",
-		"target": 1
+		"target": 1,
+		"is_story": true
 	},
 	"quest_lab": {
+		"chapter": 3,
 		"title": "Unlock R&D Lab",
 		"hint": "Reach Level 3 or pay 250 Users",
-		"target": 1
+		"target": 1,
+		"is_story": true
+	},
+	"story_ch1_seed": {
+		"chapter": 1,
+		"title": "Seed Stage: MVP Launch",
+		"hint": "Talk to Alex and reach 100 Users",
+		"target": 100,
+		"is_story": true
+	},
+	"story_ch2_series_a": {
+		"chapter": 2,
+		"title": "Series A: Campus Scaling",
+		"hint": "Overclock the Server Terminal with Bob",
+		"target": 1,
+		"is_story": true
+	},
+	"story_ch3_unicorn": {
+		"chapter": 3,
+		"title": "Unicorn Status: Super Brew",
+		"hint": "Brew Unicorn Espresso with Dr. Lisa in R&D",
+		"target": 1,
+		"is_story": true
 	}
 }
 
@@ -94,9 +122,13 @@ func _show_quest(quest_id: String, current: int, target: int, is_ready: bool) ->
 	var def = _quest_definitions.get(quest_id, {})
 	var title = def.get("title", quest_id)
 	var hint = def.get("hint", "")
+	var is_story: bool = def.get("is_story", false) or quest_id.begins_with("story_") or quest_id in ["quest_briefcases", "quest_server", "quest_lab"]
 	
 	if title_label != null:
-		title_label.text = "📋 " + title
+		if is_story:
+			title_label.text = "🦄 [Story] " + title
+		else:
+			title_label.text = "📋 " + title
 		
 	if progress_label != null:
 		if is_ready:

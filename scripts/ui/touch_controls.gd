@@ -100,6 +100,8 @@ var _cached_collectible_style: StyleBoxFlat = null
 var _cached_research_style: StyleBoxFlat = null
 var _cached_overclock_style: StyleBoxFlat = null
 var _cached_pitch_style: StyleBoxFlat = null
+var _cached_hack_style: StyleBoxFlat = null
+var _cached_brew_style: StyleBoxFlat = null
 
 # ------------------------------------------------------------------------------
 # Lifecycle
@@ -266,6 +268,28 @@ func _setup_styles() -> void:
 	_cached_pitch_style.shadow_size = 12
 	_cached_pitch_style.anti_aliasing = true
 
+	# Dynamic Hack style (Neon Matrix Green: border #00FF41, dark green bg, matrix shadow glow)
+	_cached_hack_style = StyleBoxFlat.new()
+	_cached_hack_style.bg_color = Color(0.02, 0.22, 0.08, 0.92)
+	_cached_hack_style.border_color = Color(0.0, 1.0, 0.25, 0.98)
+	_cached_hack_style.set_border_width_all(3)
+	_cached_hack_style.set_corner_radius_all(50)
+	_cached_hack_style.corner_detail = 24
+	_cached_hack_style.shadow_color = Color(0.0, 1.0, 0.25, 0.60)
+	_cached_hack_style.shadow_size = 14
+	_cached_hack_style.anti_aliasing = true
+
+	# Dynamic Super-Espresso Brew Lab style (Mocha / Copper Shine: warm mocha bg, copper border, amber shadow glow)
+	_cached_brew_style = StyleBoxFlat.new()
+	_cached_brew_style.bg_color = Color(0.32, 0.18, 0.08, 0.92)
+	_cached_brew_style.border_color = Color(0.92, 0.60, 0.25, 0.98)
+	_cached_brew_style.set_border_width_all(3)
+	_cached_brew_style.set_corner_radius_all(50)
+	_cached_brew_style.corner_detail = 24
+	_cached_brew_style.shadow_color = Color(0.85, 0.50, 0.15, 0.60)
+	_cached_brew_style.shadow_size = 14
+	_cached_brew_style.anti_aliasing = true
+
 # ------------------------------------------------------------------------------
 # Input Isolation Shield (Tier 2 & 3)
 # ------------------------------------------------------------------------------
@@ -292,9 +316,13 @@ func register_interactable(node: Node3D, label_text: String = "Action [E]") -> v
 		active_interactables.append(node)
 	active_interactable = node
 	if label_text == "Action [E]" or label_text.is_empty():
-		if node.has_method("open_research") or node.is_in_group("research_terminals"):
+		if "Hack" in str(node.get("action_label")) or node.has_method("start_cyber_sync") or node.has_method("can_hack") or node.is_in_group("server_terminals"):
+			label_text = "Hack [E]"
+		elif "Brew" in str(node.get("action_label")) or node.is_in_group("coffee_machines") or node.has_method("can_brew"):
+			label_text = "Brew [E]"
+		elif node.has_method("open_research") or node.is_in_group("research_terminals"):
 			label_text = "Research [E]"
-		elif node.is_in_group("server_terminals") or node.has_method("activate_overclock") or node.get("action_label") == "Overclock [E]":
+		elif node.has_method("activate_overclock") or node.get("action_label") == "Overclock [E]":
 			label_text = "Overclock [E]"
 		elif node.is_in_group("pitch_stages") or node.has_method("pitch_investor") or node.get("action_label") == "Pitch [E]":
 			label_text = "Pitch [E]"
@@ -304,6 +332,10 @@ func register_interactable(node: Node3D, label_text: String = "Action [E]") -> v
 			label_text = "Unlock [E]"
 		elif node is Area3D or node.is_in_group("collectibles") or node.has_method("collect"):
 			label_text = "Collect [E]"
+	elif "Hack" in label_text or str(node.get("action_label")) == "Hack [E]":
+		label_text = "Hack [E]"
+	elif "Brew" in label_text or str(node.get("action_label")) == "Brew [E]":
+		label_text = "Brew [E]"
 	elif node.has_method("open_research") or node.is_in_group("research_terminals") or label_text == "Research [E]":
 		label_text = "Research [E]"
 	elif node.is_in_group("server_terminals") or node.has_method("activate_overclock") or "Overclock" in label_text:
@@ -326,9 +358,13 @@ func unregister_interactable(node: Node3D) -> void:
 		else:
 			active_interactable = active_interactables.back()
 			var remaining_label = "Action [E]"
-			if active_interactable.has_method("open_research") or active_interactable.is_in_group("research_terminals"):
+			if "Hack" in str(active_interactable.get("action_label")) or active_interactable.has_method("start_cyber_sync") or active_interactable.is_in_group("server_terminals"):
+				remaining_label = "Hack [E]"
+			elif "Brew" in str(active_interactable.get("action_label")) or active_interactable.is_in_group("coffee_machines") or active_interactable.has_method("can_brew"):
+				remaining_label = "Brew [E]"
+			elif active_interactable.has_method("open_research") or active_interactable.is_in_group("research_terminals"):
 				remaining_label = "Research [E]"
-			elif active_interactable.is_in_group("server_terminals") or active_interactable.has_method("activate_overclock") or active_interactable.get("action_label") == "Overclock [E]":
+			elif active_interactable.has_method("activate_overclock") or active_interactable.get("action_label") == "Overclock [E]":
 				remaining_label = "Overclock [E]"
 			elif active_interactable.is_in_group("pitch_stages") or active_interactable.has_method("pitch_investor") or active_interactable.get("action_label") == "Pitch [E]":
 				remaining_label = "Pitch [E]"
@@ -372,6 +408,12 @@ func trigger_action() -> void:
 	if is_instance_valid(target):
 		if target.has_method("open_research"):
 			target.call("open_research")
+		elif target.has_method("start_cyber_sync"):
+			target.call("start_cyber_sync")
+		elif target.has_method("start_hack_minigame"):
+			target.call("start_hack_minigame")
+		elif target.has_method("start_brew_minigame"):
+			target.call("start_brew_minigame")
 		elif target.has_method("interact"):
 			target.call("interact")
 		elif target.has_method("attempt_unlock"):
@@ -443,7 +485,15 @@ func _update_action_button_visuals(label_text: String = "", is_active: bool = fa
 	# Context determination
 	var target = get_current_interactable()
 	if is_instance_valid(target):
-		if target.has_method("open_research") or target.is_in_group("research_terminals") or "Research" in text_to_set:
+		if "Hack" in text_to_set or (target.is_in_group("server_terminals") and str(target.get("action_label")) == "Hack [E]") or target.has_method("start_cyber_sync") or target.has_method("start_hack_minigame"):
+			text_to_set = "Hack [E]"
+			if _cached_hack_style != null:
+				action_button.add_theme_stylebox_override("normal", _cached_hack_style)
+		elif "Brew" in text_to_set or target.is_in_group("coffee_machines") or target.has_method("can_brew") or target.has_method("start_brew_minigame") or str(target.get("action_label")) == "Brew [E]":
+			text_to_set = "Brew [E]"
+			if _cached_brew_style != null:
+				action_button.add_theme_stylebox_override("normal", _cached_brew_style)
+		elif target.has_method("open_research") or target.is_in_group("research_terminals") or "Research" in text_to_set:
 			text_to_set = "Research [E]"
 			if _cached_research_style != null:
 				action_button.add_theme_stylebox_override("normal", _cached_research_style)
@@ -499,7 +549,11 @@ func _update_action_button_visuals(label_text: String = "", is_active: bool = fa
 				action_button.add_theme_stylebox_override("normal", _cached_npc_style)
 	else:
 		# Explicit label provided without object reference
-		if "Research" in text_to_set and _cached_research_style != null:
+		if "Hack" in text_to_set and _cached_hack_style != null:
+			action_button.add_theme_stylebox_override("normal", _cached_hack_style)
+		elif "Brew" in text_to_set and _cached_brew_style != null:
+			action_button.add_theme_stylebox_override("normal", _cached_brew_style)
+		elif "Research" in text_to_set and _cached_research_style != null:
 			action_button.add_theme_stylebox_override("normal", _cached_research_style)
 		elif "Overclock" in text_to_set and _cached_overclock_style != null:
 			action_button.add_theme_stylebox_override("normal", _cached_overclock_style)

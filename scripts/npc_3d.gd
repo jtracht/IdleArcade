@@ -26,6 +26,118 @@ var _is_talking: bool = false
 var _anim_time: float = 0.0
 var _emote_timer: float = 0.0
 
+# Phase 11 Narrative Campaign Story & Branched Dialogue Definitions
+const CAMPAIGN_STORY: Dictionary = {
+	"ceo_alex": {
+		"chapter": 1,
+		"prompt": "Willkommen auf dem Tech-Campus! Wir starten unsere Unicorn-Reise aus dieser Garage. Um unser MVP zu launchen und die ersten 100 Nutzer zu begeistern: Welche Wachstumsstrategie schlägst du vor?",
+		"choices": [
+			{
+				"id": "ch1_marketing",
+				"text": "🚀 Aggressives Marketing (+500 Users)",
+				"reaction": "Alex: Volles Risiko, maximale Traktion! Das virale Marketing sorgt für sofortige Bekanntheit auf dem ganzen Campus!",
+				"reward_type": "users",
+				"reward_value": 500.0,
+				"duration": 0.0
+			},
+			{
+				"id": "ch1_tech",
+				"text": "🛡️ Stabile Technik (+100% RPS 30s)",
+				"reaction": "Alex: Ausgezeichnete Ingenieursmentalität! Mit robuster Architektur überstehen wir jeden Nutzeransturm ohne Ausfälle!",
+				"reward_type": "rps",
+				"reward_value": 2.0,
+				"duration": 30.0
+			},
+			{
+				"id": "ch1_team",
+				"text": "☕ Team-Kultur (+50% Speed 45s)",
+				"reaction": "Alex: Ein motiviertes Team versetzt Berge! Lass uns direkt die ersten 3 Förderkoffer auf dem Campus einsammeln!",
+				"reward_type": "speed",
+				"reward_value": 1.5,
+				"duration": 45.0
+			}
+		]
+	},
+	"architect_bob": {
+		"chapter": 2,
+		"prompt": "Die Series-A-Nutzerwelle überflutet unser Rechenzentrum! Wir müssen die Server stabilisieren und die R&D-Freigabe erlangen. Wie optimieren wir unsere Infrastruktur?",
+		"choices": [
+			{
+				"id": "ch2_overclock",
+				"text": "⚡ Cloud Overclocking (+100% RPS 45s)",
+				"reaction": "Bob: Die Cores glühen! Unsere Durchsatzraten schießen durch die Decke!",
+				"reward_type": "rps",
+				"reward_value": 2.0,
+				"duration": 45.0
+			},
+			{
+				"id": "ch2_hardware",
+				"text": "🔒 Hardware-Refactoring (+1500 Users)",
+				"reaction": "Bob: Vorbildliche Ausfallsicherheit! Mit diesem Budget rüsten wir die Glasfaser-Backbones massiv auf.",
+				"reward_type": "users",
+				"reward_value": 1500.0,
+				"duration": 0.0
+			},
+			{
+				"id": "ch2_ops",
+				"text": "🏃 Rapid Ops (+50% Speed 45s)",
+				"reaction": "Bob: Schnelle Beine, schneller Code! Lauf zur Server-Konsole und führe den Cyber-Sync durch!",
+				"reward_type": "speed",
+				"reward_value": 1.5,
+				"duration": 45.0
+			}
+		]
+	},
+	"scientist_lisa": {
+		"chapter": 3,
+		"prompt": "Willkommen im R&D-Labor! Wir stehen kurz vor der magischen Milliarden-Bewertung. Unsere neuronalen Quantenmodelle benötigen den finalen Durchbruch. Welches Forschungsfeld priorisieren wir?",
+		"choices": [
+			{
+				"id": "ch3_quantum",
+				"text": "🧠 Quantum Deep Learning (+200% RPS 60s)",
+				"reaction": "Dr. Lisa: Phänomenal! Der Quantenalgorithmus potenziert unsere Nutzerbewertung auf Rekordniveau!",
+				"reward_type": "rps",
+				"reward_value": 3.0,
+				"duration": 60.0
+			},
+			{
+				"id": "ch3_espresso",
+				"text": "☕ Super-Espresso Formula (+50% Speed 60s & +20% Worker)",
+				"reaction": "Dr. Lisa: Höchste Koffein-Reinheit! Das Labor arbeitet mit übermenschlicher Effizienz!",
+				"reward_type": "speed",
+				"reward_value": 1.5,
+				"duration": 60.0
+			},
+			{
+				"id": "ch3_pitch",
+				"text": "🦄 Mega-Venture Pitch (+5000 Users)",
+				"reaction": "Dr. Lisa: Die Investoren sind begeistert! Der Term-Sheet über 1 Milliarde Dollar ist unterzeichnet!",
+				"reward_type": "users",
+				"reward_value": 5000.0,
+				"duration": 0.0
+			}
+		]
+	}
+}
+
+## Returns narrative campaign chapter associated with this NPC (1: Alex, 2: Bob, 3: Lisa).
+func get_campaign_chapter() -> int:
+	if CAMPAIGN_STORY.has(npc_id):
+		return int(CAMPAIGN_STORY[npc_id].get("chapter", 1))
+	return 1
+
+## Returns branched dialogue options for this NPC.
+func get_campaign_choices() -> Array:
+	if CAMPAIGN_STORY.has(npc_id):
+		return CAMPAIGN_STORY[npc_id].get("choices", [])
+	return []
+
+## Returns story prompt text for this NPC.
+func get_campaign_prompt() -> String:
+	if CAMPAIGN_STORY.has(npc_id):
+		return str(CAMPAIGN_STORY[npc_id].get("prompt", dialogue_text))
+	return dialogue_text
+
 @onready var visuals: Node3D = get_node_or_null("Visuals")
 @onready var body_mesh: MeshInstance3D = get_node_or_null("Visuals/BodyMesh")
 @onready var name_label: Label3D = get_node_or_null("Visuals/NameLabel3D")
@@ -145,11 +257,14 @@ func interact() -> void:
 	var dialogue_panel = get_tree().root.find_child("DialoguePanel", true, false)
 	
 	if dialogue_panel != null and dialogue_panel.has_method("open_for_npc"):
+		var story_prompt: String = get_campaign_prompt()
+		var choices_to_pass: Array = get_campaign_choices()
+		var chapter_to_pass: int = get_campaign_chapter()
 		dialogue_panel.open_for_npc(
 			npc_id,
 			npc_name,
 			npc_title,
-			dialogue_text,
+			story_prompt,
 			quest_id,
 			quest_title,
 			quest_desc,
@@ -157,7 +272,9 @@ func interact() -> void:
 			quest_reward_energy,
 			quest_reward_bonus,
 			visual_color,
-			_avatar_ref
+			_avatar_ref,
+			choices_to_pass,
+			chapter_to_pass
 		)
 		if not dialogue_panel.is_connected("closed", Callable(self, "end_dialogue")):
 			dialogue_panel.closed.connect(end_dialogue, CONNECT_ONE_SHOT)

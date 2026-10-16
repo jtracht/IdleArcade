@@ -104,7 +104,8 @@ func _ready() -> void:
 		interaction_area.body_entered.connect(_on_body_entered)
 
 func _physics_process(delta: float) -> void:
-	_anim_time += delta
+	var anim_mult: float = get_speed_multiplier()
+	_anim_time += delta * anim_mult
 	
 	if _speech_timer > 0.0:
 		_speech_timer -= delta
@@ -115,7 +116,7 @@ func _physics_process(delta: float) -> void:
 		_interaction_cooldown -= delta
 
 	# State Machine Logic
-	_state_timer -= delta
+	_state_timer -= delta * anim_mult
 	match current_state:
 		State.TYPING:
 			_process_typing_state(delta)
@@ -172,8 +173,9 @@ func _process_walking_state(delta: float) -> void:
 		return
 		
 	var dir = diff.normalized()
-	velocity.x = dir.x * base_speed
-	velocity.z = dir.z * base_speed
+	var current_walk_speed: float = get_effective_speed()
+	velocity.x = dir.x * current_walk_speed
+	velocity.z = dir.z * current_walk_speed
 	
 	# Facing rotation, walking bob, and articulated limb swings
 	if visuals != null:
@@ -416,3 +418,21 @@ func _apply_role_styling() -> void:
 		
 	if name_label != null:
 		name_label.text = worker_name + "\n" + worker_title
+
+## Returns true if Unicorn Espresso buff is active
+func is_espresso_buff_active() -> bool:
+	var gs = get_node_or_null("/root/GameState")
+	if gs == null:
+		return false
+	if gs.has_method("is_unicorn_espresso_active"):
+		return gs.is_unicorn_espresso_active()
+	return bool(gs.get("unicorn_espresso_buff_active"))
+
+## Returns active speed multiplier (1.20x if Unicorn Espresso buff active, else 1.0)
+func get_speed_multiplier() -> float:
+	return 1.20 if is_espresso_buff_active() else 1.0
+
+## Returns effective walk speed including active campus buffs
+func get_effective_speed() -> float:
+	return base_speed * get_speed_multiplier()
+
