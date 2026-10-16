@@ -519,14 +519,14 @@ func _test_section_7_settings_modal(gs: Node, am: Node) -> void:
 
 	# 7.4 Touch Controls Minimum Height >= 56px
 	var controls_specs = [
-		("%MasterVolumeSlider", "MasterVolumeSlider", 56.0),
-		("%MasterMuteToggle", "MasterMuteToggle", 56.0),
-		("%SFXVolumeSlider", "SFXVolumeSlider", 56.0),
-		("%SFXMuteToggle", "SFXMuteToggle", 56.0),
-		("%MusicVolumeSlider", "MusicVolumeSlider", 56.0),
-		("%MusicMuteToggle", "MusicMuteToggle", 56.0),
-		("%HapticsToggle", "HapticsToggle", 56.0),
-		("%BatterySaverToggle", "BatterySaverToggle", 56.0),
+		["%MasterVolumeSlider", "MasterVolumeSlider", 56.0],
+		["%MasterMuteToggle", "MasterMuteToggle", 56.0],
+		["%SFXVolumeSlider", "SFXVolumeSlider", 56.0],
+		["%SFXMuteToggle", "SFXMuteToggle", 56.0],
+		["%MusicVolumeSlider", "MusicVolumeSlider", 56.0],
+		["%MusicMuteToggle", "MusicMuteToggle", 56.0],
+		["%HapticsToggle", "HapticsToggle", 56.0],
+		["%BatterySaverToggle", "BatterySaverToggle", 56.0],
 	]
 
 	for spec in controls_specs:
