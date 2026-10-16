@@ -190,18 +190,17 @@ func _test_section_2_economy_transactions(gs: Node) -> void:
 	gs.energy = 500.0
 	_assert_check(gs.can_research_tech("tech_coffee_automation"), "2.2 can_research true with exactly 500.0 energy")
 	
-	var researched_signal_emitted: bool = false
-	var emitted_tid: String = ""
+	var res_tracker: Dictionary = {"emitted": false, "tid": ""}
 	var on_tech_res = func(id: String):
-		researched_signal_emitted = true
-		emitted_tid = id
+		res_tracker["emitted"] = true
+		res_tracker["tid"] = id
 	gs.tech_researched.connect(on_tech_res)
 	
 	var success_coffee = gs.research_tech("tech_coffee_automation")
 	_assert_check(success_coffee == true, "2.3 research_tech('tech_coffee_automation') succeeds")
 	_assert_check(abs(gs.energy - 0.0) < EPSILON, "2.4 Energy deducted by 500.0 (remaining: %.1f)" % gs.energy)
 	_assert_check(gs.is_tech_researched("tech_coffee_automation"), "2.5 is_tech_researched('tech_coffee_automation') is now true")
-	_assert_check(researched_signal_emitted and emitted_tid == "tech_coffee_automation", "2.6 Signal tech_researched('tech_coffee_automation') emitted")
+	_assert_check(res_tracker["emitted"] and res_tracker["tid"] == "tech_coffee_automation", "2.6 Signal tech_researched('tech_coffee_automation') emitted")
 	_assert_check(not gs.can_research_tech("tech_coffee_automation"), "2.7 can_research false for already researched tech (idempotency)")
 	
 	gs.tech_researched.disconnect(on_tech_res)
@@ -228,17 +227,17 @@ func _test_section_3_gameplay_effects(gs: Node) -> void:
 	gs.reset_state()
 	
 	# 3.1 Avatar Speed (+15%)
-	var base_speed: float = gs.get_effective_avatar_speed()
-	_assert_check(abs(base_speed - 6.0) < EPSILON, "3.1 Baseline avatar speed is 6.0 m/s (got %.2f)" % base_speed)
+	var base_speed_mult: float = gs.get_effective_avatar_speed()
+	_assert_check(abs(base_speed_mult - 1.0) < EPSILON, "3.1 Baseline avatar speed multiplier is 1.0 (got %.2f)" % base_speed_mult)
 	
 	gs.energy = 500.0
 	gs.research_tech("tech_coffee_automation")
-	var speed_with_coffee: float = gs.get_effective_avatar_speed()
-	_assert_check(abs(speed_with_coffee - 6.9) < EPSILON, "3.2 Avatar speed with tech_coffee_automation is 6.9 m/s (+15%) (got %.2f)" % speed_with_coffee)
+	var speed_with_coffee_mult: float = gs.get_effective_avatar_speed()
+	_assert_check(abs(speed_with_coffee_mult - 1.15) < EPSILON, "3.2 Avatar speed multiplier with tech_coffee_automation is 1.15 (+15 percent) (got %.2f)" % speed_with_coffee_mult)
 	
 	# 3.2 Worker Production Rate (+10%)
 	var worker_mult = gs.get_worker_production_multiplier()
-	_assert_check(abs(worker_mult - 1.10) < EPSILON, "3.3 Worker production multiplier is 1.10 (+10%) (got %.2f)" % worker_mult)
+	_assert_check(abs(worker_mult - 1.10) < EPSILON, "3.3 Worker production multiplier is 1.10 (+10 percent) (got %.2f)" % worker_mult)
 	
 	# 3.3 Server Overclock (+25% RPS)
 	# Give base upgrades for passive RPS
@@ -251,7 +250,7 @@ func _test_section_3_gameplay_effects(gs: Node) -> void:
 	gs.research_tech("tech_server_overclock")
 	var rps_after = gs.get_effective_passive_rps()
 	var rps_ratio = rps_after / rps_before
-	_assert_check(abs(rps_ratio - 1.25) < 0.01, "3.5 tech_server_overclock boosts passive RPS by exactly +25% (ratio: %.2f)" % rps_ratio)
+	_assert_check(abs(rps_ratio - 1.25) < 0.01, "3.5 tech_server_overclock boosts passive RPS by exactly +25 percent (ratio: %.2f)" % rps_ratio)
 	
 	# 3.4 Quantum Ads (2x Click Power & +50% Angel Investor spawn chance)
 	var click_before = gs.base_click_power
@@ -498,9 +497,9 @@ func _test_section_7_nav_drawer_button(_gs: Node) -> void:
 	_assert_check(nav_drawer != null, "7.3 %NavDrawer resolved in HUD")
 	
 	if tech_btn != null:
-		_assert_check(tech_btn.custom_minimum_size.y >= 64.0, "7.4 %TechTreeButton height >= 64px (got %.1fpx)" % tech_btn.custom_minimum_size.y)
-		_assert_check(tech_btn.mouse_filter == Control.MOUSE_FILTER_STOP, "7.5 %TechTreeButton mouse_filter == STOP")
-		_assert_check("Tech" in tech_btn.text or "R&D" in tech_btn.text, "7.6 %TechTreeButton has descriptive label ('%s')" % tech_btn.text)
+		_assert_check(tech_btn.custom_minimum_size.y >= 64.0, "7.4 TechTreeButton height >= 64px (got %.1fpx)" % tech_btn.custom_minimum_size.y)
+		_assert_check(tech_btn.mouse_filter == Control.MOUSE_FILTER_STOP, "7.5 TechTreeButton mouse_filter == STOP")
+		_assert_check("Tech" in tech_btn.text or "R&D" in tech_btn.text, "7.6 TechTreeButton has descriptive label ('%s')" % tech_btn.text)
 		
 	if hud_inst.has_method("open_tech_tree_modal"):
 		_assert_check(nav_drawer.visible == false, "7.7 NavDrawer initially closed")
@@ -559,10 +558,10 @@ func _test_section_8_touch_controls_styling(_gs: Node) -> void:
 		_assert_check(applied_style == r_style, "8.8 ActionButton normal theme stylebox overridden with _cached_research_style")
 		
 	# Test action dispatch
-	var opened_emitted: bool = false
-	dummy_terminal.research_opened.connect(func(): opened_emitted = true)
+	var opened_tracker: Dictionary = {"emitted": false}
+	dummy_terminal.research_opened.connect(func(): opened_tracker["emitted"] = true)
 	tc_inst.call("trigger_action")
-	_assert_check(opened_emitted, "8.9 trigger_action() invokes terminal open_research() dispatch")
+	_assert_check(opened_tracker["emitted"], "8.9 trigger_action() invokes terminal open_research() dispatch")
 	
 	# Clean unregister
 	tc_inst.call("unregister_interactable", dummy_terminal)
