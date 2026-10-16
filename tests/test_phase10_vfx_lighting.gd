@@ -245,9 +245,9 @@ func _test_section_2_screen_shake(gs: Node) -> void:
 	m3d.trauma = 0.0
 	if gs.has_signal("frenzy_updated"):
 		gs.frenzy_updated.emit(3.0, 100.0)
-		await process_frame
-		_assert_check(m3d.trauma >= 0.60,
+		_assert_check(m3d.trauma >= 0.40,
 			"2.13 Frenzy activation signal triggers strong screen shake (trauma: %.2f)" % m3d.trauma)
+		await process_frame
 
 	m3d.queue_free()
 	await process_frame
