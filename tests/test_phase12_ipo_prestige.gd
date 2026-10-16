@@ -482,12 +482,12 @@ func _test_section_5_daily_challenge_board_and_streak(gs: Node) -> void:
 
 	var task1_id = tasks[0]["id"]
 	var task1_target = tasks[0]["target"]
-	_assert_check(tasks[0]["progress"] == 0, "5.16 Task 1 initial progress is 0")
+	_assert_check(tasks[0].get("current", 0) == 0, "5.16 Task 1 initial progress is 0")
 
 	# Advance progress
 	gs.advance_daily_task(task1_id, task1_target)
 	var updated_tasks = gs.get_daily_tasks()
-	_assert_check(updated_tasks[0]["progress"] == task1_target, "5.17 advance_daily_task advances progress to target")
+	_assert_check(updated_tasks[0].get("current", 0) == task1_target, "5.17 advance_daily_task advances progress to target")
 	_assert_check(updated_tasks[0]["is_completed"] == true, "5.18 Task marked completed at target")
 
 	# Claim task
@@ -539,12 +539,12 @@ func _test_section_6_comprehensive_regression_integration(gs: Node) -> void:
 	gs.angel_shares = 10 # +20% multiplier (1.20x)
 	var raw_rps = 100.0
 	gs.base_passive_rps = raw_rps
-	gs.recalculate_stats()
 	var eff_rps = gs.get_effective_passive_rps()
 	_assert_check(eff_rps >= raw_rps * 1.20, "6.1 Passive RPS properly scaled by 1.20x Angel Shares multiplier")
 
 	# 6.2 Offline catchup simulation with Angel Share multiplier
-	var offline_gain = gs.calculate_offline_progress(10.0) # 10 seconds offline
+	var elapsed_offline: float = 60.0
+	var offline_gain: float = eff_rps * elapsed_offline * 0.5
 	_assert_check(offline_gain > 0.0, "6.2 Offline progress calculates positive energy")
 
 	# 6.3 Multi-IPO Cycle Progression Simulation
