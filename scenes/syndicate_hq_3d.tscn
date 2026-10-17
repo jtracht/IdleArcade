@@ -1,0 +1,519 @@
+[gd_scene load_steps=38 format=3 uid="uid://dm4syndicatehq01"]
+
+[ext_resource type="Script" path="res://scripts/syndicate_hq_3d.gd" id="1_syndicatehq"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_root"]
+size = Vector3(3.2, 1, 1.8)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_area"]
+radius = 2.8
+
+[sub_resource type="StandardMaterial3D" id="Mat_DaisBase"]
+albedo_color = Color(0.12, 0.14, 0.18, 1)
+metallic = 0.5
+roughness = 0.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_DaisBase"]
+material = SubResource("Mat_DaisBase")
+size = Vector3(5.6, 0.06, 4.4)
+
+[sub_resource type="StandardMaterial3D" id="Mat_DaisTrim"]
+albedo_color = Color(0.06, 0.28, 0.2, 1)
+emission_enabled = true
+emission = Color(0, 0.75, 0.55, 1)
+emission_energy_multiplier = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_DaisTrim"]
+material = SubResource("Mat_DaisTrim")
+size = Vector3(5.7, 0.04, 4.5)
+
+[sub_resource type="StandardMaterial3D" id="Mat_TableLeg"]
+albedo_color = Color(0.1, 0.12, 0.15, 1)
+metallic = 0.8
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_TableLeg"]
+material = SubResource("Mat_TableLeg")
+size = Vector3(0.25, 0.72, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_TableBeam"]
+material = SubResource("Mat_TableLeg")
+size = Vector3(2.2, 0.1, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="Mat_TableTop"]
+albedo_color = Color(0.14, 0.16, 0.2, 1)
+metallic = 0.4
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_TableTop"]
+material = SubResource("Mat_TableTop")
+size = Vector3(3, 0.12, 1.5)
+
+[sub_resource type="StandardMaterial3D" id="Mat_CyanNeon"]
+albedo_color = Color(0, 0.9, 1, 1)
+emission_enabled = true
+emission = Color(0, 0.9, 1, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_TableNeonTrim"]
+material = SubResource("Mat_CyanNeon")
+size = Vector3(3.04, 0.04, 1.54)
+
+[sub_resource type="StandardMaterial3D" id="Mat_ProjectorMetal"]
+albedo_color = Color(0.2, 0.22, 0.25, 1)
+metallic = 0.9
+roughness = 0.2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ProjectorDish"]
+material = SubResource("Mat_ProjectorMetal")
+top_radius = 0.35
+bottom_radius = 0.35
+height = 0.04
+radial_segments = 12
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ProjectorLens"]
+material = SubResource("Mat_CyanNeon")
+top_radius = 0.28
+bottom_radius = 0.28
+height = 0.05
+radial_segments = 12
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="Mat_HoloCone"]
+transparency = 1
+cull_mode = 0
+albedo_color = Color(0, 0.85, 1, 0.2)
+emission_enabled = true
+emission = Color(0, 0.9, 1, 1)
+emission_energy_multiplier = 1.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_HoloCone"]
+material = SubResource("Mat_HoloCone")
+top_radius = 0.35
+bottom_radius = 0.05
+height = 0.32
+radial_segments = 12
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="Mat_GlobeWireframe"]
+transparency = 1
+cull_mode = 0
+albedo_color = Color(0, 0.85, 1, 0.35)
+emission_enabled = true
+emission = Color(0, 0.95, 1, 1)
+emission_energy_multiplier = 2.4
+
+[sub_resource type="SphereMesh" id="SphereMesh_GlobeWireframe"]
+material = SubResource("Mat_GlobeWireframe")
+radius = 0.35
+height = 0.7
+radial_segments = 16
+rings = 8
+
+[sub_resource type="TorusMesh" id="TorusMesh_GlobeRing"]
+material = SubResource("Mat_CyanNeon")
+inner_radius = 0.36
+outer_radius = 0.38
+rings = 10
+ring_segments = 4
+
+[sub_resource type="StandardMaterial3D" id="Mat_GlobeCore"]
+transparency = 1
+albedo_color = Color(0.2, 1, 0.8, 0.9)
+emission_enabled = true
+emission = Color(0, 1, 0.8, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_GlobeCore"]
+material = SubResource("Mat_GlobeCore")
+radius = 0.08
+height = 0.16
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="Mat_ChairLeather"]
+albedo_color = Color(0.08, 0.1, 0.12, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_ChairSeat"]
+material = SubResource("Mat_ChairLeather")
+size = Vector3(0.5, 0.08, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ChairBack"]
+material = SubResource("Mat_ChairLeather")
+size = Vector3(0.5, 0.55, 0.08)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ChairLeg"]
+material = SubResource("Mat_TableLeg")
+top_radius = 0.04
+bottom_radius = 0.04
+height = 0.45
+radial_segments = 8
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="Mat_FrameObsidian"]
+albedo_color = Color(0.12, 0.12, 0.14, 1)
+metallic = 0.8
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_FramePost"]
+material = SubResource("Mat_FrameObsidian")
+size = Vector3(0.06, 2.2, 0.06)
+
+[sub_resource type="BoxMesh" id="BoxMesh_FrameTop"]
+material = SubResource("Mat_FrameObsidian")
+size = Vector3(2.36, 0.06, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="Mat_ScreenBacking"]
+albedo_color = Color(0.05, 0.07, 0.1, 1)
+roughness = 0.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_ScreenBacking"]
+material = SubResource("Mat_ScreenBacking")
+size = Vector3(2.3, 1.35, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="Mat_ScreenFace"]
+albedo_color = Color(0.02, 0.1, 0.16, 0.95)
+emission_enabled = true
+emission = Color(0, 0.5, 0.7, 1)
+emission_energy_multiplier = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_ScreenFace"]
+material = SubResource("Mat_ScreenFace")
+size = Vector3(2.2, 1.25, 0.01)
+
+[sub_resource type="StandardMaterial3D" id="Mat_BannerPole"]
+albedo_color = Color(0.85, 0.75, 0.3, 1)
+metallic = 0.9
+roughness = 0.2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_BannerPole"]
+material = SubResource("Mat_BannerPole")
+top_radius = 0.02
+bottom_radius = 0.02
+height = 1.6
+radial_segments = 8
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_Finial"]
+material = SubResource("Mat_BannerPole")
+radius = 0.04
+height = 0.08
+radial_segments = 6
+rings = 3
+
+[sub_resource type="StandardMaterial3D" id="Mat_EmeraldFabric"]
+albedo_color = Color(0.06, 0.28, 0.18, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_BannerFabric"]
+material = SubResource("Mat_EmeraldFabric")
+size = Vector3(0.7, 1.5, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="Mat_GoldTrim"]
+albedo_color = Color(0.95, 0.8, 0.2, 1)
+metallic = 0.8
+roughness = 0.3
+emission_enabled = true
+emission = Color(0.95, 0.8, 0.2, 1)
+emission_energy_multiplier = 0.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_BannerTrim"]
+material = SubResource("Mat_GoldTrim")
+size = Vector3(0.72, 0.04, 0.025)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Plinth"]
+albedo_color = Color(0.15, 0.18, 0.22, 1)
+metallic = 0.5
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_Plinth"]
+material = SubResource("Mat_Plinth")
+size = Vector3(0.4, 0.8, 0.4)
+
+[node name="SyndicateHQ3D" type="StaticBody3D" groups=["interactables", "stations", "syndicate_hqs"]]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_syndicatehq")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_root")
+
+[node name="InteractionArea" type="Area3D" parent="."]
+collision_layer = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractionArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("SphereShape3D_area")
+
+[node name="PromptLabel3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4, 0)
+visible = false
+billboard = 1
+text = "🏛️ [E] Syndicate HQ"
+font_size = 28
+outline_size = 6
+outline_color = Color(0.02, 0.1, 0.08, 0.95)
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="HQLight" type="OmniLight3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+light_color = Color(0, 0.9, 0.8, 1)
+light_energy = 1.4
+omni_range = 6.0
+
+[node name="RoomPlatform" type="Node3D" parent="Visuals"]
+
+[node name="DaisBase" type="MeshInstance3D" parent="Visuals/RoomPlatform"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
+mesh = SubResource("BoxMesh_DaisBase")
+
+[node name="DaisTrim" type="MeshInstance3D" parent="Visuals/RoomPlatform"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+mesh = SubResource("BoxMesh_DaisTrim")
+
+[node name="ConferenceTable" type="Node3D" parent="Visuals"]
+
+[node name="TableLegLeft" type="MeshInstance3D" parent="Visuals/ConferenceTable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1, 0.36, 0)
+mesh = SubResource("BoxMesh_TableLeg")
+
+[node name="TableLegRight" type="MeshInstance3D" parent="Visuals/ConferenceTable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 0.36, 0)
+mesh = SubResource("BoxMesh_TableLeg")
+
+[node name="TableBeam" type="MeshInstance3D" parent="Visuals/ConferenceTable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+mesh = SubResource("BoxMesh_TableBeam")
+
+[node name="TableTop" type="MeshInstance3D" parent="Visuals/ConferenceTable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.76, 0)
+mesh = SubResource("BoxMesh_TableTop")
+
+[node name="TableNeonTrim" type="MeshInstance3D" parent="Visuals/ConferenceTable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.74, 0)
+mesh = SubResource("BoxMesh_TableNeonTrim")
+
+[node name="ProjectorDish" type="MeshInstance3D" parent="Visuals/ConferenceTable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.84, 0)
+mesh = SubResource("CylinderMesh_ProjectorDish")
+
+[node name="ProjectorLens" type="MeshInstance3D" parent="Visuals/ConferenceTable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+mesh = SubResource("CylinderMesh_ProjectorLens")
+
+[node name="HologramCone" type="MeshInstance3D" parent="Visuals/ConferenceTable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.02, 0)
+mesh = SubResource("CylinderMesh_HoloCone")
+
+[node name="HolographicGlobe" type="Node3D" parent="Visuals/ConferenceTable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0)
+
+[node name="GlobeWireframe" type="MeshInstance3D" parent="Visuals/ConferenceTable/HolographicGlobe"]
+mesh = SubResource("SphereMesh_GlobeWireframe")
+
+[node name="GlobeEquatorRing" type="MeshInstance3D" parent="Visuals/ConferenceTable/HolographicGlobe"]
+mesh = SubResource("TorusMesh_GlobeRing")
+
+[node name="GlobeMeridianRing1" type="MeshInstance3D" parent="Visuals/ConferenceTable/HolographicGlobe"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0)
+mesh = SubResource("TorusMesh_GlobeRing")
+
+[node name="GlobeMeridianRing2" type="MeshInstance3D" parent="Visuals/ConferenceTable/HolographicGlobe"]
+transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 0, 0)
+mesh = SubResource("TorusMesh_GlobeRing")
+
+[node name="GlobeCore" type="MeshInstance3D" parent="Visuals/ConferenceTable/HolographicGlobe"]
+mesh = SubResource("SphereMesh_GlobeCore")
+
+[node name="GlobeGlow" type="OmniLight3D" parent="Visuals/ConferenceTable/HolographicGlobe"]
+light_color = Color(0, 0.95, 1, 1)
+light_energy = 1.6
+omni_range = 3.2
+
+[node name="Chairs" type="Node3D" parent="Visuals"]
+
+[node name="Chair_North1" type="Node3D" parent="Visuals/Chairs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, -1.05)
+
+[node name="Leg" type="MeshInstance3D" parent="Visuals/Chairs/Chair_North1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.225, 0)
+mesh = SubResource("CylinderMesh_ChairLeg")
+
+[node name="Seat" type="MeshInstance3D" parent="Visuals/Chairs/Chair_North1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.46, 0)
+mesh = SubResource("BoxMesh_ChairSeat")
+
+[node name="Back" type="MeshInstance3D" parent="Visuals/Chairs/Chair_North1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, -0.21)
+mesh = SubResource("BoxMesh_ChairBack")
+
+[node name="Chair_North2" type="Node3D" parent="Visuals/Chairs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0, -1.05)
+
+[node name="Leg" type="MeshInstance3D" parent="Visuals/Chairs/Chair_North2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.225, 0)
+mesh = SubResource("CylinderMesh_ChairLeg")
+
+[node name="Seat" type="MeshInstance3D" parent="Visuals/Chairs/Chair_North2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.46, 0)
+mesh = SubResource("BoxMesh_ChairSeat")
+
+[node name="Back" type="MeshInstance3D" parent="Visuals/Chairs/Chair_North2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, -0.21)
+mesh = SubResource("BoxMesh_ChairBack")
+
+[node name="Chair_South1" type="Node3D" parent="Visuals/Chairs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, 1.05)
+
+[node name="Leg" type="MeshInstance3D" parent="Visuals/Chairs/Chair_South1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.225, 0)
+mesh = SubResource("CylinderMesh_ChairLeg")
+
+[node name="Seat" type="MeshInstance3D" parent="Visuals/Chairs/Chair_South1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.46, 0)
+mesh = SubResource("BoxMesh_ChairSeat")
+
+[node name="Back" type="MeshInstance3D" parent="Visuals/Chairs/Chair_South1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0.21)
+mesh = SubResource("BoxMesh_ChairBack")
+
+[node name="Chair_South2" type="Node3D" parent="Visuals/Chairs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0, 1.05)
+
+[node name="Leg" type="MeshInstance3D" parent="Visuals/Chairs/Chair_South2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.225, 0)
+mesh = SubResource("CylinderMesh_ChairLeg")
+
+[node name="Seat" type="MeshInstance3D" parent="Visuals/Chairs/Chair_South2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.46, 0)
+mesh = SubResource("BoxMesh_ChairSeat")
+
+[node name="Back" type="MeshInstance3D" parent="Visuals/Chairs/Chair_South2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0.21)
+mesh = SubResource("BoxMesh_ChairBack")
+
+[node name="ProjectionScreen" type="Node3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.8)
+
+[node name="FrameLeft" type="MeshInstance3D" parent="Visuals/ProjectionScreen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.15, 1.1, 0)
+mesh = SubResource("BoxMesh_FramePost")
+
+[node name="FrameRight" type="MeshInstance3D" parent="Visuals/ProjectionScreen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.15, 1.1, 0)
+mesh = SubResource("BoxMesh_FramePost")
+
+[node name="FrameBar" type="MeshInstance3D" parent="Visuals/ProjectionScreen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.15, 0)
+mesh = SubResource("BoxMesh_FrameTop")
+
+[node name="ScreenBacking" type="MeshInstance3D" parent="Visuals/ProjectionScreen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, -0.01)
+mesh = SubResource("BoxMesh_ScreenBacking")
+
+[node name="ScreenFace" type="MeshInstance3D" parent="Visuals/ProjectionScreen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0.02)
+mesh = SubResource("BoxMesh_ScreenFace")
+
+[node name="ScreenHeaderLabel" type="Label3D" parent="Visuals/ProjectionScreen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9, 0.035)
+text = "✦ GLOBAL SYNDICATE RANKINGS ✦
+SEASON 1 - TOP VENTURE HOLDINGS"
+font_size = 18
+outline_size = 4
+outline_color = Color(0.01, 0.08, 0.12, 0.95)
+
+[node name="ScreenDataLabel" type="Label3D" parent="Visuals/ProjectionScreen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0.035)
+text = "1. [CYBER] Cyberdyne Apex   - 12.8M pts
+2. [QUANT] Quantum Vanguard -  9.4M pts
+3. [NEXUS] Nexus Syndicate  -  7.1M pts
+------------------------------------
+YOUR HOLDING: [SOLO] Independent (+0% Div)"
+font_size = 13
+outline_size = 4
+outline_color = Color(0.01, 0.08, 0.12, 0.95)
+
+[node name="ScreenLight" type="OmniLight3D" parent="Visuals/ProjectionScreen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0.3)
+light_color = Color(0, 0.8, 1, 1)
+light_energy = 0.7
+omni_range = 2.5
+
+[node name="Banners" type="Node3D" parent="Visuals"]
+
+[node name="BannerLeft" type="Node3D" parent="Visuals/Banners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 0, -1.7)
+
+[node name="Pole" type="MeshInstance3D" parent="Visuals/Banners/BannerLeft"]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 1.9, 0)
+mesh = SubResource("CylinderMesh_BannerPole")
+
+[node name="FinialLeft" type="MeshInstance3D" parent="Visuals/Banners/BannerLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 1.9, 0)
+mesh = SubResource("SphereMesh_Finial")
+
+[node name="FinialRight" type="MeshInstance3D" parent="Visuals/Banners/BannerLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 1.9, 0)
+mesh = SubResource("SphereMesh_Finial")
+
+[node name="FabricMesh" type="MeshInstance3D" parent="Visuals/Banners/BannerLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0)
+mesh = SubResource("BoxMesh_BannerFabric")
+
+[node name="GoldTrim" type="MeshInstance3D" parent="Visuals/Banners/BannerLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+mesh = SubResource("BoxMesh_BannerTrim")
+
+[node name="CrestLabel" type="Label3D" parent="Visuals/Banners/BannerLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0.02)
+text = "⚜
+SYNDICATE
+PRIME"
+font_size = 18
+outline_size = 4
+outline_color = Color(0.02, 0.1, 0.06, 0.95)
+
+[node name="BannerRight" type="Node3D" parent="Visuals/Banners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 0, -1.7)
+
+[node name="Pole" type="MeshInstance3D" parent="Visuals/Banners/BannerRight"]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 1.9, 0)
+mesh = SubResource("CylinderMesh_BannerPole")
+
+[node name="FinialLeft" type="MeshInstance3D" parent="Visuals/Banners/BannerRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 1.9, 0)
+mesh = SubResource("SphereMesh_Finial")
+
+[node name="FinialRight" type="MeshInstance3D" parent="Visuals/Banners/BannerRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 1.9, 0)
+mesh = SubResource("SphereMesh_Finial")
+
+[node name="FabricMesh" type="MeshInstance3D" parent="Visuals/Banners/BannerRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0)
+mesh = SubResource("BoxMesh_BannerFabric")
+
+[node name="GoldTrim" type="MeshInstance3D" parent="Visuals/Banners/BannerRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+mesh = SubResource("BoxMesh_BannerTrim")
+
+[node name="CrestLabel" type="Label3D" parent="Visuals/Banners/BannerRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0.02)
+text = "⚔
+HOLDINGS
+VICTORY"
+font_size = 18
+outline_size = 4
+outline_color = Color(0.02, 0.1, 0.06, 0.95)
+
+[node name="PlinthLeft" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4, 0.4, 0)
+mesh = SubResource("BoxMesh_Plinth")
+
+[node name="PlinthRight" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4, 0.4, 0)
+mesh = SubResource("BoxMesh_Plinth")

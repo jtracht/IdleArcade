@@ -261,7 +261,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, -8.5)
 mesh = SubResource("Mesh_Whiteboard")
 
 [node name="ServerRackUnit" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, 0, -6.5)
 
 [node name="RackMesh" type="MeshInstance3D" parent="ServerRackUnit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)

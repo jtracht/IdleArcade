@@ -252,6 +252,11 @@ func _activate_overclock_state(duration: float, multiplier: float, is_perfect: b
 	if gs != null and gs.has_method("activate_server_overclock_buff"):
 		gs.activate_server_overclock_buff(duration, multiplier)
 		
+	# Live Event contribution (e.g. Server Crash Crisis)
+	var lem = get_node_or_null("/root/LiveEventManager")
+	if lem != null and lem.has_method("contribute_progress"):
+		lem.contribute_progress("overclock", 1.0)
+		
 	# Visual juice: sparks and light
 	if is_perfect:
 		if matrix_sparks != null:

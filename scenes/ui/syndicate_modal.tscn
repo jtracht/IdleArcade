@@ -1,0 +1,662 @@
+[gd_scene load_steps=12 format=3 uid="uid://csyndicatemodal130"]
+
+[ext_resource type="Script" path="res://scripts/ui/syndicate_modal.gd" id="1_syndicatemodal"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_card"]
+bg_color = Color(0.04, 0.08, 0.06, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.15, 0.95, 0.65, 0.85)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
+shadow_color = Color(0, 0, 0, 0.7)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_identity_banner"]
+bg_color = Color(0.06, 0.16, 0.11, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.15, 0.95, 0.65, 0.9)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_close_btn"]
+bg_color = Color(0.12, 0.22, 0.18, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.85, 0.6, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab_btn"]
+bg_color = Color(0.08, 0.18, 0.14, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 2
+border_color = Color(0.15, 0.9, 0.6, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_perk_card"]
+bg_color = Color(0.05, 0.09, 0.07, 0.92)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.28, 0.31, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_preset_btn"]
+bg_color = Color(0.09, 0.18, 0.14, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.15, 0.8, 0.55, 0.7)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_donate_energy_btn"]
+bg_color = Color(0.08, 0.52, 0.3, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.95, 0.65, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0.85, 0.5, 0.4)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_donate_shares_btn"]
+bg_color = Color(0.12, 0.42, 0.52, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.9, 1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0.8, 1, 0.4)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rank_badge"]
+bg_color = Color(0.06, 0.14, 0.18, 0.9)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.85, 1, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+
+[node name="SyndicateModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_syndicatemodal")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.05, 0.04, 0.88)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ModalCard" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(680, 920)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 10
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 10
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "🏢"
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 18
+text = "INCUBATOR SYNDICATE HQ"
+
+[node name="Spacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CloseButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_close_btn")
+text = "✕"
+
+[node name="SyndicateIdentityBanner" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_identity_banner")
+
+[node name="IdentityVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/SyndicateIdentityBanner"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="SyndicateIdentityLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/SyndicateIdentityBanner/IdentityVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_font_sizes/font_size = 16
+text = "🏛️ [ARK] Incubator Syndicate"
+
+[node name="SyndicateTierBadgeLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/SyndicateIdentityBanner/IdentityVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.95, 0.7, 1)
+theme_override_font_sizes/font_size = 13
+text = "Tier 1: Seed Syndicate • +5% Syndicate Dividend"
+
+[node name="TierProgressBar" type="ProgressBar" parent="CenterContainer/ModalCard/CardVBox/SyndicateIdentityBanner/IdentityVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+mouse_filter = 2
+value = 25.0
+
+[node name="TierProgressLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/SyndicateIdentityBanner/IdentityVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.85, 0.8, 1)
+theme_override_font_sizes/font_size = 11
+text = "Vault Progress: 10,000 / 100,000 Energy to Tier 2"
+
+[node name="TabBarHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="OverviewTabButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabBarHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_tab_btn")
+text = "🌳 Perk Tree"
+
+[node name="RosterTabButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabBarHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_tab_btn")
+text = "👥 Roster & Vault"
+
+[node name="WarsTabButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabBarHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_tab_btn")
+text = "⚔️ Syndicate Wars"
+
+[node name="HSeparator1" type="HSeparator" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="TabContentContainer" type="MarginContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 0
+
+[node name="OverviewTab" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="OverviewHeaderLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.9, 0.88, 1)
+theme_override_font_sizes/font_size = 13
+text = "Syndicate holdings grant shared venture dividends, autonomous drone speed boosts, and bonus Angel Shares on IPOs."
+autowrap_mode = 3
+
+[node name="PerkScroll" type="ScrollContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab"]
+custom_minimum_size = Vector2(0, 480)
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 0
+
+[node name="PerksVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="PerkCardTier1" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_perk_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier1"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier1/CardVBox"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier1/CardVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Tier 1: Seed Syndicate"
+
+[node name="StatusBadgeLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier1/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 0.46, 1)
+theme_override_font_sizes/font_size = 12
+text = "UNLOCKED"
+
+[node name="PerkDescLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier1/CardVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.85, 0.8, 1)
+theme_override_font_sizes/font_size = 12
+text = "• +5% Syndicate Dividend on passive RPS\n• Req: 10,000 Energy or 1 Angel Share in Vault"
+
+[node name="PerkCardTier2" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_perk_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier2"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier2/CardVBox"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier2/CardVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Tier 2: Growth Syndicate"
+
+[node name="StatusBadgeLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier2/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "NEXT OBJECTIVE"
+
+[node name="PerkDescLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier2/CardVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.85, 0.8, 1)
+theme_override_font_sizes/font_size = 12
+text = "• +10% Syndicate Dividend on passive RPS\n• +15% Drone Autonomous Flight & Collection Speed\n• Req: 100,000 Energy or 5 Angel Shares in Vault"
+
+[node name="PerkCardTier3" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_perk_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier3"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier3/CardVBox"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier3/CardVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Tier 3: Expansion Syndicate"
+
+[node name="StatusBadgeLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier3/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.22, 0.28, 0.31, 1)
+theme_override_font_sizes/font_size = 12
+text = "LOCKED"
+
+[node name="PerkDescLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier3/CardVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.85, 0.8, 1)
+theme_override_font_sizes/font_size = 12
+text = "• +15% Syndicate Dividend on passive RPS\n• +15% Drone Speed\n• +5% Bonus Angel Shares on IPO Ascension\n• Req: 500,000 Energy or 20 Angel Shares in Vault"
+
+[node name="PerkCardTier4" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_perk_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier4"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier4/CardVBox"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier4/CardVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Tier 4: Venture Syndicate"
+
+[node name="StatusBadgeLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier4/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.22, 0.28, 0.31, 1)
+theme_override_font_sizes/font_size = 12
+text = "LOCKED"
+
+[node name="PerkDescLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier4/CardVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.85, 0.8, 1)
+theme_override_font_sizes/font_size = 12
+text = "• +20% Syndicate Dividend on passive RPS\n• +15% Drone Speed\n• +10% Bonus Angel Shares on IPO Ascension\n• Req: 2,500,000 Energy or 50 Angel Shares in Vault"
+
+[node name="PerkCardTier5" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_perk_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier5"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier5/CardVBox"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier5/CardVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Tier 5: Holding Monopoly"
+
+[node name="StatusBadgeLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier5/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.22, 0.28, 0.31, 1)
+theme_override_font_sizes/font_size = 12
+text = "LOCKED"
+
+[node name="PerkDescLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll/PerksVBox/PerkCardTier5/CardVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.85, 0.8, 1)
+theme_override_font_sizes/font_size = 12
+text = "• +25% Max Syndicate Dividend on passive RPS\n• +15% Drone Speed\n• +15% Max Bonus Angel Shares on IPO Ascension\n• Req: 10,000,000 Energy or 100 Angel Shares in Vault"
+
+[node name="RosterTab" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 10
+
+[node name="RosterHeaderLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 14
+text = "ACTIVE PARTNERS & CONTRIBUTORS"
+
+[node name="RosterScroll" type="ScrollContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 0
+
+[node name="MemberListVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab/RosterScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_constants/separation = 6
+
+[node name="HSeparator2" type="HSeparator" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab"]
+layout_mode = 2
+
+[node name="DonationHeaderLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.95, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+text = "INVEST CAPITAL IN SYNDICATE VAULT"
+
+[node name="PlayerWalletLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "Your Reserves: 👥 0 Energy • 💎 0 Angel Shares"
+
+[node name="DonationAmountLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "Selected Energy: 👥 0"
+
+[node name="DonationSlider" type="HSlider" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 0
+
+[node name="PresetHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="Preset10Button" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab/PresetHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_preset_btn")
+text = "10%"
+
+[node name="Preset50Button" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab/PresetHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_preset_btn")
+text = "50%"
+
+[node name="PresetMaxButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab/PresetHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_preset_btn")
+text = "MAX"
+
+[node name="ActionButtonsHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 10
+
+[node name="DonateEnergyButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab/ActionButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_donate_energy_btn")
+text = "⚡ Invest Energy"
+
+[node name="DonateSharesButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab/ActionButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_donate_shares_btn")
+text = "💎 Invest 1 Angel Share"
+
+[node name="DonationStatusLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.85, 0.8, 1)
+theme_override_font_sizes/font_size = 12
+text = "Ready to invest"
+horizontal_alignment = 1
+
+[node name="WarsTab" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 10
+
+[node name="WarsHeaderVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/WarsTab"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="WarsTitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/WarsTab/WarsHeaderVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 15
+text = "GLOBAL SYNDICATE WARS — SEASONAL LEADERBOARDS"
+
+[node name="SeasonTimerLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/WarsTab/WarsHeaderVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "⏳ Season 1 Ends In: Calculating..."
+
+[node name="RankBadge" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/WarsTab"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_rank_badge")
+
+[node name="RankBadgeLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/WarsTab/RankBadge"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.95, 0.8, 1)
+theme_override_font_sizes/font_size = 13
+text = "🏆 Active Standing: Rank #4 • 0 War Points • Prize: Founder Crest"
+
+[node name="LeaderboardHeaderLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/WarsTab"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.95, 1)
+theme_override_font_sizes/font_size = 13
+text = "TOP 10 GLOBAL SYNDICATES"
+
+[node name="LeaderboardScroll" type="ScrollContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/WarsTab"]
+custom_minimum_size = Vector2(0, 360)
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 0
+
+[node name="LeaderboardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/WarsTab/LeaderboardScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_constants/separation = 6

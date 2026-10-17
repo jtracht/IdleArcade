@@ -84,6 +84,12 @@ func collect(collector: Node3D = null) -> void:
 	if gs != null and gs.has_method("collect_3d_item"):
 		gs.collect_3d_item(item_type, reward_amount)
 		
+	# Live Event contribution (e.g. Angel Investor Summit)
+	if item_type == "briefcase":
+		var lem = get_node_or_null("/root/LiveEventManager")
+		if lem != null and lem.has_method("contribute_progress"):
+			lem.contribute_progress("briefcase", 1.0)
+		
 	collected.emit(item_type, reward_amount)
 	
 	# Trigger procedural pickup chime

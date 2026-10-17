@@ -1,4 +1,4 @@
-[gd_scene load_steps=46 format=3 uid="uid://dm4main3d001scene"]
+[gd_scene load_steps=47 format=3 uid="uid://dm4main3d001scene"]
 
 [ext_resource type="Script" path="res://scripts/main_3d.gd" id="1_main3d"]
 [ext_resource type="PackedScene" uid="uid://c8avatar3d001scene" path="res://scenes/avatar_3d.tscn" id="2_avatar"]
@@ -21,6 +21,7 @@
 [ext_resource type="PackedScene" uid="uid://dm4ipobell3d01" path="res://scenes/ipo_bell_3d.tscn" id="19_ipobell"]
 [ext_resource type="PackedScene" uid="uid://dm4trophyshowcase01" path="res://scenes/trophy_showcase_3d.tscn" id="20_trophyshowcase"]
 [ext_resource type="PackedScene" uid="uid://dm4dailyboard3d01" path="res://scenes/daily_board_3d.tscn" id="21_dailyboard"]
+[ext_resource type="PackedScene" uid="uid://dm4syndicatehq01" path="res://scenes/syndicate_hq_3d.tscn" id="22_syndicatehq"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -579,5 +580,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 12)
 
 [node name="DailyBoard3D" parent="." instance=ExtResource("21_dailyboard")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 8)
+
+[node name="SyndicateHQ3D" parent="." instance=ExtResource("22_syndicatehq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 0)
 
 

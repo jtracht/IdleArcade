@@ -56,6 +56,13 @@ signal daily_streak_updated(new_streak: int)
 signal daily_tasks_updated(tasks: Array)
 signal daily_task_claimed(task_id: String, reward_dict: Dictionary)
 
+# Phase 13 Syndicate / Gilden-Wirtschaft Signals
+signal syndicate_joined(syndicate_data: Dictionary)
+signal syndicate_left()
+signal syndicate_contributed(resource_type: String, amount: float, new_fund_total: float, tier: int)
+signal syndicate_tier_upgraded(new_tier: int, bonuses: Dictionary)
+signal syndicate_season_updated(season_week: int, seasonal_score: int)
+
 # --- State Variables ---
 var energy: float = 0.0
 var total_energy_earned: float = 0.0
@@ -122,6 +129,23 @@ var last_daily_challenge_date: String = ""
 var daily_board_streak: int = 0
 var daily_board_last_login_day: int = 0
 var daily_board_tasks: Array[Dictionary] = []
+
+# Phase 13 Syndicate / Gilden-Wirtschaft State Variables
+var active_syndicate_id: String = ""
+var active_syndicate_name: String = ""
+var active_syndicate_tag: String = ""
+var active_syndicate_desc: String = ""
+var active_syndicate_role: String = "Member"
+var syndicate_tier: int = 0
+var syndicate_fund_energy: float = 0.0
+var syndicate_fund_angel_shares: int = 0
+var syndicate_energy_contributed: float = 0.0
+var syndicate_angel_shares_contributed: int = 0
+var syndicate_members_count: int = 1
+var syndicate_seasonal_score: int = 0
+var syndicate_season_week: int = 0
+var syndicate_joined_timestamp: int = 0
+var syndicate_unlocked_badges: Array[String] = []
 
 var base_click_power: float = 1.0
 var base_passive_rps: float = 0.0
@@ -395,6 +419,82 @@ const DAILY_TASK_KEYS: Array[String] = [
 	"task_buy_upgrades"
 ]
 
+# Phase 13 Syndicate Tier Configuration (Tiers 0 to 5)
+const SYNDICATE_TIER_CONFIG: Dictionary = {
+	0: {
+		"tier": 0,
+		"name": "Unaffiliated",
+		"req_energy": 0.0,
+		"req_shares": 0,
+		"dividend_pct": 0.0,
+		"dividend_mult": 1.0,
+		"drone_speed_pct": 0.0,
+		"drone_speed_mult": 1.0,
+		"ipo_bonus_shares_pct": 0.0,
+		"ipo_bonus_shares_mult": 1.0
+	},
+	1: {
+		"tier": 1,
+		"name": "Seed Syndicate",
+		"req_energy": 10000.0,
+		"req_shares": 1,
+		"dividend_pct": 0.05,
+		"dividend_mult": 1.05,
+		"drone_speed_pct": 0.0,
+		"drone_speed_mult": 1.0,
+		"ipo_bonus_shares_pct": 0.0,
+		"ipo_bonus_shares_mult": 1.0
+	},
+	2: {
+		"tier": 2,
+		"name": "Growth Syndicate",
+		"req_energy": 100000.0,
+		"req_shares": 5,
+		"dividend_pct": 0.10,
+		"dividend_mult": 1.10,
+		"drone_speed_pct": 0.15,
+		"drone_speed_mult": 1.15,
+		"ipo_bonus_shares_pct": 0.0,
+		"ipo_bonus_shares_mult": 1.0
+	},
+	3: {
+		"tier": 3,
+		"name": "Expansion Syndicate",
+		"req_energy": 500000.0,
+		"req_shares": 20,
+		"dividend_pct": 0.15,
+		"dividend_mult": 1.15,
+		"drone_speed_pct": 0.15,
+		"drone_speed_mult": 1.15,
+		"ipo_bonus_shares_pct": 0.05,
+		"ipo_bonus_shares_mult": 1.05
+	},
+	4: {
+		"tier": 4,
+		"name": "Venture Syndicate",
+		"req_energy": 2500000.0,
+		"req_shares": 50,
+		"dividend_pct": 0.20,
+		"dividend_mult": 1.20,
+		"drone_speed_pct": 0.15,
+		"drone_speed_mult": 1.15,
+		"ipo_bonus_shares_pct": 0.10,
+		"ipo_bonus_shares_mult": 1.10
+	},
+	5: {
+		"tier": 5,
+		"name": "Holding Monopoly",
+		"req_energy": 10000000.0,
+		"req_shares": 100,
+		"dividend_pct": 0.25,
+		"dividend_mult": 1.25,
+		"drone_speed_pct": 0.15,
+		"drone_speed_mult": 1.15,
+		"ipo_bonus_shares_pct": 0.15,
+		"ipo_bonus_shares_mult": 1.15
+	}
+}
+
 func _init() -> void:
 	reset_state()
 
@@ -475,6 +575,23 @@ func reset_state() -> void:
 	daily_board_last_login_day = 0
 	daily_board_tasks.clear()
 
+	# Phase 13 Syndicate / Gilden-Wirtschaft Defaults
+	active_syndicate_id = ""
+	active_syndicate_name = ""
+	active_syndicate_tag = ""
+	active_syndicate_desc = ""
+	active_syndicate_role = "Member"
+	syndicate_tier = 0
+	syndicate_fund_energy = 0.0
+	syndicate_fund_angel_shares = 0
+	syndicate_energy_contributed = 0.0
+	syndicate_angel_shares_contributed = 0
+	syndicate_members_count = 1
+	syndicate_seasonal_score = 0
+	syndicate_season_week = 0
+	syndicate_joined_timestamp = 0
+	syndicate_unlocked_badges.clear()
+
 func _process(delta: float) -> void:
 	var safe_delta: float = maxf(0.0, delta)
 	var clamped_delta: float = minf(0.1, safe_delta)
@@ -543,13 +660,20 @@ func _process(delta: float) -> void:
 
 ## Registers an active core tap, updates frenzy, and rewards energy.
 func tap_core() -> float:
-	var earned: float = base_click_power * frenzy_multiplier * get_angel_share_multiplier()
+	var live_event_mult: float = 1.0
+	var lem = get_node_or_null("/root/LiveEventManager")
+	if lem != null and lem.has_method("get_production_multiplier"):
+		live_event_mult = lem.get_production_multiplier()
+	var earned: float = base_click_power * frenzy_multiplier * get_angel_share_multiplier() * live_event_mult
 	energy += earned
 	total_energy_earned += earned
 	total_lifetime_energy += earned
 	total_clicks += 1
 	core_tapped.emit(total_clicks)
 	advance_daily_task("task_core_taps", 1)
+	
+	if lem != null and lem.has_method("contribute_progress"):
+		lem.contribute_progress("click", 1.0)
 	
 	if not is_frenzy_active:
 		frenzy_meter = minf(100.0, frenzy_meter + 4.0)
@@ -664,10 +788,18 @@ func get_bonus_multiplier() -> float:
 func get_campus_item_multiplier() -> float:
 	return (1.0 + (float(collectibles_collected) * 0.10)) if is_tech_researched("tech_neural_cloud") else (1.0 + (float(collectibles_collected) * 0.05))
 
-## Returns passive RPS boosted by bonus users multiplier, campus item multiplier, tech research, active server overclock buff, and active campaign buff.
+## Returns passive RPS boosted by bonus users multiplier, campus item multiplier, tech research, active server overclock buff, active campaign buff, syndicate dividend, and live event production multiplier.
 func get_effective_passive_rps() -> float:
 	var camp_rps_mult: float = campaign_rps_buff_multiplier if campaign_rps_buff_timer > 0.0 else 1.0
-	return base_passive_rps * get_bonus_multiplier() * get_campus_item_multiplier() * (1.25 if is_tech_researched("tech_server_overclock") else 1.0) * (server_overclock_buff_multiplier if (server_overclock_buff_timer > 0.0 or server_overclock_buff_active) else 1.0) * camp_rps_mult * get_angel_share_multiplier()
+	var live_event_mult: float = get_live_event_production_multiplier()
+	return base_passive_rps * get_bonus_multiplier() * get_campus_item_multiplier() * (1.25 if is_tech_researched("tech_server_overclock") else 1.0) * (server_overclock_buff_multiplier if (server_overclock_buff_timer > 0.0 or server_overclock_buff_active) else 1.0) * camp_rps_mult * get_angel_share_multiplier() * get_syndicate_dividend_multiplier() * live_event_mult
+
+## Returns active LiveEventManager production multiplier (default 1.0).
+func get_live_event_production_multiplier() -> float:
+	var lem = get_node_or_null("/root/LiveEventManager")
+	if lem != null and lem.has_method("get_production_multiplier"):
+		return lem.get_production_multiplier()
+	return 1.0
 
 ## Activates the Server Room Overclock temporary RPS boost event (+50% for 25s by default).
 func activate_server_overclock_buff(duration: float = 25.0, multiplier: float = 1.50) -> void:
@@ -962,6 +1094,27 @@ func save_to_disk() -> void:
 			"screen_shake_intensity": screen_shake_intensity,
 			"light_cycle_mode": light_cycle_mode
 		},
+		"syndicate": {
+			"active_id": active_syndicate_id,
+			"name": active_syndicate_name,
+			"tag": active_syndicate_tag,
+			"description": active_syndicate_desc,
+			"role": active_syndicate_role,
+			"tier": syndicate_tier,
+			"fund_energy": syndicate_fund_energy,
+			"fund_angel_shares": syndicate_fund_angel_shares,
+			"energy_contributed": syndicate_energy_contributed,
+			"angel_shares_contributed": syndicate_angel_shares_contributed,
+			"members_count": syndicate_members_count,
+			"seasonal_score": syndicate_seasonal_score,
+			"season_week": syndicate_season_week,
+			"joined_timestamp": syndicate_joined_timestamp,
+			"unlocked_badges": syndicate_unlocked_badges.duplicate()
+		},
+		"active_syndicate_id": active_syndicate_id,
+		"syndicate_tier": syndicate_tier,
+		"syndicate_fund_energy": syndicate_fund_energy,
+		"syndicate_fund_angel_shares": syndicate_fund_angel_shares,
 		"upgrades": {}
 	}
 	
@@ -1186,6 +1339,40 @@ func load_from_disk() -> bool:
 
 	campaign_chapter_changed.emit(campaign_chapter)
 	check_and_update_trophies()
+
+	# Phase 13 Syndicate Deserialization
+	var syn_data = data.get("syndicate", {})
+	if syn_data is Dictionary and not syn_data.is_empty():
+		active_syndicate_id = str(syn_data.get("active_id", data.get("active_syndicate_id", "")))
+		active_syndicate_name = str(syn_data.get("name", ""))
+		active_syndicate_tag = str(syn_data.get("tag", ""))
+		active_syndicate_desc = str(syn_data.get("description", ""))
+		active_syndicate_role = str(syn_data.get("role", "Member"))
+		var raw_syn_tier: int = int(syn_data.get("tier", data.get("syndicate_tier", 0)))
+		syndicate_tier = clampi(raw_syn_tier, 0, 5)
+		var raw_syn_energy: float = float(syn_data.get("fund_energy", data.get("syndicate_fund_energy", 0.0)))
+		syndicate_fund_energy = 0.0 if (is_nan(raw_syn_energy) or is_inf(raw_syn_energy)) else maxf(0.0, raw_syn_energy)
+		syndicate_fund_angel_shares = maxi(0, int(syn_data.get("fund_angel_shares", data.get("syndicate_fund_angel_shares", 0))))
+		var raw_contrib_energy: float = float(syn_data.get("energy_contributed", 0.0))
+		syndicate_energy_contributed = 0.0 if (is_nan(raw_contrib_energy) or is_inf(raw_contrib_energy)) else maxf(0.0, raw_contrib_energy)
+		syndicate_angel_shares_contributed = maxi(0, int(syn_data.get("angel_shares_contributed", 0)))
+		syndicate_members_count = maxi(1, int(syn_data.get("members_count", 1)))
+		syndicate_seasonal_score = maxi(0, int(syn_data.get("seasonal_score", 0)))
+		syndicate_season_week = maxi(0, int(syn_data.get("season_week", 0)))
+		syndicate_joined_timestamp = int(syn_data.get("joined_timestamp", 0))
+		syndicate_unlocked_badges.clear()
+		var raw_badges = syn_data.get("unlocked_badges", [])
+		if raw_badges is Array:
+			for b in raw_badges:
+				if b is String and not b.is_empty() and not syndicate_unlocked_badges.has(b):
+					syndicate_unlocked_badges.append(b)
+	elif data.has("active_syndicate_id"):
+		# Flat backward-compatibility fallback
+		active_syndicate_id = str(data.get("active_syndicate_id", ""))
+		syndicate_tier = clampi(int(data.get("syndicate_tier", 0)), 0, 5)
+		var raw_syn_energy: float = float(data.get("syndicate_fund_energy", 0.0))
+		syndicate_fund_energy = 0.0 if (is_nan(raw_syn_energy) or is_inf(raw_syn_energy)) else maxf(0.0, raw_syn_energy)
+		syndicate_fund_angel_shares = maxi(0, int(data.get("syndicate_fund_angel_shares", 0)))
 			
 	energy_changed.emit(energy, offline_gain)
 	rps_changed.emit(get_effective_passive_rps())
@@ -1420,7 +1607,12 @@ func calculate_pending_angel_shares() -> int:
 	if total_lifetime_energy < 100000.0:
 		return 0
 	var total_eligible: int = int(floor(sqrt(maxf(0.0, total_lifetime_energy) / 100000.0)))
-	return maxi(0, total_eligible - angel_shares)
+	var base_pending: int = maxi(0, total_eligible - angel_shares)
+	var bonus_pct: float = get_syndicate_ipo_bonus_percent()
+	if bonus_pct > 0.0 and base_pending > 0:
+		var bonus_shares: int = int(floor(float(base_pending) * bonus_pct))
+		return base_pending + bonus_shares
+	return base_pending
 
 ## Computes permanent global bonus multiplier (+2% per Angel Share).
 func get_angel_share_multiplier() -> float:
@@ -1440,10 +1632,15 @@ func trigger_ipo() -> Dictionary:
 			"total_angel_shares": angel_shares,
 			"angel_shares": angel_shares,
 			"multiplier": get_angel_share_multiplier(),
-			"total_ipos_completed": total_ipos_completed
+			"total_ipos_completed": total_ipos_completed,
+			"base_shares_gained": 0,
+			"syndicate_bonus_shares": 0
 		}
 		
-	var shares_gained: int = calculate_pending_angel_shares()
+	var base_pending: int = maxi(0, int(floor(sqrt(maxf(0.0, total_lifetime_energy) / 100000.0))) - angel_shares)
+	var bonus_pct: float = get_syndicate_ipo_bonus_percent()
+	var bonus_shares: int = int(floor(float(base_pending) * bonus_pct)) if (bonus_pct > 0.0 and base_pending > 0) else 0
+	var shares_gained: int = base_pending + bonus_shares
 	if shares_gained <= 0:
 		return {
 			"success": false,
@@ -1453,7 +1650,9 @@ func trigger_ipo() -> Dictionary:
 			"total_angel_shares": angel_shares,
 			"angel_shares": angel_shares,
 			"multiplier": get_angel_share_multiplier(),
-			"total_ipos_completed": total_ipos_completed
+			"total_ipos_completed": total_ipos_completed,
+			"base_shares_gained": 0,
+			"syndicate_bonus_shares": 0
 		}
 
 	# 1. Award Angel Shares and update stats
@@ -1515,7 +1714,9 @@ func trigger_ipo() -> Dictionary:
 		"total_angel_shares": angel_shares,
 		"angel_shares": angel_shares,
 		"multiplier": get_angel_share_multiplier(),
-		"total_ipos_completed": total_ipos_completed
+		"total_ipos_completed": total_ipos_completed,
+		"base_shares_gained": base_pending,
+		"syndicate_bonus_shares": bonus_shares
 	}
 
 ## Unlocks a milestone trophy if not already unlocked.
@@ -1674,6 +1875,258 @@ func claim_daily_task(task_id: String) -> Dictionary:
 ## Returns the current daily streak counter.
 func get_daily_streak() -> int:
 	return daily_board_streak
+
+# ==============================================================================
+# Phase 13 Syndicate / Gilden-Wirtschaft & Holdings Methods
+# ==============================================================================
+
+## Returns true if player is currently affiliated with an active syndicate.
+func is_in_syndicate() -> bool:
+	return not active_syndicate_id.is_empty()
+
+## Returns current syndicate tier (0 if unaffiliated, 1-5 otherwise).
+func get_syndicate_tier() -> int:
+	return syndicate_tier if is_in_syndicate() else 0
+
+## Returns tier bonuses dictionary for current syndicate tier.
+func get_syndicate_bonuses() -> Dictionary:
+	var t: int = get_syndicate_tier()
+	var cfg = SYNDICATE_TIER_CONFIG.get(t, SYNDICATE_TIER_CONFIG[0])
+	return {
+		"tier": t,
+		"name": cfg.get("name", "Unaffiliated"),
+		"dividend_pct": float(cfg.get("dividend_pct", 0.0)),
+		"dividend_multiplier": float(cfg.get("dividend_mult", 1.0)),
+		"dividend_mult": float(cfg.get("dividend_mult", 1.0)),
+		"drone_speed_pct": float(cfg.get("drone_speed_pct", 0.0)),
+		"drone_speed_multiplier": float(cfg.get("drone_speed_mult", 1.0)),
+		"drone_speed_mult": float(cfg.get("drone_speed_mult", 1.0)),
+		"bonus_angel_shares_pct": float(cfg.get("ipo_bonus_shares_pct", 0.0)),
+		"bonus_angel_shares_multiplier": float(cfg.get("ipo_bonus_shares_mult", 1.0)),
+		"ipo_bonus_shares_pct": float(cfg.get("ipo_bonus_shares_pct", 0.0)),
+		"ipo_bonus_shares_mult": float(cfg.get("ipo_bonus_shares_mult", 1.0))
+	}
+
+## Returns active syndicate details dictionary.
+func get_active_syndicate() -> Dictionary:
+	return {
+		"id": active_syndicate_id,
+		"name": active_syndicate_name,
+		"tag": active_syndicate_tag,
+		"description": active_syndicate_desc,
+		"role": active_syndicate_role,
+		"tier": get_syndicate_tier(),
+		"fund_energy": syndicate_fund_energy,
+		"fund_angel_shares": syndicate_fund_angel_shares,
+		"energy_contributed": syndicate_energy_contributed,
+		"angel_shares_contributed": syndicate_angel_shares_contributed,
+		"members_count": syndicate_members_count,
+		"seasonal_score": syndicate_seasonal_score,
+		"season_week": syndicate_season_week,
+		"unlocked_badges": syndicate_unlocked_badges.duplicate(),
+		"bonuses": get_syndicate_bonuses(),
+		"is_active": is_in_syndicate()
+	}
+
+## Computes global syndicate dividend multiplier on passive RPS (+5% per tier up to +25%).
+func get_syndicate_dividend_multiplier() -> float:
+	var t: int = get_syndicate_tier()
+	if t <= 0:
+		return 1.0
+	return 1.0 + (float(t) * 0.05)
+
+## Returns drone collection speed multiplier (+15% when tier >= 2).
+func get_drone_speed_multiplier() -> float:
+	return 1.15 if get_syndicate_tier() >= 2 else 1.0
+
+## Returns bonus percentage for angel shares on IPO (+5% at T3, +10% at T4, +15% at T5).
+func get_syndicate_ipo_bonus_percent() -> float:
+	var t: int = get_syndicate_tier()
+	if t < 3:
+		return 0.0
+	return float(t - 2) * 0.05
+
+## Founds a new syndicate, setting the player as Founder.
+func found_syndicate(id: String, name: String, tag: String = "", description: String = "") -> Dictionary:
+	if not active_syndicate_id.is_empty() and active_syndicate_id != id:
+		return {"success": false, "error": "Already affiliated with a syndicate: " + active_syndicate_id}
+	
+	var final_id: String = id.strip_edges()
+	if final_id.is_empty():
+		final_id = "syn_" + str(Time.get_unix_time_from_system())
+		
+	active_syndicate_id = final_id
+	active_syndicate_name = name.strip_edges() if not name.strip_edges().is_empty() else "Enterprise Syndicate"
+	active_syndicate_tag = tag.strip_edges() if not tag.strip_edges().is_empty() else "SYN"
+	active_syndicate_desc = description.strip_edges()
+	active_syndicate_role = "Founder"
+	if syndicate_tier == 0:
+		syndicate_tier = 1
+	syndicate_members_count = maxi(1, syndicate_members_count)
+	syndicate_joined_timestamp = int(Time.get_unix_time_from_system())
+	
+	syndicate_seasonal_score = calculate_seasonal_score()
+	recalculate_stats()
+	save_to_disk()
+	
+	rps_changed.emit(get_effective_passive_rps())
+	syndicate_joined.emit(get_active_syndicate())
+	
+	return {
+		"success": true,
+		"syndicate": get_active_syndicate()
+	}
+
+## Joins an existing syndicate by ID.
+func join_syndicate(id: String, name: String = "", tag: String = "", description: String = "") -> bool:
+	if id.strip_edges().is_empty():
+		return false
+		
+	active_syndicate_id = id.strip_edges()
+	if not name.strip_edges().is_empty():
+		active_syndicate_name = name.strip_edges()
+	elif active_syndicate_name.is_empty():
+		active_syndicate_name = "Enterprise Syndicate"
+		
+	if not tag.strip_edges().is_empty():
+		active_syndicate_tag = tag.strip_edges()
+	elif active_syndicate_tag.is_empty():
+		active_syndicate_tag = "SYN"
+		
+	if not description.strip_edges().is_empty():
+		active_syndicate_desc = description.strip_edges()
+		
+	active_syndicate_role = "Member"
+		
+	if syndicate_tier == 0:
+		syndicate_tier = 1
+		
+	syndicate_joined_timestamp = int(Time.get_unix_time_from_system())
+	syndicate_seasonal_score = calculate_seasonal_score()
+	recalculate_stats()
+	save_to_disk()
+	
+	rps_changed.emit(get_effective_passive_rps())
+	syndicate_joined.emit(get_active_syndicate())
+	return true
+
+## Leaves current syndicate and resets perks to baseline.
+func leave_syndicate() -> bool:
+	if active_syndicate_id.is_empty():
+		return false
+		
+	active_syndicate_id = ""
+	active_syndicate_name = ""
+	active_syndicate_tag = ""
+	active_syndicate_desc = ""
+	active_syndicate_role = "Member"
+	syndicate_tier = 0
+	syndicate_fund_energy = 0.0
+	syndicate_fund_angel_shares = 0
+	syndicate_energy_contributed = 0.0
+	syndicate_angel_shares_contributed = 0
+	syndicate_seasonal_score = 0
+	
+	recalculate_stats()
+	save_to_disk()
+	
+	rps_changed.emit(get_effective_passive_rps())
+	syndicate_left.emit()
+	return true
+
+## Contributes energy or angel shares to the syndicate fund.
+func contribute_to_syndicate(amount: float, resource_type: String = "energy") -> Dictionary:
+	if not is_in_syndicate():
+		return {"success": false, "error": "Not affiliated with any syndicate"}
+	if amount <= 0.0:
+		return {"success": false, "error": "Contribution amount must be greater than zero"}
+		
+	var clean_type: String = resource_type.to_lower().strip_edges()
+	if clean_type == "energy":
+		if energy < amount:
+			return {"success": false, "error": "Insufficient energy (available: %f, required: %f)" % [energy, amount]}
+		energy -= amount
+		syndicate_fund_energy += amount
+		syndicate_energy_contributed += amount
+		energy_changed.emit(energy, -amount)
+	elif clean_type in ["angel_shares", "shares"]:
+		var shares_int: int = int(amount)
+		if shares_int <= 0:
+			return {"success": false, "error": "Must contribute at least 1 Angel Share"}
+		if angel_shares < shares_int:
+			return {"success": false, "error": "Insufficient angel shares (available: %d, required: %d)" % [angel_shares, shares_int]}
+		angel_shares -= shares_int
+		syndicate_fund_angel_shares += shares_int
+		syndicate_angel_shares_contributed += shares_int
+		angel_shares_changed.emit(angel_shares, -shares_int)
+	else:
+		return {"success": false, "error": "Invalid resource type '%s'. Use 'energy' or 'angel_shares'." % resource_type}
+		
+	# Check for tier progression
+	var prev_tier: int = syndicate_tier
+	check_syndicate_tier_progression()
+	if syndicate_tier > prev_tier:
+		syndicate_tier_upgraded.emit(syndicate_tier, get_syndicate_bonuses())
+		
+	syndicate_seasonal_score = calculate_seasonal_score()
+	syndicate_season_updated.emit(syndicate_season_week, syndicate_seasonal_score)
+	
+	recalculate_stats()
+	rps_changed.emit(get_effective_passive_rps())
+	syndicate_contributed.emit(clean_type, amount, syndicate_fund_energy, syndicate_tier)
+	save_to_disk()
+	
+	return {
+		"success": true,
+		"resource_type": clean_type,
+		"amount": amount,
+		"tier": syndicate_tier,
+		"fund_energy": syndicate_fund_energy,
+		"fund_angel_shares": syndicate_fund_angel_shares,
+		"seasonal_score": syndicate_seasonal_score,
+		"bonuses": get_syndicate_bonuses()
+	}
+
+## Contributes angel shares to syndicate vault.
+func contribute_angel_shares_to_syndicate(shares: int) -> Dictionary:
+	return contribute_to_syndicate(float(shares), "angel_shares")
+
+## Evaluates vault funds and advances tier if threshold is reached.
+func check_syndicate_tier_progression() -> int:
+	if not is_in_syndicate():
+		syndicate_tier = 0
+		return 0
+	for t in [5, 4, 3, 2, 1]:
+		var cfg = SYNDICATE_TIER_CONFIG[t]
+		if syndicate_fund_energy >= float(cfg.req_energy) or syndicate_fund_angel_shares >= int(cfg.req_shares):
+			if t > syndicate_tier:
+				syndicate_tier = t
+			break
+	return syndicate_tier
+
+## Calculates weekly seasonal leaderboard score.
+func calculate_seasonal_score(fund_energy: float = -1.0, fund_shares: int = -1, tier: int = -1) -> int:
+	var e: float = fund_energy if fund_energy >= 0.0 else syndicate_fund_energy
+	var s: int = fund_shares if fund_shares >= 0 else syndicate_fund_angel_shares
+	var t: int = tier if tier >= 0 else syndicate_tier
+	return int(floor(maxf(0.0, e) / 100.0)) + (maxi(0, s) * 500) + (maxi(0, t) * 1000)
+
+## Returns current seasonal score and manages weekly seasonal rotation.
+func get_seasonal_leaderboard_score() -> int:
+	var current_week: int = int(Time.get_unix_time_from_system() / (86400 * 7))
+	if syndicate_season_week == 0:
+		syndicate_season_week = current_week
+	elif current_week > syndicate_season_week:
+		if syndicate_seasonal_score >= 10000 and not syndicate_unlocked_badges.has("badge_syndicate_champion"):
+			syndicate_unlocked_badges.append("badge_syndicate_champion")
+		syndicate_season_week = current_week
+	syndicate_seasonal_score = calculate_seasonal_score()
+	return syndicate_seasonal_score
+
+## Returns dictionary of all tier configurations.
+func get_syndicate_tier_definitions() -> Dictionary:
+	return SYNDICATE_TIER_CONFIG.duplicate(true)
+
 
 
 

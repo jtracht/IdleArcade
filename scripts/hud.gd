@@ -18,10 +18,13 @@ const TECH_TREE_MODAL_SCENE: PackedScene = preload("res://scenes/ui/tech_tree_mo
 const SETTINGS_MODAL_SCENE: PackedScene = preload("res://scenes/ui/settings_modal.tscn")
 const IPO_MODAL_SCENE: PackedScene = preload("res://scenes/ui/ipo_modal.tscn")
 const DAILY_BOARD_MODAL_SCENE: PackedScene = preload("res://scenes/ui/daily_board_modal.tscn")
+const SYNDICATE_MODAL_SCENE: PackedScene = preload("res://scenes/ui/syndicate_modal.tscn")
 
 @onready var status_indicator: Label = %StatusIndicator
 @onready var streak_badge: Control = get_node_or_null("%StreakBadge")
 @onready var streak_badge_label: Label = get_node_or_null("%StreakBadgeLabel")
+@onready var syndicate_badge: Control = get_node_or_null("%SyndicateBadge")
+@onready var syndicate_badge_label: Label = get_node_or_null("%SyndicateBadgeLabel")
 @onready var auth_button: Button = %AuthButton
 @onready var leaderboard_button: Button = %LeaderboardButton
 @onready var guild_button: Button = %GuildButton
@@ -30,12 +33,18 @@ const DAILY_BOARD_MODAL_SCENE: PackedScene = preload("res://scenes/ui/daily_boar
 @onready var tech_tree_button: Button = get_node_or_null("%TechTreeButton")
 @onready var settings_button: Button = get_node_or_null("%SettingsButton")
 @onready var ipo_button: Button = get_node_or_null("%IPOButton")
+@onready var syndicate_button: Button = get_node_or_null("%SyndicateButton")
 
 @onready var burger_menu_button: Button = get_node_or_null("%BurgerMenuButton")
 @onready var campaign_badge: PanelContainer = get_node_or_null("%CampaignBadge")
 @onready var chapter_title_label: Label = get_node_or_null("%ChapterTitleLabel")
 @onready var story_mission_label: Label = get_node_or_null("%StoryMissionLabel")
 @onready var badge_progress_label: Label = get_node_or_null("%BadgeProgressLabel")
+@onready var live_event_banner: PanelContainer = get_node_or_null("%LiveEventBanner")
+@onready var live_event_title_label: Label = get_node_or_null("%LiveEventTitleLabel")
+@onready var live_event_timer_label: Label = get_node_or_null("%LiveEventTimerLabel")
+@onready var live_event_progress_bar: ProgressBar = get_node_or_null("%LiveEventProgressBar")
+@onready var live_event_progress_label: Label = get_node_or_null("%LiveEventProgressLabel")
 @onready var nav_drawer: Control = get_node_or_null("%NavDrawer")
 @onready var close_nav_button: Button = get_node_or_null("%CloseNavButton")
 @onready var nav_backdrop: Button = get_node_or_null("%NavDrawerBackdrop")
@@ -162,6 +171,7 @@ func _ready() -> void:
 	_connect_game_state_signals()
 	_bind_action_bar_buttons()
 	_connect_nakama_signals()
+	_connect_live_event_signals()
 	_refresh_all_ui()
 
 func _connect_game_state_signals() -> void:
@@ -186,6 +196,16 @@ func _connect_game_state_signals() -> void:
 		GameState.campaign_choice_selected.connect(_on_campaign_choice_selected)
 	if GameState.has_signal("daily_streak_updated"):
 		GameState.daily_streak_updated.connect(_on_daily_streak_updated)
+	if GameState.has_signal("syndicate_joined"):
+		GameState.syndicate_joined.connect(_on_syndicate_state_changed)
+	if GameState.has_signal("syndicate_left"):
+		GameState.syndicate_left.connect(_on_syndicate_state_changed)
+	if GameState.has_signal("syndicate_contributed"):
+		GameState.syndicate_contributed.connect(_on_syndicate_state_changed)
+	if GameState.has_signal("syndicate_tier_upgraded"):
+		GameState.syndicate_tier_upgraded.connect(_on_syndicate_state_changed)
+	if GameState.has_signal("syndicate_season_updated"):
+		GameState.syndicate_season_updated.connect(_on_syndicate_state_changed)
 
 func _refresh_all_ui() -> void:
 	if GameState == null:
@@ -196,7 +216,26 @@ func _refresh_all_ui() -> void:
 	_on_frenzy_updated(GameState.frenzy_multiplier, GameState.frenzy_meter)
 	_update_campaign_badge()
 	_update_streak_badge(GameState.get_daily_streak() if GameState.has_method("get_daily_streak") else int(GameState.get("daily_board_streak")))
+	_update_syndicate_badge()
+	_refresh_live_event_banner()
 	_refresh_all_upgrade_buttons()
+
+func _on_syndicate_state_changed(_arg1 = null, _arg2 = null, _arg3 = null, _arg4 = null) -> void:
+	_update_syndicate_badge()
+
+func _update_syndicate_badge() -> void:
+	if syndicate_badge_label == null:
+		return
+	if GameState != null and GameState.has_method("is_in_syndicate") and GameState.is_in_syndicate():
+		var syn_data: Dictionary = GameState.get_active_syndicate()
+		var tag: String = str(syn_data.get("tag", "ARK")).strip_edges()
+		if tag.is_empty():
+			tag = "ARK"
+		var div_mult: float = GameState.get_syndicate_dividend_multiplier()
+		var div_pct: int = int(round((div_mult - 1.0) * 100.0))
+		syndicate_badge_label.text = "🏢 [%s] +%d%%" % [tag, div_pct]
+	else:
+		syndicate_badge_label.text = "🏢 [SOLO]"
 
 func _on_daily_streak_updated(new_streak: int) -> void:
 	_update_streak_badge(new_streak)
@@ -538,6 +577,21 @@ func _bind_action_bar_buttons() -> void:
 				if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 					open_daily_board_modal()
 			)
+	if syndicate_button != null:
+		syndicate_button.pressed.connect(func():
+			close_nav_drawer()
+			open_syndicate_modal()
+		)
+	if syndicate_badge != null:
+		if syndicate_badge is Button:
+			syndicate_badge.pressed.connect(func():
+				open_syndicate_modal()
+			)
+		else:
+			syndicate_badge.gui_input.connect(func(event: InputEvent):
+				if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+					open_syndicate_modal()
+			)
 
 func _on_campus_button_pressed() -> void:
 	var main_3d = get_tree().root.find_child("Main3D", true, false)
@@ -559,6 +613,9 @@ func open_ipo_modal() -> Control:
 
 func open_daily_board_modal() -> Control:
 	return open_modal(DAILY_BOARD_MODAL_SCENE)
+
+func open_syndicate_modal() -> Control:
+	return open_modal(SYNDICATE_MODAL_SCENE)
 
 func open_modal(modal_scene: PackedScene) -> Control:
 	close_nav_drawer()
@@ -650,5 +707,124 @@ func _exit_tree() -> void:
 		if card.get("glow_tween") != null and card["glow_tween"].is_valid():
 			card["glow_tween"].kill()
 			card["glow_tween"] = null
+
+func _process(_delta: float) -> void:
+	var lem = _get_live_event_manager()
+	if lem != null and live_event_banner != null and live_event_banner.visible:
+		if lem.has_method("get_time_remaining"):
+			_update_live_event_timer(lem.get_time_remaining())
+
+# ==============================================================================
+# Phase 13 Milestone M4: Cooperative Live-Campus Events
+# ==============================================================================
+
+func _get_live_event_manager() -> Node:
+	if has_node("/root/LiveEventManager"):
+		return get_node("/root/LiveEventManager")
+	return null
+
+func _connect_live_event_signals() -> void:
+	var lem = _get_live_event_manager()
+	if lem == null:
+		return
+	if lem.has_signal("live_event_started") and not lem.live_event_started.is_connected(_on_live_event_started):
+		lem.live_event_started.connect(_on_live_event_started)
+	if lem.has_signal("live_event_progress_updated") and not lem.live_event_progress_updated.is_connected(_on_live_event_progress_updated):
+		lem.live_event_progress_updated.connect(_on_live_event_progress_updated)
+	if lem.has_signal("live_event_milestone_reached") and not lem.live_event_milestone_reached.is_connected(_on_live_event_milestone_reached):
+		lem.live_event_milestone_reached.connect(_on_live_event_milestone_reached)
+	if lem.has_signal("live_event_completed") and not lem.live_event_completed.is_connected(_on_live_event_completed):
+		lem.live_event_completed.connect(_on_live_event_completed)
+	if lem.has_signal("live_event_ended") and not lem.live_event_ended.is_connected(_on_live_event_ended):
+		lem.live_event_ended.connect(_on_live_event_ended)
+	
+	_refresh_live_event_banner()
+
+func _refresh_live_event_banner() -> void:
+	var lem = _get_live_event_manager()
+	if lem == null or live_event_banner == null:
+		return
+	if lem.has_method("is_event_active") and (lem.is_event_active() or (lem.has_method("get_active_event") and lem.get_active_event().get("state_name") == "COMPLETED")):
+		var data: Dictionary = lem.get_active_event()
+		_show_live_event_banner(true)
+		if live_event_title_label != null:
+			live_event_title_label.text = "🚨 " + str(data.get("title", "LIVE CRISIS EVENT")).to_upper()
+		var cur: float = float(data.get("progress", 0.0))
+		var tgt: float = float(data.get("target", 100.0))
+		var pct: float = float(data.get("percentage", 0.0))
+		_update_live_event_progress(cur, tgt, pct)
+		_update_live_event_timer(float(data.get("time_remaining", 0.0)))
+	else:
+		_show_live_event_banner(false)
+
+func _show_live_event_banner(should_show: bool) -> void:
+	if live_event_banner == null:
+		return
+	if should_show:
+		if not live_event_banner.visible:
+			live_event_banner.visible = true
+			live_event_banner.modulate.a = 0.0
+			var tween = live_event_banner.create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			tween.tween_property(live_event_banner, "modulate:a", 1.0, 0.3)
+	else:
+		if live_event_banner.visible:
+			var tween = live_event_banner.create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+			tween.tween_property(live_event_banner, "modulate:a", 0.0, 0.25)
+			tween.tween_callback(func(): live_event_banner.visible = false)
+
+func _on_live_event_started(_event_id: String, event_name: String, duration: float, target_goal: float) -> void:
+	if live_event_title_label != null:
+		live_event_title_label.text = "🚨 " + event_name.to_upper()
+		live_event_title_label.add_theme_color_override("font_color", Color(1.0, 0.35, 0.25))
+	_update_live_event_progress(0.0, target_goal, 0.0)
+	_update_live_event_timer(duration)
+	_show_live_event_banner(true)
+
+func _on_live_event_progress_updated(current: float, target: float, percentage: float) -> void:
+	_update_live_event_progress(current, target, percentage)
+
+func _update_live_event_progress(current: float, target: float, percentage: float) -> void:
+	if live_event_progress_bar != null:
+		live_event_progress_bar.max_value = target if target > 0.0 else 100.0
+		var tween = live_event_progress_bar.create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tween.tween_property(live_event_progress_bar, "value", current, 0.2)
+	if live_event_progress_label != null:
+		live_event_progress_label.text = "[%s / %s (%.0f%%)]" % [
+			GameState.format_number(current) if GameState != null else str(int(current)),
+			GameState.format_number(target) if GameState != null else str(int(target)),
+			percentage
+		]
+
+func _on_live_event_milestone_reached(_milestone_pct: float, _milestone_name: String) -> void:
+	if live_event_banner != null:
+		var tween = live_event_banner.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		live_event_banner.scale = Vector2(1.03, 1.03)
+		tween.tween_property(live_event_banner, "scale", Vector2.ONE, 0.15)
+	var hm = get_node_or_null("/root/HapticsManager")
+	if hm != null and hm.has_method("vibrate_gate_unlock"):
+		hm.vibrate_gate_unlock()
+
+func _on_live_event_completed(_event_id: String, _reward_data: Dictionary) -> void:
+	if live_event_title_label != null:
+		live_event_title_label.text = "🏆 EVENT COMPLETED! [BUFF ACTIVE]"
+		live_event_title_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
+	if live_event_progress_label != null:
+		live_event_progress_label.text = "VICTORY! 100%"
+	_trigger_level_up_confetti()
+	var hm = get_node_or_null("/root/HapticsManager")
+	if hm != null and hm.has_method("vibrate_gate_unlock"):
+		hm.vibrate_gate_unlock()
+
+func _on_live_event_ended(_event_id: String) -> void:
+	_show_live_event_banner(false)
+
+func _update_live_event_timer(seconds: float) -> void:
+	if live_event_timer_label == null:
+		return
+	var s: int = maxi(0, int(ceilf(seconds)))
+	var mins: int = s / 60
+	var secs: int = s % 60
+	live_event_timer_label.text = "⏳ %02d:%02d" % [mins, secs]
+
 
 

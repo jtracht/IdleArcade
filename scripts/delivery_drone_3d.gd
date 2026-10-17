@@ -152,7 +152,12 @@ func _physics_process(delta: float) -> void:
 		var target_yaw: float = atan2(-flat_dir.x, -flat_dir.z)
 		rotation.y = lerp_angle(rotation.y, target_yaw, clampf(delta * 5.0, 0.0, 1.0))
 		
-		var effective_speed: float = move_speed * _speed_multiplier
+		var drone_speed_mult: float = GameState.get_drone_speed_multiplier() if (GameState != null and GameState.has_method("get_drone_speed_multiplier")) else 1.0
+		var live_event_drone_mult: float = 1.0
+		var lem = get_node_or_null("/root/LiveEventManager")
+		if lem != null and lem.has_method("get_drone_speed_multiplier"):
+			live_event_drone_mult = lem.get_drone_speed_multiplier()
+		var effective_speed: float = move_speed * _speed_multiplier * drone_speed_mult * live_event_drone_mult
 		velocity.x = flat_dir.x * effective_speed
 		velocity.z = flat_dir.z * effective_speed
 	else:

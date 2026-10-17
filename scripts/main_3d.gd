@@ -35,6 +35,7 @@ class_name Main3D
 @onready var pitch_stage: Node3D = get_node_or_null("PitchStage")
 @onready var day_night_cycle: DayNightCycle = get_node_or_null("DayNightCycle")
 @onready var screen_transition: ScreenTransition = get_node_or_null("ScreenTransition")
+@onready var syndicate_hq: Node3D = get_node_or_null("SyndicateHQ3D")
 
 var _overlay_open: bool = false
 var _overclock_time: float = 0.0
@@ -379,6 +380,19 @@ func open_tech_tree() -> void:
 			hud_instance.open_tech_tree_modal()
 		elif ResourceLoader.exists("res://scenes/ui/tech_tree_modal.tscn"):
 			var scene = load("res://scenes/ui/tech_tree_modal.tscn")
+			if scene != null and hud_instance.has_method("open_modal"):
+				hud_instance.open_modal(scene)
+		elif not is_hud_overlay_open():
+			open_hud_overlay()
+	elif not is_hud_overlay_open():
+		open_hud_overlay()
+
+func open_syndicate_modal() -> void:
+	if hud_instance != null:
+		if hud_instance.has_method("open_syndicate_modal"):
+			hud_instance.open_syndicate_modal()
+		elif ResourceLoader.exists("res://scenes/ui/syndicate_modal.tscn"):
+			var scene = load("res://scenes/ui/syndicate_modal.tscn")
 			if scene != null and hud_instance.has_method("open_modal"):
 				hud_instance.open_modal(scene)
 		elif not is_hud_overlay_open():

@@ -21,6 +21,7 @@ Nakama="*res://addons/com.heroiclabs.nakama/Nakama.gd"
 NakamaManager="*res://scripts/autoload/nakama_manager.gd"
 HapticsManager="*res://scripts/autoload/haptics_manager.gd"
 AudioManager="*res://scripts/autoload/audio_manager.gd"
+LiveEventManager="*res://scripts/autoload/live_event_manager.gd"
 
 [audio]
 
