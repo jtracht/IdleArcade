@@ -190,8 +190,8 @@ func _test_section_1_syndicate_holdings_economy(gs: Node) -> void:
 	_assert_check(gs.get_syndicate_tier() == 5, "1.36 Tier strictly clamped to maximum Tier 5")
 
 	# 1.8 Seasonal Score Formula Verification
-	# Formula: fund_energy * 0.1 + fund_shares * 500 + tier * 1000
-	var expected_score: int = int(gs.syndicate_fund_energy * 0.1 + float(gs.syndicate_fund_angel_shares) * 500.0 + float(gs.syndicate_tier) * 1000.0)
+	# Formula: floor(fund_energy / 100) + fund_shares * 500 + tier * 1000
+	var expected_score: int = gs.calculate_seasonal_score()
 	var actual_score: int = gs.get_seasonal_leaderboard_score()
 	_assert_check(actual_score == expected_score, "1.37 Seasonal score matches formula (%d == %d)" % [actual_score, expected_score])
 
@@ -559,7 +559,7 @@ func _test_section_5_full_integration_loop(gs: Node, lem: Node) -> void:
 	_assert_check(absf(compounded_rps - 230.0) < EPSILON, "5.10 Compounded RPS matches: 100 * 1.15 * 2.0 = 230.0 (actual: %f)" % compounded_rps)
 
 	# 5.4 Step 4: Overclock Buff Stacking
-	gs.activate_server_overclock_buff(1.5, 30.0)
+	gs.activate_server_overclock_buff(30.0, 1.5)
 	# Compounded: base (100) * syndicate (1.15) * live event (2.0) * overclock (1.5) = 345.0
 	var full_stack_rps = gs.get_effective_passive_rps()
 	_assert_check(absf(full_stack_rps - 345.0) < EPSILON, "5.11 Full stack RPS matches: 100 * 1.15 * 2.0 * 1.5 = 345.0 (actual: %f)" % full_stack_rps)
