@@ -447,10 +447,10 @@ func _test_section_4_live_event_manager_crises(gs: Node, lem: Node) -> void:
 	_assert_check(active_ev.get("time_remaining") > 500.0, "4.8 time_remaining initialized (> 500s)")
 
 	# 4.3 Signal Tracking
-	var progress_signals: int = 0
+	var progress_signals: Array[int] = [0]
 	var milestones_reached: Array[float] = []
 	var on_prog = func(curr: float, tgt: float, pct: float):
-		progress_signals += 1
+		progress_signals[0] += 1
 	var on_mile = func(pct: float, m_name: String):
 		milestones_reached.append(pct)
 
@@ -460,7 +460,7 @@ func _test_section_4_live_event_manager_crises(gs: Node, lem: Node) -> void:
 	# 4.4 Contribute Progress: Clicks and Overclocks
 	# 1 click = 1 pt. 1 overclock = 50 pts.
 	lem.contribute_progress("click", 50.0) # 50 pts = 10%
-	_assert_check(progress_signals > 0, "4.9 live_event_progress_updated emitted")
+	_assert_check(progress_signals[0] > 0, "4.9 live_event_progress_updated emitted")
 	_assert_check(absf(lem.get_progress_percentage() - 10.0) < EPSILON, "4.10 50 click points = 10.0% progress")
 
 	lem.contribute_progress("overclock", 2.0) # 2 * 50 = 100 pts -> 150 pts = 30%
@@ -525,7 +525,8 @@ func _test_section_5_full_integration_loop(gs: Node, lem: Node) -> void:
 
 	# 5.1 Step 1: Solo baseline
 	var base_rps: float = 100.0
-	gs.base_passive_rps = base_rps
+	gs.upgrades["tier_1"]["level"] = 100
+	gs.recalculate_stats()
 	_assert_check(absf(gs.get_effective_passive_rps() - base_rps) < EPSILON, "5.1 Solo player baseline RPS is 100.0")
 
 	# 5.2 Step 2: Found Syndicate & Advance to Tier 3
@@ -543,7 +544,7 @@ func _test_section_5_full_integration_loop(gs: Node, lem: Node) -> void:
 	_assert_check(absf(gs.get_drone_speed_multiplier() - 1.15) < EPSILON, "5.6 Tier 2 drone speed is 1.15x (+15%)")
 
 	# Donate angel shares to reach Tier 3 (+15% dividend, +5% IPO bonus)
-	gs.angel_shares = 30
+	gs.angel_shares = 20
 	gs.contribute_angel_shares_to_syndicate(20)
 	_assert_check(gs.get_syndicate_tier() == 3, "5.7 Syndicate reached Tier 3")
 	_assert_check(absf(gs.get_effective_passive_rps() - 115.0) < EPSILON, "5.8 Tier 3 dividend yields 115.0 RPS (+15%)")
