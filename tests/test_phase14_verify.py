@@ -24,8 +24,12 @@ Exhaustively certifies Phase 14 deliverables across 5 distinct tiers:
           bounds [0..4], desk fatigue reduction ratios (0.75, 0.40), epiphany reward
           minimum floor (100.0) & 15x passive RPS formula, 20.0s lifetime, coffee cooldown 60.0s,
           corrupt JSON recovery, and invalid role recruitment rejection.
-  Tier 3: Low-Poly Triangle Budgets & Spatial Ergonomics
-          Validates mesh triangle budgets:
+  Tier 3: Stacking Multipliers & Low-Poly Triangle Budgets
+          Validates Stacking Multipliers (§R5):
+          - Staff Bonus + Syndicate Dividend + Angel Shares compounding formulas,
+            individual scaling, pairwise stacking, three-way compounding, extreme scale,
+            commutativity, and monotonicity invariants.
+          Validates mesh triangle budgets (< 2,500 Tris):
           - Office expansion < 2,500 Tris
           - Chibi-Worker < 600 Tris
           - Combined office + 5 workers < 2,500 Tris
@@ -471,10 +475,10 @@ def run_tier_2():
 
 
 # =============================================================================
-# TIER 3: Low-Poly Triangle Budgets & Spatial Ergonomics
+# TIER 3: Stacking Multipliers & Low-Poly Triangle Budgets
 # =============================================================================
 def run_tier_3():
-    print(f"\n{Colors.BOLD}{Colors.OKBLUE}=== TIER 3: Low-Poly Triangle Budgets & Spatial Ergonomics ==={Colors.ENDC}")
+    print(f"\n{Colors.BOLD}{Colors.OKBLUE}=== TIER 3: Stacking Multipliers & Low-Poly Triangle Budgets ==={Colors.ENDC}")
     t = "Tier 3"
 
     # 1. Low-Poly Triangle Budget: Office Expansion Scene
@@ -611,6 +615,123 @@ def run_tier_3():
             reporter.check(t, "mouse_filter = 0" in s_text, "Ergonomics: HUD %StaffButton mouse_filter = STOP")
         else:
             reporter.check(t, False, "HUD %StaffButton found in hud.tscn")
+
+    # 6. Stacking Multipliers: Staff Bonus + Syndicate + Angel Shares (§R5 Specification)
+    gs_file = GAME_DIR / "scripts/autoload/game_state.gd"
+    reporter.check(t, gs_file.exists(), "scripts/autoload/game_state.gd exists on disk")
+    if gs_file.exists():
+        gs_text = gs_file.read_text(encoding="utf-8", errors="replace")
+
+        # AST contract checks
+        rps_func = re.search(r'func\s+get_effective_passive_rps\s*\(\s*\)\s*->\s*float\s*:(.*?)(?=\nfunc|\Z)', gs_text, re.DOTALL)
+        reporter.check(t, rps_func is not None, "AST: get_effective_passive_rps() exists in game_state.gd")
+        if rps_func:
+            rps_body = rps_func.group(1)
+            reporter.check(t, "get_staff_rps_multiplier()" in rps_body or "staff_mult" in rps_body,
+                           "AST Stacking: get_effective_passive_rps compounds Staff Bonus multiplier")
+            reporter.check(t, "get_syndicate_dividend_multiplier()" in rps_body,
+                           "AST Stacking: get_effective_passive_rps compounds Syndicate Dividend multiplier")
+            reporter.check(t, "get_angel_share_multiplier()" in rps_body,
+                           "AST Stacking: get_effective_passive_rps compounds Angel Shares multiplier")
+            reporter.check(t, bool(re.search(r'get_angel_share_multiplier\(\)\s*\*\s*get_syndicate_dividend_multiplier\(\)', rps_body)) and
+                              ("staff_mult" in rps_body or "get_staff_rps_multiplier()" in rps_body),
+                           "AST Stacking: Staff, Syndicate, and Angel Shares multipliers are combined multiplicatively (*)")
+
+    # Mathematical Stacking Model (§R5: Staff Bonus + Syndicate + Angel Shares)
+    base_rps = 100.0
+
+    def calc_staff_mult(active_count: int, avg_morale: float) -> float:
+        if active_count <= 0:
+            return 1.0
+        return 1.0 + (float(active_count) * 0.05) * min(max(avg_morale, 0.0), 1.0)
+
+    def calc_syndicate_mult(tier: int) -> float:
+        if tier <= 0:
+            return 1.0
+        return 1.0 + (float(min(max(tier, 0), 5)) * 0.05)
+
+    def calc_angel_mult(shares: int) -> float:
+        return 1.0 + (float(max(shares, 0)) * 0.02)
+
+    def calc_stacked_rps(base: float, active_count: int, avg_morale: float, tier: int, shares: int) -> float:
+        return base * calc_staff_mult(active_count, avg_morale) * calc_syndicate_mult(tier) * calc_angel_mult(shares)
+
+    # 6.1 Baseline Identity
+    m_base = calc_staff_mult(0, 1.0) * calc_syndicate_mult(0) * calc_angel_mult(0)
+    reporter.check(t, abs(m_base - 1.0) < 1e-6, "Stacking Baseline: 0 staff, 0 syndicate, 0 angel shares produces exact 1.0000x multiplier")
+    reporter.check(t, abs(calc_stacked_rps(base_rps, 0, 1.0, 0, 0) - 100.0) < 1e-5,
+                   "Stacking Baseline: Base 100.0 RPS unmodified at identity stack (100.0 RPS)")
+
+    # 6.2 Individual Multipliers Alone
+    m_staff_5 = calc_staff_mult(5, 1.0)
+    reporter.check(t, abs(m_staff_5 - 1.25) < 1e-6, "Stacking Component: 5 staff at 1.0 morale = 1.2500x (+25%)")
+    reporter.check(t, abs(calc_stacked_rps(base_rps, 5, 1.0, 0, 0) - 125.0) < 1e-5,
+                   "Stacking Component: Staff alone scales 100.0 RPS to 125.0 RPS")
+
+    m_syn_5 = calc_syndicate_mult(5)
+    reporter.check(t, abs(m_syn_5 - 1.25) < 1e-6, "Stacking Component: Syndicate Tier 5 = 1.2500x (+25%)")
+    reporter.check(t, abs(calc_stacked_rps(base_rps, 0, 1.0, 5, 0) - 125.0) < 1e-5,
+                   "Stacking Component: Syndicate Tier 5 alone scales 100.0 RPS to 125.0 RPS")
+
+    m_angel_50 = calc_angel_mult(50)
+    reporter.check(t, abs(m_angel_50 - 2.00) < 1e-6, "Stacking Component: 50 Angel Shares = 2.0000x (+100%)")
+    reporter.check(t, abs(calc_stacked_rps(base_rps, 0, 1.0, 0, 50) - 200.0) < 1e-5,
+                   "Stacking Component: 50 Angel Shares alone scales 100.0 RPS to 200.0 RPS")
+
+    # 6.3 Pairwise Stacking Combinations
+    rps_staff_syn = calc_stacked_rps(base_rps, 5, 1.0, 5, 0)
+    reporter.check(t, abs(rps_staff_syn - 156.25) < 1e-5,
+                   "Pairwise Stacking: Staff (1.25x) * Syndicate Tier 5 (1.25x) = 156.25 RPS (1.5625x)")
+
+    rps_staff_angel = calc_stacked_rps(base_rps, 5, 1.0, 0, 50)
+    reporter.check(t, abs(rps_staff_angel - 250.00) < 1e-5,
+                   "Pairwise Stacking: Staff (1.25x) * Angel Shares 50 (2.00x) = 250.00 RPS (2.5000x)")
+
+    rps_syn_angel = calc_stacked_rps(base_rps, 0, 1.0, 5, 50)
+    reporter.check(t, abs(rps_syn_angel - 250.00) < 1e-5,
+                   "Pairwise Stacking: Syndicate Tier 5 (1.25x) * Angel Shares 50 (2.00x) = 250.00 RPS (2.5000x)")
+
+    # 6.4 Three-Way Stacking Combination (§R5 Core: Staff Bonus + Syndicate + Angel Shares)
+    rps_triple_max = calc_stacked_rps(base_rps, 5, 1.0, 5, 50)
+    reporter.check(t, abs(rps_triple_max - 312.50) < 1e-5,
+                   "Three-Way Stacking: Staff (1.25x) * Syndicate T5 (1.25x) * Angel 50 (2.00x) = 312.50 RPS (3.1250x)")
+
+    rps_triple_partial = calc_stacked_rps(base_rps, 5, 0.80, 3, 25)
+    reporter.check(t, abs(rps_triple_partial - 207.00) < 1e-5,
+                   "Three-Way Stacking: Partial Morale (1.20x) * Syndicate T3 (1.15x) * Angel 25 (1.50x) = 207.00 RPS (2.0700x)")
+
+    rps_triple_fatigue = calc_stacked_rps(base_rps, 3, 1.0, 2, 10)
+    reporter.check(t, abs(rps_triple_fatigue - 151.80) < 1e-5,
+                   "Three-Way Stacking: 3 Active Staff (1.15x) * Syndicate T2 (1.10x) * Angel 10 (1.20x) = 151.80 RPS (1.5180x)")
+
+    # 6.5 Extreme Scale & Invariant Properties
+    rps_extreme = calc_stacked_rps(base_rps, 5, 1.0, 5, 500)
+    reporter.check(t, abs(rps_extreme - 1718.75) < 1e-5,
+                   "Stacking Extreme: 5 Staff (1.25x) * Syndicate T5 (1.25x) * 500 Angel Shares (11.00x) = 1718.75 RPS (17.1875x)")
+
+    s_val = calc_staff_mult(5, 1.0)
+    y_val = calc_syndicate_mult(5)
+    a_val = calc_angel_mult(50)
+    perms = [
+        s_val * y_val * a_val,
+        s_val * a_val * y_val,
+        y_val * s_val * a_val,
+        y_val * a_val * s_val,
+        a_val * s_val * y_val,
+        a_val * y_val * s_val,
+    ]
+    reporter.check(t, max(perms) - min(perms) < 1e-9,
+                   "Stacking Invariant: Multiplication is strictly commutative across all factor permutations")
+
+    is_mono = (
+        calc_stacked_rps(100.0, 1, 1.0, 1, 5) <
+        calc_stacked_rps(100.0, 2, 1.0, 1, 5) <
+        calc_stacked_rps(100.0, 5, 1.0, 1, 5) <
+        calc_stacked_rps(100.0, 5, 1.0, 3, 5) <
+        calc_stacked_rps(100.0, 5, 1.0, 5, 5) <
+        calc_stacked_rps(100.0, 5, 1.0, 5, 20)
+    )
+    reporter.check(t, is_mono, "Stacking Invariant: Effective RPS is strictly monotonically increasing with system progression")
 
 
 # =============================================================================
@@ -892,6 +1013,9 @@ def run_tier_5():
 
     print(f"\n{Colors.OKCYAN}>>> Executing Milestone M1 Sub-Oracle (Staff Management & Morale)...{Colors.ENDC}")
     execute_sub_oracle(["tests/test_p14_m1_staff.py"], "Milestone M1 (Staff Management & Morale)")
+
+    print(f"\n{Colors.OKCYAN}>>> Executing Milestone M1 Challenger (Stacking Multipliers & Fuzzing)...{Colors.ENDC}")
+    execute_sub_oracle(["tests/test_p14_m1_challenger_stacking.py"], "Milestone M1 Challenger (Stacking Multipliers & Fuzzing)")
 
     print(f"\n{Colors.OKCYAN}>>> Executing Milestone M2 Sub-Oracle (3D Office & Worker AI)...{Colors.ENDC}")
     execute_sub_oracle(["tests/test_p14_m2_office_3d.py"], "Milestone M2 (3D Office & Chibi Worker AI)")

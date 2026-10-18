@@ -30,6 +30,8 @@ extends SceneTree
 var pass_count: int = 0
 var fail_count: int = 0
 
+const MIN_EXPECTED_PASS_COUNT: int = 170
+
 const EPSILON: float = 0.001
 
 func _assert_check(condition: bool, description: String, detail: String = "") -> void:
@@ -82,11 +84,13 @@ func _run_all_tests() -> void:
 	print(">>> PHASE 14 SCENETREE TEST SUITE SUMMARY: %d PASSED, %d FAILED <<<" % [pass_count, fail_count])
 	print("====================================================================")
 
-	if fail_count == 0:
+	if fail_count == 0 and pass_count >= MIN_EXPECTED_PASS_COUNT:
 		print(">>> ALL PHASE 14 HEADLESS SCENETREE TESTS PASSED (Exit Code 0) <<<")
 		quit(0)
 	else:
-		printerr(">>> PHASE 14 HEADLESS SCENETREE TESTS FAILED (Exit Code 1) <<<")
+		printerr(">>> PHASE 14 HEADLESS SCENETREE TESTS FAILED (Exit Code 1, pass_count=%d/%d, fail_count=%d) <<<" % [
+			pass_count, MIN_EXPECTED_PASS_COUNT, fail_count
+		])
 		quit(1)
 
 # =============================================================================
@@ -314,22 +318,30 @@ func _test_section_3_3d_office_and_chibi_workers(gs: Node) -> void:
 
 	# Validate state machine and mood icons
 	_assert_check(worker.get_state() == "working", "3.15 Initial worker state is 'working'")
-	_assert_check(worker.get_node("MoodIconLabel3D").text == "💻", "3.16 Working state displays '💻' mood icon")
+	_assert_check(worker.get_node("MoodIcon3D").text == "💻", "3.16 Working state displays '💻' mood icon")
 
 	# State transition to BREAK
 	worker.set_state("break")
 	_assert_check(worker.get_state() == "break", "3.17 Transitioned to 'break' state")
-	_assert_check(worker.get_node("MoodIconLabel3D").text == "☕", "3.18 Break state displays '☕' mood icon")
+	_assert_check(worker.get_node("MoodIcon3D").text == "☕", "3.18 Break state displays '☕' mood icon")
 
 	# State transition to FATIGUED
 	worker.set_state("fatigued")
 	_assert_check(worker.get_state() == "fatigued", "3.19 Transitioned to 'fatigued' state")
-	_assert_check(worker.get_node("MoodIconLabel3D").text == "💤", "3.20 Fatigued state displays '💤' mood icon")
+	_assert_check(worker.get_node("MoodIcon3D").text == "💤", "3.20 Fatigued state displays '💤' mood icon")
 
 	# State transition to CELEBRATING
 	worker.set_state("celebrating")
 	_assert_check(worker.get_state() == "celebrating", "3.21 Transitioned to 'celebrating' state")
-	_assert_check(worker.get_node("MoodIconLabel3D").text == "🎉", "3.22 Celebrating state displays '🎉' mood icon")
+	_assert_check(worker.get_node("MoodIcon3D").text == "🎉", "3.22 Celebrating state displays '🎉' mood icon")
+
+	# Clear global coffee break hyper-focus from Section 2 to isolate worker speed dilation tests
+	gs.staff_hyper_focus_active = false
+	gs.staff_hyper_focus_timer = 0.0
+	gs.staff_hyper_focus_remaining = 0.0
+	gs.staff_coffee_break_active = false
+	gs.staff_coffee_break_timer = 0.0
+	gs.staff_coffee_break_remaining = 0.0
 
 	# Speed dilation validation
 	_assert_check(absf(worker.get_animation_speed_multiplier() - 1.0) < EPSILON, "3.23 Normal speed multiplier is 1.0x")
@@ -414,11 +426,11 @@ func _test_section_4_mobile_staff_modal_and_ergonomics(gs: Node) -> void:
 		_assert_check(staff_btn != null, "4.16 HUD %StaffButton exists in navigation drawer")
 
 		if badge != null:
-			_assert_check(badge.custom_minimum_size.y >= 56.0, "4.17 HUD %StaffBadge height (%.1fpx) >= 56px" % badge.custom_minimum_size.y)
+			_assert_check(badge.custom_minimum_size.y >= 56.0, "4.17 HUD %%StaffBadge height (%.1fpx) >= 56px" % badge.custom_minimum_size.y)
 			_assert_check(badge.mouse_filter == Control.MOUSE_FILTER_STOP, "4.18 HUD %StaffBadge mouse_filter = STOP")
 
 		if staff_btn != null:
-			_assert_check(staff_btn.custom_minimum_size.y >= 64.0, "4.19 HUD %StaffButton height (%.1fpx) >= 64px" % staff_btn.custom_minimum_size.y)
+			_assert_check(staff_btn.custom_minimum_size.y >= 64.0, "4.19 HUD %%StaffButton height (%.1fpx) >= 64px" % staff_btn.custom_minimum_size.y)
 			_assert_check(staff_btn.mouse_filter == Control.MOUSE_FILTER_STOP, "4.20 HUD %StaffButton mouse_filter = STOP")
 
 		# Check formatting
@@ -459,7 +471,7 @@ func _test_section_5_epiphany_synergy_and_ipo(gs: Node) -> void:
 		# Trigger epiphany
 		worker.trigger_epiphany(500.0)
 		_assert_check(worker.has_epiphany() == true, "5.4 has_epiphany() is true after trigger")
-		_assert_check(worker.get_node("MoodIconLabel3D").text == "💡", "5.5 Epiphany displays '💡' mood icon")
+		_assert_check(worker.get_node("MoodIcon3D").text == "💡", "5.5 Epiphany displays '💡' mood icon")
 
 		# Tap to collect
 		var collected = worker.collect_epiphany()
@@ -478,7 +490,7 @@ func _test_section_5_epiphany_synergy_and_ipo(gs: Node) -> void:
 		# Advance 21 seconds
 		worker._process(21.0)
 		_assert_check(worker.has_epiphany() == false, "5.11 Epiphany cleanly auto-expires after 20.0s lifetime")
-		_assert_check(worker.get_node("MoodIconLabel3D").text == "💻", "5.12 Mood icon reverted to '💻' on expiration")
+		_assert_check(worker.get_node("MoodIcon3D").text == "💻", "5.12 Mood icon reverted to '💻' on expiration")
 
 		worker.queue_free()
 
@@ -498,8 +510,12 @@ func _test_section_5_epiphany_synergy_and_ipo(gs: Node) -> void:
 	_assert_check(pre_ipo_workers_count == 5, "5.15 Pre-IPO staff count is 5")
 
 	# Trigger IPO
+	gs.staff_hyper_focus_active = true
+	gs.staff_hyper_focus_timer = 60.0
+	gs.total_lifetime_energy = 5000000.0
 	gs.total_energy_earned = 5000000.0
-	var ipo_success = gs.trigger_ipo()
+	var ipo_res = gs.trigger_ipo()
+	var ipo_success: bool = (ipo_res is Dictionary and ipo_res.get("success", false) == true) or (ipo_res == true)
 	_assert_check(ipo_success == true, "5.16 trigger_ipo() executed successfully")
 	_assert_check(absf(gs.energy - 0.0) < EPSILON, "5.17 Player regular energy reset to 0.0")
 
