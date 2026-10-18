@@ -1,0 +1,394 @@
+[gd_scene load_steps=9 format=3 uid="uid://cstaffmodal001"]
+
+[ext_resource type="Script" path="res://scripts/ui/staff_modal.gd" id="1_staffmodal"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_card"]
+bg_color = Color(0.04, 0.07, 0.09, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.95, 1, 0.85)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
+shadow_color = Color(0, 0, 0, 0.75)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_summary_banner"]
+bg_color = Color(0.18, 0.12, 0.04, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.75, 0.1, 0.9)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_close_btn"]
+bg_color = Color(0.15, 0.10, 0.06, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.95, 1, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab_btn"]
+bg_color = Color(0.08, 0.14, 0.18, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 2
+border_color = Color(0, 0.9, 1, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(0.06, 0.10, 0.14, 0.92)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.35, 0.45, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_action_btn"]
+bg_color = Color(0.08, 0.38, 0.48, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.95, 1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0.85, 1, 0.4)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_coffee_btn"]
+bg_color = Color(0.38, 0.22, 0.06, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.75, 0.1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(1, 0.65, 0.1, 0.45)
+shadow_size = 8
+
+[node name="StaffModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_staffmodal")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.05, 0.07, 0.9)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ModalCard" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(680, 920)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 10
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 10
+
+[node name="IconLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "👥"
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "CAMPUS STAFF & HR MANAGEMENT"
+
+[node name="Spacer" type="Control" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CloseButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_close_btn")
+text = "✕"
+
+[node name="StaffSummaryBanner" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_summary_banner")
+
+[node name="SummaryVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/StaffSummaryBanner"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="StaffSummaryLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/StaffSummaryBanner/SummaryVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_font_sizes/font_size = 16
+text = "Active Specialists: 0 / 5 • Average Morale: 100%"
+
+[node name="StaffRPSBonusLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/StaffSummaryBanner/SummaryVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.95, 0.7, 1)
+theme_override_font_sizes/font_size = 13
+text = "Staff RPS Multiplier: +0.0% (+5% per worker * morale)"
+
+[node name="HyperFocusStatusLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/StaffSummaryBanner/SummaryVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.75, 0.1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Hyper-Focus: Inactive"
+
+[node name="TabBarHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="RecruitingTabButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabBarHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_tab_btn")
+text = "👥 Recruiting"
+
+[node name="DeskUpgradesTabButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabBarHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_tab_btn")
+text = "🖥️ Desks"
+
+[node name="TeambuildingTabButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabBarHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_tab_btn")
+text = "☕ Teambuilding"
+
+[node name="HSeparator1" type="HSeparator" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+
+[node name="TabContentContainer" type="MarginContainer" parent="CenterContainer/ModalCard/CardVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 0
+
+[node name="RecruitingTab" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="RecruitingHeaderLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RecruitingTab"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "Autonomous campus specialists boost passive RPS based on their morale level."
+
+[node name="WorkersScroll" type="ScrollContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RecruitingTab"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 420)
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 0
+horizontal_scroll_mode = 0
+
+[node name="WorkersListVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RecruitingTab/WorkersScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="RecruitSectionPanel" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RecruitingTab"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="RecruitHBox" type="HBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RecruitingTab/RecruitSectionPanel"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 10
+
+[node name="RoleOptionButton" type="OptionButton" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RecruitingTab/RecruitSectionPanel/RecruitHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 0
+
+[node name="RecruitButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RecruitingTab/RecruitSectionPanel/RecruitHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 56)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_action_btn")
+text = "Einstellen (Recruit)"
+
+[node name="DeskUpgradesTab" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="DesksHeaderLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/DeskUpgradesTab"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "Ergonomic desk upgrades reduce specialist fatigue rate by 25% (Lvl 2) to 60% (Lvl 3)."
+
+[node name="DesksScroll" type="ScrollContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/DeskUpgradesTab"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 420)
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 0
+horizontal_scroll_mode = 0
+
+[node name="DesksVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/DeskUpgradesTab/DesksScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="TeambuildingTab" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 12
+
+[node name="TeambuildingInfoCard" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/TeambuildingTab"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="InfoVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/TeambuildingTab/TeambuildingInfoCard"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="CoffeeTitleLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/TeambuildingTab/TeambuildingInfoCard/InfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 16
+text = "☕ Campus Kaffeerunde & Teambuilding"
+
+[node name="CoffeeDescLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/TeambuildingTab/TeambuildingInfoCard/InfoVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Serve freshly roasted coffee to instantly recharge all team members to 100% morale, reset fatigue to 0, and trigger a 60-second 1.5x Hyper-Focus speed boost."
+autowrap_mode = 2
+
+[node name="HyperFocusProgressBar" type="ProgressBar" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/TeambuildingTab"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 28)
+layout_mode = 2
+mouse_filter = 2
+show_percentage = false
+
+[node name="ServeCoffeeBreakButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/TeambuildingTab"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 64)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_coffee_btn")
+text = "☕ Coffee Break servieren (Free)"
+
+[node name="EspressoSynergyCard" type="PanelContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/TeambuildingTab"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="EspressoSynergyLabel" type="Label" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/TeambuildingTab/EspressoSynergyCard"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.6, 0.25, 1)
+theme_override_font_sizes/font_size = 14
+text = "☕ Super-Espresso Machine Synergie: Inactive"

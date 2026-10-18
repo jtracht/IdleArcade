@@ -12,6 +12,7 @@ signal brew_completed(unicorn_espresso: bool)
 signal brew_ended()
 signal espresso_buff_started(duration: float, avatar_mult: float, worker_mult: float)
 signal coffee_machine_interacted()
+signal office_hyper_focus_activated(duration: float, speed_mult: float)
 
 @export var prompt_text: String = "[E] Super-Espresso Brew Lab"
 @export var action_label: String = "Brew [E]"
@@ -186,7 +187,10 @@ func complete_brew(success: bool = true) -> void:
 			
 		espresso_buff_started.emit(buff_duration, avatar_speed_boost, worker_speed_boost)
 		
-		# 3. Audio juice
+		# 3. Synchronize with campus office: trigger GameState coffee break / 60s Hyper-Focus
+		trigger_office_synergy(buff_duration)
+		
+		# 4. Audio juice
 		var am = get_node_or_null("/root/AudioManager")
 		if am != null:
 			if am.has_method("play_sfx_pickup"):
@@ -194,18 +198,47 @@ func complete_brew(success: bool = true) -> void:
 			elif am.has_method("play_sfx_confetti"):
 				am.play_sfx_confetti()
 				
-		# 4. Screen shake
+		# 5. Screen shake
 		var tree = get_tree()
 		if tree != null and tree.current_scene != null and tree.current_scene.has_method("add_screen_shake"):
 			tree.current_scene.add_screen_shake(0.30)
 			
-		# 5. Cooldown engagement (60s)
+		# 6. Cooldown engagement (60s)
 		is_on_cooldown = true
 		cooldown_time_remaining = brew_cooldown
 	
 	brew_ended.emit()
 	_update_status_display()
 	_close_minigame_overlay()
+
+## Synchronizes Unicorn Espresso brew with the campus office: activates 60s Hyper-Focus across all Chibi workers.
+func trigger_office_synergy(duration: float = 60.0) -> void:
+	var gs = get_node_or_null("/root/GameState")
+	if gs != null:
+		if gs.has_method("give_team_coffee_break"):
+			gs.give_team_coffee_break()
+		elif gs.has_method("activate_office_hyper_focus"):
+			gs.activate_office_hyper_focus(duration)
+
+	# Direct notification to OfficeExpansion3D instances in the scene
+	var tree = get_tree()
+	if tree != null:
+		var offices = tree.get_nodes_in_group("staff_offices")
+		for office in offices:
+			if office.has_method("activate_hyper_focus"):
+				office.activate_hyper_focus(duration, 1.50)
+			elif office.has_method("_on_unicorn_espresso_activated"):
+				office._on_unicorn_espresso_activated(duration, 1.50)
+
+		# Also notify any standalone chibi worker nodes in the tree
+		var workers = tree.get_nodes_in_group("chibi_workers")
+		for worker in workers:
+			if worker.has_method("set_hyper_focus"):
+				worker.set_hyper_focus(true, duration)
+				if worker.has_method("play_celebration"):
+					worker.play_celebration(1.0)
+
+	office_hyper_focus_activated.emit(duration, 1.50)
 
 ## Cancels active brew
 func cancel_brew() -> void:

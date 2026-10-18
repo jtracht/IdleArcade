@@ -19,12 +19,15 @@ const SETTINGS_MODAL_SCENE: PackedScene = preload("res://scenes/ui/settings_moda
 const IPO_MODAL_SCENE: PackedScene = preload("res://scenes/ui/ipo_modal.tscn")
 const DAILY_BOARD_MODAL_SCENE: PackedScene = preload("res://scenes/ui/daily_board_modal.tscn")
 const SYNDICATE_MODAL_SCENE: PackedScene = preload("res://scenes/ui/syndicate_modal.tscn")
+const STAFF_MODAL_SCENE: PackedScene = preload("res://scenes/ui/staff_modal.tscn")
 
 @onready var status_indicator: Label = %StatusIndicator
 @onready var streak_badge: Control = get_node_or_null("%StreakBadge")
 @onready var streak_badge_label: Label = get_node_or_null("%StreakBadgeLabel")
 @onready var syndicate_badge: Control = get_node_or_null("%SyndicateBadge")
 @onready var syndicate_badge_label: Label = get_node_or_null("%SyndicateBadgeLabel")
+@onready var staff_badge: Control = get_node_or_null("%StaffBadge")
+@onready var staff_badge_label: Label = get_node_or_null("%StaffBadgeLabel")
 @onready var auth_button: Button = %AuthButton
 @onready var leaderboard_button: Button = %LeaderboardButton
 @onready var guild_button: Button = %GuildButton
@@ -34,6 +37,7 @@ const SYNDICATE_MODAL_SCENE: PackedScene = preload("res://scenes/ui/syndicate_mo
 @onready var settings_button: Button = get_node_or_null("%SettingsButton")
 @onready var ipo_button: Button = get_node_or_null("%IPOButton")
 @onready var syndicate_button: Button = get_node_or_null("%SyndicateButton")
+@onready var staff_button: Button = get_node_or_null("%StaffButton")
 
 @onready var burger_menu_button: Button = get_node_or_null("%BurgerMenuButton")
 @onready var campaign_badge: PanelContainer = get_node_or_null("%CampaignBadge")
@@ -206,6 +210,36 @@ func _connect_game_state_signals() -> void:
 		GameState.syndicate_tier_upgraded.connect(_on_syndicate_state_changed)
 	if GameState.has_signal("syndicate_season_updated"):
 		GameState.syndicate_season_updated.connect(_on_syndicate_state_changed)
+	if GameState.has_signal("staff_worker_hired"):
+		GameState.staff_worker_hired.connect(_on_staff_state_changed)
+	elif GameState.has_signal("worker_hired"):
+		GameState.worker_hired.connect(_on_staff_state_changed)
+	if GameState.has_signal("staff_worker_fired"):
+		GameState.staff_worker_fired.connect(_on_staff_state_changed)
+	elif GameState.has_signal("worker_fired"):
+		GameState.worker_fired.connect(_on_staff_state_changed)
+	if GameState.has_signal("staff_worker_state_changed"):
+		GameState.staff_worker_state_changed.connect(_on_staff_state_changed)
+	elif GameState.has_signal("worker_state_changed"):
+		GameState.worker_state_changed.connect(_on_staff_state_changed)
+	if GameState.has_signal("staff_worker_morale_updated"):
+		GameState.staff_worker_morale_updated.connect(_on_staff_state_changed)
+	if GameState.has_signal("staff_desk_upgraded"):
+		GameState.staff_desk_upgraded.connect(_on_staff_state_changed)
+	elif GameState.has_signal("desk_upgraded"):
+		GameState.desk_upgraded.connect(_on_staff_state_changed)
+	if GameState.has_signal("staff_coffee_break_started"):
+		GameState.staff_coffee_break_started.connect(_on_staff_state_changed)
+	elif GameState.has_signal("team_coffee_break_started"):
+		GameState.team_coffee_break_started.connect(_on_staff_state_changed)
+	if GameState.has_signal("staff_coffee_break_ended"):
+		GameState.staff_coffee_break_ended.connect(_on_staff_state_changed)
+	elif GameState.has_signal("team_coffee_break_ended"):
+		GameState.team_coffee_break_ended.connect(_on_staff_state_changed)
+	if GameState.has_signal("staff_morale_updated"):
+		GameState.staff_morale_updated.connect(_on_staff_state_changed)
+	if GameState.has_signal("staff_bonus_updated"):
+		GameState.staff_bonus_updated.connect(_on_staff_state_changed)
 
 func _refresh_all_ui() -> void:
 	if GameState == null:
@@ -217,8 +251,28 @@ func _refresh_all_ui() -> void:
 	_update_campaign_badge()
 	_update_streak_badge(GameState.get_daily_streak() if GameState.has_method("get_daily_streak") else int(GameState.get("daily_board_streak")))
 	_update_syndicate_badge()
+	_update_staff_badge()
 	_refresh_live_event_banner()
 	_refresh_all_upgrade_buttons()
+
+func _on_staff_state_changed(_arg1 = null, _arg2 = null, _arg3 = null, _arg4 = null) -> void:
+	_update_staff_badge()
+
+func _update_staff_badge() -> void:
+	if staff_badge_label == null:
+		return
+	var count: int = 0
+	var avg_morale: float = 1.0
+	if GameState != null:
+		if GameState.has_method("get_hired_workers"):
+			count = GameState.get_hired_workers().size()
+		elif "hired_workers" in GameState:
+			count = GameState.hired_workers.size()
+		if GameState.has_method("get_staff_average_morale"):
+			avg_morale = GameState.get_staff_average_morale()
+		elif GameState.has_method("get_average_worker_morale"):
+			avg_morale = GameState.get_average_worker_morale()
+	staff_badge_label.text = "👥 %d (%d%%)" % [count, int(round(avg_morale * 100.0))]
 
 func _on_syndicate_state_changed(_arg1 = null, _arg2 = null, _arg3 = null, _arg4 = null) -> void:
 	_update_syndicate_badge()
@@ -592,6 +646,21 @@ func _bind_action_bar_buttons() -> void:
 				if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 					open_syndicate_modal()
 			)
+	if staff_button != null:
+		staff_button.pressed.connect(func():
+			close_nav_drawer()
+			open_staff_modal()
+		)
+	if staff_badge != null:
+		if staff_badge is Button:
+			staff_badge.pressed.connect(func():
+				open_staff_modal()
+			)
+		else:
+			staff_badge.gui_input.connect(func(event: InputEvent):
+				if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+					open_staff_modal()
+			)
 
 func _on_campus_button_pressed() -> void:
 	var main_3d = get_tree().root.find_child("Main3D", true, false)
@@ -616,6 +685,12 @@ func open_daily_board_modal() -> Control:
 
 func open_syndicate_modal() -> Control:
 	return open_modal(SYNDICATE_MODAL_SCENE)
+
+func open_staff_modal() -> Control:
+	return open_modal(STAFF_MODAL_SCENE)
+
+func open_staff() -> Control:
+	return open_staff_modal()
 
 func open_modal(modal_scene: PackedScene) -> Control:
 	close_nav_drawer()

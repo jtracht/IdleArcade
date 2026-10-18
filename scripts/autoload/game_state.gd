@@ -63,6 +63,27 @@ signal syndicate_contributed(resource_type: String, amount: float, new_fund_tota
 signal syndicate_tier_upgraded(new_tier: int, bonuses: Dictionary)
 signal syndicate_season_updated(season_week: int, seasonal_score: int)
 
+# Phase 14 Staff & Autonomous Worker Simulation Signals
+signal staff_worker_hired(worker_data: Dictionary)
+signal staff_worker_fired(worker_id: String)
+signal staff_worker_state_changed(worker_id: String, new_state: String)
+signal staff_worker_morale_updated(worker_id: String, new_morale: float, new_fatigue: float)
+signal staff_desk_upgraded(desk_index: int, new_level: int)
+signal staff_coffee_break_started(duration: float)
+signal staff_coffee_break_ended()
+signal staff_morale_updated(average_morale: float)
+signal staff_epiphany_triggered(worker_id: String, reward_energy: float)
+
+# Compatible Aliases for Phase 14 Staff & Worker Signals
+signal worker_hired(worker_data: Dictionary)
+signal worker_fired(worker_id: String)
+signal worker_state_changed(worker_id: String, new_state: String)
+signal desk_upgraded(desk_index: int, new_level: int, cost: float)
+signal team_coffee_break_started(duration: float, speed_multiplier: float)
+signal team_coffee_break_ended()
+signal epiphany_collected(worker_id: String, bonus_energy: float)
+signal staff_bonus_updated(staff_multiplier: float, active_workers: int, avg_morale: float)
+
 # --- State Variables ---
 var energy: float = 0.0
 var total_energy_earned: float = 0.0
@@ -146,6 +167,17 @@ var syndicate_seasonal_score: int = 0
 var syndicate_season_week: int = 0
 var syndicate_joined_timestamp: int = 0
 var syndicate_unlocked_badges: Array[String] = []
+
+# Phase 14 Staff & Autonomous Chibi-Worker Simulation State
+var hired_workers: Array = []
+var desk_levels: Array = [1, 1, 1, 1, 1]
+var staff_hyper_focus_active: bool = false
+var staff_hyper_focus_timer: float = 0.0
+var staff_hyper_focus_remaining: float = 0.0
+var staff_hyper_focus_multiplier: float = 1.50
+var staff_coffee_break_active: bool = false
+var staff_coffee_break_timer: float = 0.0
+var staff_coffee_break_remaining: float = 0.0
 
 var base_click_power: float = 1.0
 var base_passive_rps: float = 0.0
@@ -495,6 +527,83 @@ const SYNDICATE_TIER_CONFIG: Dictionary = {
 	}
 }
 
+# Phase 14 Staff Roles & Ergonomics Configuration
+const MAX_WORKERS: int = 5
+const MAX_DESK_LEVEL: int = 3
+const BASE_WORKER_FATIGUE_RATE_PER_MINUTE: float = 0.02
+const BASE_WORKER_FATIGUE_RATE_PER_SECOND: float = 0.02 / 60.0
+const BASE_WORKER_MORALE_DECAY_RATE_PER_SECOND: float = 0.02 / 60.0
+
+const STAFF_ROLE_DEFINITIONS: Dictionary = {
+	"Frontend Dev": {
+		"role": "Frontend Dev",
+		"title": "Frontend Developer",
+		"default_name": "Devin",
+		"specialty": "UI responsiveness & click synergy",
+		"hire_cost": 500.0,
+		"desk_index": 0
+	},
+	"Backend Dev": {
+		"role": "Backend Dev",
+		"title": "Backend Architect",
+		"default_name": "Bjarne",
+		"specialty": "Server stability & throughput",
+		"hire_cost": 1500.0,
+		"desk_index": 1
+	},
+	"UI/UX Designer": {
+		"role": "UI/UX Designer",
+		"title": "UI/UX Specialist",
+		"default_name": "Sora",
+		"specialty": "Touch ergonomics & flow",
+		"hire_cost": 3500.0,
+		"desk_index": 2
+	},
+	"Growth Hacker": {
+		"role": "Growth Hacker",
+		"title": "Growth Hacker",
+		"default_name": "Ada",
+		"specialty": "Viral adoption & marketing",
+		"hire_cost": 8000.0,
+		"desk_index": 3
+	},
+	"QA Engineer": {
+		"role": "QA Engineer",
+		"title": "QA Lead",
+		"default_name": "Quinn",
+		"specialty": "Bug hunting & zero regressions",
+		"hire_cost": 15000.0,
+		"desk_index": 4
+	}
+}
+
+const DESK_CONFIG: Dictionary = {
+	1: {
+		"level": 1,
+		"name": "Basic Wooden Desk",
+		"cost": 0.0,
+		"upgrade_cost": 0.0,
+		"fatigue_reduction_pct": 0.0,
+		"fatigue_multiplier": 1.00
+	},
+	2: {
+		"level": 2,
+		"name": "Dual-Monitor Tech Desk",
+		"cost": 5000.0,
+		"upgrade_cost": 5000.0,
+		"fatigue_reduction_pct": 0.25,
+		"fatigue_multiplier": 0.75
+	},
+	3: {
+		"level": 3,
+		"name": "Cyber Standing Desk mit RGB",
+		"cost": 25000.0,
+		"upgrade_cost": 25000.0,
+		"fatigue_reduction_pct": 0.60,
+		"fatigue_multiplier": 0.40
+	}
+}
+
 func _init() -> void:
 	reset_state()
 
@@ -592,6 +701,17 @@ func reset_state() -> void:
 	syndicate_joined_timestamp = 0
 	syndicate_unlocked_badges.clear()
 
+	# Phase 14 Staff & Workplace Simulation Defaults
+	hired_workers.clear()
+	desk_levels = [1, 1, 1, 1, 1]
+	staff_hyper_focus_active = false
+	staff_hyper_focus_timer = 0.0
+	staff_hyper_focus_remaining = 0.0
+	staff_hyper_focus_multiplier = 1.50
+	staff_coffee_break_active = false
+	staff_coffee_break_timer = 0.0
+	staff_coffee_break_remaining = 0.0
+
 func _process(delta: float) -> void:
 	var safe_delta: float = maxf(0.0, delta)
 	var clamped_delta: float = minf(0.1, safe_delta)
@@ -655,6 +775,31 @@ func _process(delta: float) -> void:
 			unicorn_espresso_buff_remaining = 0.0
 			unicorn_espresso_buff_active = false
 			unicorn_espresso_buff_ended.emit()
+
+	# Phase 14 Staff Fatigue & Morale Update
+	update_staff_simulation(clamped_delta)
+
+	# Phase 14 Staff Coffee Break / Hyper-Focus Buff Duration Decay
+	if staff_hyper_focus_timer > 0.0 or staff_hyper_focus_active or staff_coffee_break_timer > 0.0 or staff_coffee_break_active:
+		staff_hyper_focus_timer -= safe_delta
+		staff_hyper_focus_remaining = maxf(0.0, staff_hyper_focus_timer)
+		staff_coffee_break_timer = staff_hyper_focus_timer
+		staff_coffee_break_remaining = staff_hyper_focus_remaining
+		if staff_hyper_focus_timer <= 0.0:
+			staff_hyper_focus_timer = 0.0
+			staff_hyper_focus_remaining = 0.0
+			staff_hyper_focus_active = false
+			staff_coffee_break_timer = 0.0
+			staff_coffee_break_remaining = 0.0
+			staff_coffee_break_active = false
+			for w in hired_workers:
+				if str(w.get("current_state", "")) == "break":
+					w["current_state"] = "working"
+					staff_worker_state_changed.emit(str(w.get("id", "")), "working")
+					worker_state_changed.emit(str(w.get("id", "")), "working")
+			rps_changed.emit(get_effective_passive_rps())
+			staff_coffee_break_ended.emit()
+			team_coffee_break_ended.emit()
 
 # --- Interface Contract Methods ---
 
@@ -788,11 +933,12 @@ func get_bonus_multiplier() -> float:
 func get_campus_item_multiplier() -> float:
 	return (1.0 + (float(collectibles_collected) * 0.10)) if is_tech_researched("tech_neural_cloud") else (1.0 + (float(collectibles_collected) * 0.05))
 
-## Returns passive RPS boosted by bonus users multiplier, campus item multiplier, tech research, active server overclock buff, active campaign buff, syndicate dividend, and live event production multiplier.
+## Returns passive RPS boosted by bonus users multiplier, campus item multiplier, tech research, active server overclock buff, active campaign buff, syndicate dividend, live event production multiplier, and staff morale bonus.
 func get_effective_passive_rps() -> float:
 	var camp_rps_mult: float = campaign_rps_buff_multiplier if campaign_rps_buff_timer > 0.0 else 1.0
 	var live_event_mult: float = get_live_event_production_multiplier()
-	return base_passive_rps * get_bonus_multiplier() * get_campus_item_multiplier() * (1.25 if is_tech_researched("tech_server_overclock") else 1.0) * (server_overclock_buff_multiplier if (server_overclock_buff_timer > 0.0 or server_overclock_buff_active) else 1.0) * camp_rps_mult * get_angel_share_multiplier() * get_syndicate_dividend_multiplier() * live_event_mult
+	var staff_mult: float = get_staff_rps_multiplier()
+	return base_passive_rps * get_bonus_multiplier() * get_campus_item_multiplier() * (1.25 if is_tech_researched("tech_server_overclock") else 1.0) * (server_overclock_buff_multiplier if (server_overclock_buff_timer > 0.0 or server_overclock_buff_active) else 1.0) * camp_rps_mult * get_angel_share_multiplier() * get_syndicate_dividend_multiplier() * live_event_mult * staff_mult
 
 ## Returns active LiveEventManager production multiplier (default 1.0).
 func get_live_event_production_multiplier() -> float:
@@ -1115,6 +1261,22 @@ func save_to_disk() -> void:
 		"syndicate_tier": syndicate_tier,
 		"syndicate_fund_energy": syndicate_fund_energy,
 		"syndicate_fund_angel_shares": syndicate_fund_angel_shares,
+		"staff": {
+			"workers": hired_workers.duplicate(true),
+			"desk_levels": desk_levels.duplicate(),
+			"coffee_break_active": staff_coffee_break_active or staff_hyper_focus_active,
+			"coffee_break_timer": maxf(staff_coffee_break_timer, staff_hyper_focus_timer),
+			"coffee_break_remaining": maxf(staff_coffee_break_remaining, staff_hyper_focus_remaining),
+			"hyper_focus_active": staff_hyper_focus_active or staff_coffee_break_active,
+			"hyper_focus_timer": maxf(staff_hyper_focus_timer, staff_coffee_break_timer),
+			"hyper_focus_remaining": maxf(staff_hyper_focus_remaining, staff_coffee_break_remaining),
+			"hyper_focus_multiplier": staff_hyper_focus_multiplier
+		},
+		"hired_workers": hired_workers.duplicate(true),
+		"desk_levels": desk_levels.duplicate(),
+		"staff_hyper_focus_timer": staff_hyper_focus_timer,
+		"staff_hyper_focus_remaining": staff_hyper_focus_remaining,
+		"staff_hyper_focus_active": staff_hyper_focus_active,
 		"upgrades": {}
 	}
 	
@@ -1373,6 +1535,91 @@ func load_from_disk() -> bool:
 		var raw_syn_energy: float = float(data.get("syndicate_fund_energy", 0.0))
 		syndicate_fund_energy = 0.0 if (is_nan(raw_syn_energy) or is_inf(raw_syn_energy)) else maxf(0.0, raw_syn_energy)
 		syndicate_fund_angel_shares = maxi(0, int(data.get("syndicate_fund_angel_shares", 0)))
+
+	# Phase 14 Staff & Autonomous Chibi-Worker Deserialization
+	hired_workers.clear()
+	desk_levels = [1, 1, 1, 1, 1]
+	staff_hyper_focus_active = false
+	staff_hyper_focus_timer = 0.0
+	staff_hyper_focus_remaining = 0.0
+	staff_hyper_focus_multiplier = 1.50
+	staff_coffee_break_active = false
+	staff_coffee_break_timer = 0.0
+	staff_coffee_break_remaining = 0.0
+
+	var staff_data = data.get("staff", {})
+	var raw_workers = null
+	var raw_desks = null
+	var raw_hf_timer = null
+
+	if staff_data is Dictionary and not staff_data.is_empty():
+		raw_workers = staff_data.get("workers", null)
+		raw_desks = staff_data.get("desk_levels", null)
+		raw_hf_timer = staff_data.get("hyper_focus_timer", staff_data.get("coffee_break_timer", null))
+		staff_hyper_focus_active = bool(staff_data.get("hyper_focus_active", staff_data.get("coffee_break_active", false)))
+		staff_coffee_break_active = staff_hyper_focus_active
+		var raw_hf_mult: float = float(staff_data.get("hyper_focus_multiplier", 1.50))
+		staff_hyper_focus_multiplier = 1.50 if (is_nan(raw_hf_mult) or is_inf(raw_hf_mult)) else maxf(1.0, raw_hf_mult)
+
+	# Flat backward-compatibility fallback
+	if raw_workers == null:
+		raw_workers = data.get("hired_workers", [])
+	if raw_desks == null:
+		raw_desks = data.get("desk_levels", [1, 1, 1, 1, 1])
+	if raw_hf_timer == null:
+		raw_hf_timer = data.get("staff_hyper_focus_timer", 0.0)
+
+	if raw_workers is Array:
+		for w in raw_workers:
+			if w is Dictionary:
+				var r_str: String = str(w.get("role", "")).strip_edges()
+				var canon: String = _normalize_role(r_str)
+				if canon.is_empty() and STAFF_ROLE_DEFINITIONS.has(r_str):
+					canon = r_str
+				if not canon.is_empty():
+					var role_def: Dictionary = STAFF_ROLE_DEFINITIONS[canon]
+					var w_id: String = str(w.get("id", "worker_" + canon.to_lower().replace(" ", "_").replace("/", "_")))
+					var w_name: String = str(w.get("name", role_def.get("default_name", canon)))
+					
+					var raw_m: float = float(w.get("morale", 1.0))
+					var clean_m: float = 1.0 if (is_nan(raw_m) or is_inf(raw_m)) else clampf(raw_m, 0.0, 1.0)
+					
+					var raw_f: float = float(w.get("fatigue", 0.0))
+					var clean_f: float = 0.0 if (is_nan(raw_f) or is_inf(raw_f)) else clampf(raw_f, 0.0, 1.0)
+					
+					var raw_eff: float = float(w.get("efficiency", 1.0))
+					var clean_eff: float = 1.0 if (is_nan(raw_eff) or is_inf(raw_eff)) else maxf(0.1, raw_eff)
+					
+					var clean_desk: int = clampi(int(w.get("desk_assigned", 0)), 0, 4)
+					
+					var state_str: String = str(w.get("current_state", "working"))
+					if state_str not in ["working", "break", "fatigued", "celebrating"]:
+						state_str = "fatigued" if clean_f >= 1.0 else "working"
+						
+					hired_workers.append({
+						"id": w_id,
+						"name": w_name,
+						"role": canon,
+						"morale": clean_m,
+						"fatigue": clean_f,
+						"efficiency": clean_eff,
+						"desk_assigned": clean_desk,
+						"current_state": state_str
+					})
+
+	if raw_desks is Array and raw_desks.size() > 0:
+		for i in range(mini(5, raw_desks.size())):
+			var raw_lvl = int(raw_desks[i])
+			desk_levels[i] = clampi(raw_lvl, 1, 3)
+
+	var hf_t: float = float(raw_hf_timer)
+	if not is_nan(hf_t) and not is_inf(hf_t):
+		staff_hyper_focus_timer = maxf(0.0, hf_t)
+		staff_hyper_focus_remaining = staff_hyper_focus_timer
+		staff_coffee_break_timer = staff_hyper_focus_timer
+		staff_coffee_break_remaining = staff_hyper_focus_timer
+		staff_hyper_focus_active = staff_hyper_focus_timer > 0.0
+		staff_coffee_break_active = staff_hyper_focus_active
 			
 	energy_changed.emit(energy, offline_gain)
 	rps_changed.emit(get_effective_passive_rps())
@@ -1693,6 +1940,17 @@ func trigger_ipo() -> Dictionary:
 	unicorn_espresso_buff_active = false
 	unicorn_espresso_buff_timer = 0.0
 	unicorn_espresso_buff_remaining = 0.0
+	
+	# Phase 14 Staff Temporary Buff Reset on IPO
+	staff_hyper_focus_active = false
+	staff_hyper_focus_timer = 0.0
+	staff_hyper_focus_remaining = 0.0
+	staff_coffee_break_active = false
+	staff_coffee_break_timer = 0.0
+	staff_coffee_break_remaining = 0.0
+	for w in hired_workers:
+		if str(w.get("current_state", "")) == "break":
+			w["current_state"] = "working"
 	
 	# 6. Recalculate stats from reset levels
 	recalculate_stats()
@@ -2126,6 +2384,331 @@ func get_seasonal_leaderboard_score() -> int:
 ## Returns dictionary of all tier configurations.
 func get_syndicate_tier_definitions() -> Dictionary:
 	return SYNDICATE_TIER_CONFIG.duplicate(true)
+
+# ==============================================================================
+# Phase 14 Staff Management & Morale Economy Methods ("Campus Office & Mini-Workers")
+# ==============================================================================
+
+## Normalizes role string to canonical staff role definition key.
+func _normalize_role(role_name: String) -> String:
+	var clean: String = role_name.strip_edges()
+	for def_role in STAFF_ROLE_DEFINITIONS:
+		if clean.nocasecmp_to(def_role) == 0:
+			return def_role
+		var simplified: String = def_role.to_lower().replace(" ", "_").replace("/", "_")
+		var input_simplified: String = clean.to_lower().replace(" ", "_").replace("/", "_")
+		if simplified == input_simplified:
+			return def_role
+	return ""
+
+## Recruits a specialist worker by role name. Deducts hire_cost, assigns first free desk, and emits signals.
+func hire_worker(role: String) -> bool:
+	var canonical_role: String = _normalize_role(role)
+	if canonical_role.is_empty():
+		printerr("[GameState] Cannot hire worker: unknown role '%s'" % role)
+		return false
+	if hired_workers.size() >= MAX_WORKERS:
+		printerr("[GameState] Cannot hire worker: max capacity reached (%d)" % MAX_WORKERS)
+		return false
+	for w in hired_workers:
+		if str(w.get("role", "")) == canonical_role:
+			printerr("[GameState] Cannot hire worker: role '%s' already hired" % canonical_role)
+			return false
+			
+	var role_def: Dictionary = STAFF_ROLE_DEFINITIONS[canonical_role]
+	var cost: float = float(role_def.get("hire_cost", 500.0))
+	if energy < cost:
+		printerr("[GameState] Cannot hire worker: insufficient energy (cost: %f, energy: %f)" % [cost, energy])
+		return false
+		
+	# Find first unoccupied desk (0..4)
+	var occupied_desks: Array = []
+	for w in hired_workers:
+		occupied_desks.append(int(w.get("desk_assigned", 0)))
+	var chosen_desk: int = -1
+	for d in range(MAX_WORKERS):
+		if not occupied_desks.has(d):
+			chosen_desk = d
+			break
+	if chosen_desk == -1:
+		chosen_desk = 0
+		
+	energy -= cost
+	energy_changed.emit(energy, -cost)
+	
+	var worker_id: String = "worker_" + canonical_role.to_lower().replace(" ", "_").replace("/", "_")
+	var new_worker: Dictionary = {
+		"id": worker_id,
+		"name": str(role_def.get("default_name", canonical_role)),
+		"role": canonical_role,
+		"morale": 1.0,
+		"fatigue": 0.0,
+		"efficiency": 1.0,
+		"desk_assigned": chosen_desk,
+		"current_state": "working"
+	}
+	
+	hired_workers.append(new_worker)
+	staff_worker_hired.emit(new_worker.duplicate(true))
+	worker_hired.emit(new_worker.duplicate(true))
+	staff_worker_state_changed.emit(worker_id, "working")
+	
+	staff_morale_updated.emit(get_staff_average_morale())
+	rps_changed.emit(get_effective_passive_rps())
+	staff_bonus_updated.emit(get_staff_rps_multiplier(), get_active_workers_count(), get_staff_average_morale())
+	save_to_disk()
+	return true
+
+## Dismisses a worker by worker_id or role name. Frees desk, emits signals, and recalculates RPS.
+func fire_worker(worker_id: String) -> bool:
+	if worker_id.is_empty():
+		return false
+	var target_index: int = -1
+	var found_id: String = ""
+	var norm: String = _normalize_role(worker_id)
+	for i in range(hired_workers.size()):
+		var w = hired_workers[i]
+		if str(w.get("id", "")) == worker_id or str(w.get("role", "")) == worker_id or (!norm.is_empty() and str(w.get("role", "")) == norm):
+			target_index = i
+			found_id = str(w.get("id", worker_id))
+			break
+	if target_index == -1:
+		return false
+		
+	hired_workers.remove_at(target_index)
+	staff_worker_fired.emit(found_id)
+	worker_fired.emit(found_id)
+	
+	staff_morale_updated.emit(get_staff_average_morale())
+	rps_changed.emit(get_effective_passive_rps())
+	staff_bonus_updated.emit(get_staff_rps_multiplier(), get_active_workers_count(), get_staff_average_morale())
+	save_to_disk()
+	return true
+
+## Returns duplicate array of all active hired worker dictionaries.
+func get_hired_workers() -> Array:
+	return hired_workers.duplicate(true)
+
+## Returns worker dictionary by worker_id or role, or empty dictionary if not found.
+func get_worker(worker_id: String) -> Dictionary:
+	var norm: String = _normalize_role(worker_id)
+	for w in hired_workers:
+		if str(w.get("id", "")) == worker_id or str(w.get("role", "")) == worker_id or (!norm.is_empty() and str(w.get("role", "")) == norm):
+			return w.duplicate(true)
+	return {}
+
+## Returns count of hired workers currently active (not fatigued).
+func get_active_workers_count() -> int:
+	var count: int = 0
+	for w in hired_workers:
+		if str(w.get("current_state", "working")) != "fatigued":
+			count += 1
+	return count
+
+## Returns mean average morale across all hired workers (1.0 if empty).
+func get_staff_average_morale() -> float:
+	if hired_workers.is_empty():
+		return 1.0
+	var total_morale: float = 0.0
+	for w in hired_workers:
+		total_morale += clampf(float(w.get("morale", 1.0)), 0.0, 1.0)
+	return total_morale / float(hired_workers.size())
+
+## Alias for get_staff_average_morale.
+func get_average_worker_morale() -> float:
+	return get_staff_average_morale()
+
+## Upgrades desk at desk_index (0..4) to next level (max Level 3). Deducts energy and emits signals.
+func upgrade_desk(desk_index: int) -> bool:
+	if desk_index < 0 or desk_index >= MAX_WORKERS or desk_index >= desk_levels.size():
+		return false
+	var current_lvl: int = desk_levels[desk_index]
+	if current_lvl >= MAX_DESK_LEVEL:
+		return false
+	var next_lvl: int = current_lvl + 1
+	var cost: float = float(DESK_CONFIG.get(next_lvl, {}).get("cost", 5000.0))
+	if energy < cost:
+		return false
+		
+	energy -= cost
+	energy_changed.emit(energy, -cost)
+	desk_levels[desk_index] = next_lvl
+	staff_desk_upgraded.emit(desk_index, next_lvl)
+	desk_upgraded.emit(desk_index, next_lvl, cost)
+	save_to_disk()
+	return true
+
+## Returns level of desk at desk_index (1..3).
+func get_desk_level(desk_index: int) -> int:
+	if desk_index >= 0 and desk_index < desk_levels.size():
+		return desk_levels[desk_index]
+	return 1
+
+## Returns duplicate array of all desk levels [L0, L1, L2, L3, L4].
+func get_desk_levels() -> Array:
+	return desk_levels.duplicate()
+
+## Returns the energy cost to upgrade desk_index to its next tier (0.0 if maxed/invalid).
+func get_desk_upgrade_cost(desk_index: int) -> float:
+	if desk_index < 0 or desk_index >= desk_levels.size():
+		return 0.0
+	var current_lvl: int = desk_levels[desk_index]
+	if current_lvl >= MAX_DESK_LEVEL:
+		return 0.0
+	var next_lvl: int = current_lvl + 1
+	return float(DESK_CONFIG.get(next_lvl, {}).get("cost", 0.0))
+
+## Returns fatigue accumulation rate multiplier for a given desk level (1.0 for L1, 0.75 for L2, 0.40 for L3).
+func get_desk_fatigue_multiplier(desk_level: int) -> float:
+	if desk_level == 2:
+		return 0.75
+	elif desk_level >= 3:
+		return 0.40
+	return 1.00
+
+## Grants a team coffee break: resets fatigue to 0.0, restores morale to 1.0, engages 60s Hyper-Focus (+50% speed).
+func give_team_coffee_break() -> bool:
+	for w in hired_workers:
+		w["fatigue"] = 0.0
+		w["morale"] = 1.0
+		w["current_state"] = "working"
+		staff_worker_state_changed.emit(str(w.get("id", "")), "working")
+		worker_state_changed.emit(str(w.get("id", "")), "working")
+		staff_worker_morale_updated.emit(str(w.get("id", "")), 1.0, 0.0)
+		
+	staff_hyper_focus_active = true
+	staff_hyper_focus_timer = 60.0
+	staff_hyper_focus_remaining = 60.0
+	staff_hyper_focus_multiplier = 1.50
+	staff_coffee_break_active = true
+	staff_coffee_break_timer = 60.0
+	staff_coffee_break_remaining = 60.0
+	
+	staff_coffee_break_started.emit(60.0)
+	team_coffee_break_started.emit(60.0, 1.50)
+	staff_morale_updated.emit(get_staff_average_morale())
+	rps_changed.emit(get_effective_passive_rps())
+	staff_bonus_updated.emit(get_staff_rps_multiplier(), get_active_workers_count(), get_staff_average_morale())
+	save_to_disk()
+	return true
+
+## Returns true if team coffee break hyper-focus is currently active.
+func is_staff_hyper_focus_active() -> bool:
+	return (staff_hyper_focus_active or staff_coffee_break_active) and (staff_hyper_focus_timer > 0.0 or staff_coffee_break_timer > 0.0)
+
+## Returns remaining seconds of active hyper-focus.
+func get_staff_hyper_focus_time_remaining() -> float:
+	return maxf(0.0, maxf(staff_hyper_focus_timer, staff_coffee_break_timer))
+
+## Returns current hyper-focus speed multiplier (1.50 when active, 1.0 otherwise).
+func get_staff_hyper_focus_multiplier() -> float:
+	return staff_hyper_focus_multiplier if is_staff_hyper_focus_active() else 1.0
+
+## Calculates staff bonus multiplier: 1.0 + (active_workers * 0.05) * average_morale (strictly 1.0 if no active workers).
+func get_staff_rps_multiplier() -> float:
+	if hired_workers.is_empty():
+		return 1.0
+	var active_count: int = get_active_workers_count()
+	if active_count <= 0:
+		return 1.0
+	var avg_morale: float = get_staff_average_morale()
+	return 1.0 + (float(active_count) * 0.05) * avg_morale
+
+## Triggers an epiphany moment reward for worker, awarding instant energy lump-sum.
+func trigger_worker_epiphany(worker_id: String) -> float:
+	var target_id: String = worker_id
+	var found: bool = false
+	for w in hired_workers:
+		if str(w.get("id", "")) == worker_id or str(w.get("role", "")) == worker_id:
+			target_id = str(w.get("id", worker_id))
+			found = true
+			break
+	if not found:
+		if hired_workers.is_empty():
+			return 0.0
+		target_id = str(hired_workers[0].get("id", worker_id))
+		
+	var reward: float = maxf(100.0, get_effective_passive_rps() * 15.0)
+	earn_energy(reward)
+	staff_epiphany_triggered.emit(target_id, reward)
+	epiphany_collected.emit(target_id, reward)
+	save_to_disk()
+	return reward
+
+## Alias for trigger_worker_epiphany.
+func trigger_epiphany(worker_id: String) -> float:
+	return trigger_worker_epiphany(worker_id)
+
+## Advances staff fatigue, morale, and states by simulated delta seconds.
+func update_staff_simulation(delta: float) -> void:
+	if delta <= 0.0 or hired_workers.is_empty():
+		return
+		
+	var any_state_change: bool = false
+	var any_morale_change: bool = false
+	var total_morale: float = 0.0
+	
+	for w in hired_workers:
+		var current_state: String = str(w.get("current_state", "working"))
+		var desk_idx: int = clampi(int(w.get("desk_assigned", 0)), 0, MAX_WORKERS - 1)
+		var desk_lvl: int = get_desk_level(desk_idx)
+		var fatigue_mult: float = get_desk_fatigue_multiplier(desk_lvl)
+		var current_fatigue: float = clampf(float(w.get("fatigue", 0.0)), 0.0, 1.0)
+		var current_morale: float = clampf(float(w.get("morale", 1.0)), 0.0, 1.0)
+		
+		if current_state == "working":
+			# 1. Fatigue accumulation (+0.02 / min * desk multiplier)
+			var f_delta: float = BASE_WORKER_FATIGUE_RATE_PER_SECOND * fatigue_mult * delta
+			var new_fatigue: float = clampf(current_fatigue + f_delta, 0.0, 1.0)
+			if new_fatigue != current_fatigue:
+				current_fatigue = new_fatigue
+				w["fatigue"] = current_fatigue
+				
+			# 2. Morale decay when fatigue >= 0.8
+			if current_fatigue >= 0.8:
+				var m_delta: float = BASE_WORKER_MORALE_DECAY_RATE_PER_SECOND * delta
+				var new_morale: float = clampf(current_morale - m_delta, 0.0, 1.0)
+				if new_morale != current_morale:
+					current_morale = new_morale
+					w["morale"] = current_morale
+					any_morale_change = true
+					staff_worker_morale_updated.emit(str(w.get("id", "")), current_morale, current_fatigue)
+					
+			# 3. Transition to fatigued when fatigue reaches 1.0
+			if current_fatigue >= 1.0:
+				w["current_state"] = "fatigued"
+				any_state_change = true
+				staff_worker_state_changed.emit(str(w.get("id", "")), "fatigued")
+				worker_state_changed.emit(str(w.get("id", "")), "fatigued")
+		elif current_state == "fatigued":
+			# Continuous morale decay while exhausted
+			var m_delta: float = BASE_WORKER_MORALE_DECAY_RATE_PER_SECOND * delta
+			var new_morale: float = clampf(current_morale - m_delta, 0.0, 1.0)
+			if new_morale != current_morale:
+				current_morale = new_morale
+				w["morale"] = current_morale
+				any_morale_change = true
+				staff_worker_morale_updated.emit(str(w.get("id", "")), current_morale, current_fatigue)
+				
+		total_morale += current_morale
+		
+	if any_morale_change:
+		var avg_morale: float = total_morale / float(hired_workers.size())
+		staff_morale_updated.emit(avg_morale)
+		rps_changed.emit(get_effective_passive_rps())
+		staff_bonus_updated.emit(get_staff_rps_multiplier(), get_active_workers_count(), avg_morale)
+	elif any_state_change:
+		rps_changed.emit(get_effective_passive_rps())
+		staff_bonus_updated.emit(get_staff_rps_multiplier(), get_active_workers_count(), get_staff_average_morale())
+
+## Returns duplicate of staff role definitions dictionary.
+func get_staff_role_definitions() -> Dictionary:
+	return STAFF_ROLE_DEFINITIONS.duplicate(true)
+
+## Returns duplicate of desk configuration dictionary.
+func get_desk_definitions() -> Dictionary:
+	return DESK_CONFIG.duplicate(true)
+
 
 
 

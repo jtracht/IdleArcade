@@ -1,6 +1,22 @@
-[gd_scene load_steps=13 format=3 uid="uid://d3y8w1p6k4m20"]
+[gd_scene load_steps=14 format=3 uid="uid://d3y8w1p6k4m20"]
 
 [ext_resource type="Script" path="res://scripts/hud.gd" id="1_hud"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_staff_badge"]
+bg_color = Color(0.18, 0.12, 0.04, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.95, 1, 0.85)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 10.0
+content_margin_top = 4.0
+content_margin_right = 10.0
+content_margin_bottom = 4.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_syndicate_badge"]
 bg_color = Color(0.04, 0.16, 0.11, 0.9)
@@ -215,6 +231,22 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.15, 0.95, 0.65, 1)
 theme_override_font_sizes/font_size = 14
 text = "🏢 [SOLO]"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StaffBadge" type="PanelContainer" parent="TopContainer/TopVBox/HeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(90, 56)
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_staff_badge")
+
+[node name="StaffBadgeLabel" type="Label" parent="TopContainer/TopVBox/HeaderHBox/StaffBadge"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "👥 0 (100%)"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -604,6 +636,15 @@ focus_mode = 0
 mouse_filter = 0
 theme_override_font_sizes/font_size = 18
 text = "🏢 Incubator Syndicate"
+
+[node name="StaffButton" type="Button" parent="NavDrawer/DrawerPanel/DrawerVBox/NavScroll/NavItemsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 18
+text = "👥 Staff Management"
 
 
 [node name="ModalContainer" type="Control" parent="."]

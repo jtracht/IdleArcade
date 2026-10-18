@@ -1,0 +1,207 @@
+[gd_scene load_steps=20 format=3 uid="uid://dm4chibiwork01"]
+
+[ext_resource type="Script" path="res://scripts/chibi_worker_3d.gd" id="1_chibi"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_root"]
+radius = 0.35
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_click"]
+radius = 0.55
+
+[sub_resource type="StandardMaterial3D" id="Mat_Shadow"]
+transparency = 1
+albedo_color = Color(0, 0, 0, 0.4)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_Shadow"]
+material = SubResource("Mat_Shadow")
+top_radius = 0.28
+bottom_radius = 0.28
+height = 0.01
+radial_segments = 8
+rings = 0
+
+[sub_resource type="StandardMaterial3D" id="Mat_Torso"]
+albedo_color = Color(0.1, 0.75, 1, 1)
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_Torso"]
+material = SubResource("Mat_Torso")
+size = Vector3(0.32, 0.34, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Skin"]
+albedo_color = Color(0.96, 0.8, 0.68, 1)
+roughness = 0.5
+
+[sub_resource type="SphereMesh" id="SphereMesh_Head"]
+material = SubResource("Mat_Skin")
+radius = 0.22
+height = 0.44
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="Mat_Visor"]
+albedo_color = Color(0.05, 0.08, 0.12, 1)
+emission_enabled = true
+emission = Color(0.1, 0.75, 1, 1)
+emission_energy_multiplier = 1.2
+
+[sub_resource type="BoxMesh" id="BoxMesh_Visor"]
+material = SubResource("Mat_Visor")
+size = Vector3(0.26, 0.08, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Limb"]
+albedo_color = Color(0.15, 0.18, 0.24, 1)
+roughness = 0.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_Arm"]
+material = SubResource("Mat_Limb")
+size = Vector3(0.08, 0.22, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_Leg"]
+material = SubResource("Mat_Limb")
+size = Vector3(0.09, 0.24, 0.09)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Zzz"]
+transparency = 1
+albedo_color = Color(0.8, 0.9, 1, 0.8)
+emission_enabled = true
+emission = Color(0.6, 0.8, 1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_Zzz"]
+material = SubResource("Mat_Zzz")
+size = Vector3(0.05, 0.05, 0.01)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Steam"]
+transparency = 1
+albedo_color = Color(0.95, 0.92, 0.88, 0.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_Steam"]
+material = SubResource("Mat_Steam")
+size = Vector3(0.04, 0.04, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Sparkle"]
+albedo_color = Color(1, 0.85, 0.2, 1)
+emission_enabled = true
+emission = Color(1, 0.85, 0.2, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_Sparkle"]
+material = SubResource("Mat_Sparkle")
+size = Vector3(0.03, 0.03, 0.03)
+
+[node name="ChibiWorker3D" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("1_chibi")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+shape = SubResource("SphereShape3D_root")
+
+[node name="ClickArea" type="Area3D" parent="."]
+collision_layer = 4
+collision_mask = 1
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ClickArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("SphereShape3D_click")
+
+[node name="MoodIcon3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
+billboard = 1
+text = "💻"
+font_size = 32
+outline_size = 4
+outline_color = Color(0, 0, 0, 0.8)
+
+[node name="EpiphanyLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+visible = false
+light_color = Color(1, 0.85, 0.2, 1)
+light_energy = 1.2
+omni_range = 2.0
+
+[node name="ZzzParticles" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+emitting = false
+amount = 3
+lifetime = 1.8
+mesh = SubResource("BoxMesh_Zzz")
+direction = Vector3(0.1, 0.9, 0)
+spread = 20.0
+gravity = Vector3(0.05, 0.45, 0)
+initial_velocity_min = 0.1
+initial_velocity_max = 0.3
+
+[node name="SteamParticles" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.5, 0.2)
+emitting = false
+amount = 4
+lifetime = 0.8
+mesh = SubResource("BoxMesh_Steam")
+direction = Vector3(0, 1, 0)
+spread = 15.0
+gravity = Vector3(0, 0.3, 0)
+initial_velocity_min = 0.2
+initial_velocity_max = 0.4
+
+[node name="EpiphanyParticles" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
+emitting = false
+amount = 8
+lifetime = 0.6
+mesh = SubResource("BoxMesh_Sparkle")
+direction = Vector3(0, 1, 0)
+spread = 180.0
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 0.3
+initial_velocity_max = 0.6
+
+[node name="ChibiRoot" type="Node3D" parent="."]
+
+[node name="GroundShadow" type="MeshInstance3D" parent="ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+mesh = SubResource("CylinderMesh_Shadow")
+
+[node name="Torso" type="MeshInstance3D" parent="ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+mesh = SubResource("BoxMesh_Torso")
+
+[node name="LeftArmPivot" type="Node3D" parent="ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.45, 0)
+
+[node name="LeftArm" type="MeshInstance3D" parent="ChibiRoot/LeftArmPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0.05)
+mesh = SubResource("BoxMesh_Arm")
+
+[node name="RightArmPivot" type="Node3D" parent="ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.45, 0)
+
+[node name="RightArm" type="MeshInstance3D" parent="ChibiRoot/RightArmPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0.05)
+mesh = SubResource("BoxMesh_Arm")
+
+[node name="LeftLeg" type="MeshInstance3D" parent="ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.12, 0)
+mesh = SubResource("BoxMesh_Leg")
+
+[node name="RightLeg" type="MeshInstance3D" parent="ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.12, 0)
+mesh = SubResource("BoxMesh_Leg")
+
+[node name="Head" type="Node3D" parent="ChibiRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.65, 0)
+
+[node name="HeadMesh" type="MeshInstance3D" parent="ChibiRoot/Head"]
+mesh = SubResource("SphereMesh_Head")
+
+[node name="Visor" type="MeshInstance3D" parent="ChibiRoot/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0.18)
+mesh = SubResource("BoxMesh_Visor")
+
+[node name="FaceLabel3D" type="Label3D" parent="ChibiRoot/Head/Visor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.07)
+text = "•_•"
+font_size = 16
+outline_size = 2
+outline_color = Color(0, 0, 0, 0.8)

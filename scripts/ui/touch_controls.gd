@@ -104,6 +104,7 @@ var _cached_hack_style: StyleBoxFlat = null
 var _cached_brew_style: StyleBoxFlat = null
 var _cached_ipo_bell_style: StyleBoxFlat = null
 var _cached_syndicate_style: StyleBoxFlat = null
+var _cached_staff_style: StyleBoxFlat = null
 
 # ------------------------------------------------------------------------------
 # Lifecycle
@@ -314,6 +315,17 @@ func _setup_styles() -> void:
 	_cached_syndicate_style.shadow_size = 14
 	_cached_syndicate_style.anti_aliasing = true
 
+	# Dynamic Staff Office style (Warm Amber-Gold with Vibrant Neon-Cyan glow)
+	_cached_staff_style = StyleBoxFlat.new()
+	_cached_staff_style.bg_color = Color(0.24, 0.16, 0.04, 0.92)
+	_cached_staff_style.border_color = Color(0.0, 0.95, 1.0, 0.98)
+	_cached_staff_style.set_border_width_all(3)
+	_cached_staff_style.set_corner_radius_all(50)
+	_cached_staff_style.corner_detail = 24
+	_cached_staff_style.shadow_color = Color(1.0, 0.75, 0.1, 0.65)
+	_cached_staff_style.shadow_size = 14
+	_cached_staff_style.anti_aliasing = true
+
 # ------------------------------------------------------------------------------
 # Input Isolation Shield (Tier 2 & 3)
 # ------------------------------------------------------------------------------
@@ -340,7 +352,9 @@ func register_interactable(node: Node3D, label_text: String = "Action [E]") -> v
 		active_interactables.append(node)
 	active_interactable = node
 	if label_text == "Action [E]" or label_text.is_empty():
-		if "Syndicate" in str(node.get("action_label")) or node.is_in_group("syndicate_hqs") or node.has_method("open_syndicate_modal"):
+		if "Staff" in str(node.get("action_label")) or node.is_in_group("staff_offices") or node.has_method("open_staff_modal") or node.has_method("open_staff"):
+			label_text = "Staff [E]"
+		elif "Syndicate" in str(node.get("action_label")) or node.is_in_group("syndicate_hqs") or node.has_method("open_syndicate_modal"):
 			label_text = "Syndicate [E]"
 		elif "Hack" in str(node.get("action_label")) or node.has_method("start_cyber_sync") or node.has_method("can_hack") or node.is_in_group("server_terminals"):
 			label_text = "Hack [E]"
@@ -359,7 +373,9 @@ func register_interactable(node: Node3D, label_text: String = "Action [E]") -> v
 		elif node is Area3D or node.is_in_group("collectibles") or node.has_method("collect"):
 			label_text = "Collect [E]"
 	else:
-		if "Syndicate" in label_text:
+		if "Staff" in label_text:
+			label_text = "Staff [E]"
+		elif "Syndicate" in label_text:
 			label_text = "Syndicate [E]"
 		elif "Overclock" in label_text:
 			label_text = "Overclock [E]"
@@ -387,7 +403,9 @@ func unregister_interactable(node: Node3D) -> void:
 		else:
 			active_interactable = active_interactables.back()
 			var remaining_label = "Action [E]"
-			if "Syndicate" in str(active_interactable.get("action_label")) or active_interactable.is_in_group("syndicate_hqs") or active_interactable.has_method("open_syndicate_modal"):
+			if "Staff" in str(active_interactable.get("action_label")) or active_interactable.is_in_group("staff_offices") or active_interactable.has_method("open_staff_modal") or active_interactable.has_method("open_staff"):
+				remaining_label = "Staff [E]"
+			elif "Syndicate" in str(active_interactable.get("action_label")) or active_interactable.is_in_group("syndicate_hqs") or active_interactable.has_method("open_syndicate_modal"):
 				remaining_label = "Syndicate [E]"
 			elif "Hack" in str(active_interactable.get("action_label")) or active_interactable.has_method("start_cyber_sync") or active_interactable.is_in_group("server_terminals"):
 				remaining_label = "Hack [E]"
@@ -437,7 +455,11 @@ func trigger_action() -> void:
 
 	# Channel 1: Direct Method Invocation
 	if is_instance_valid(target):
-		if target.has_method("ring_bell"):
+		if target.has_method("open_staff_modal"):
+			target.call("open_staff_modal")
+		elif target.has_method("open_staff"):
+			target.call("open_staff")
+		elif target.has_method("ring_bell"):
 			target.call("ring_bell")
 		elif target.has_method("ring_ipo_bell"):
 			target.call("ring_ipo_bell")
@@ -524,7 +546,11 @@ func _update_action_button_visuals(label_text: String = "", is_active: bool = fa
 	# Context determination
 	var target = get_current_interactable()
 	if is_instance_valid(target):
-		if "Syndicate" in text_to_set or target.is_in_group("syndicate_hqs") or target.has_method("open_syndicate_modal") or str(target.get("action_label")) == "Syndicate [E]":
+		if "Staff" in text_to_set or target.is_in_group("staff_offices") or target.has_method("open_staff_modal") or target.has_method("open_staff") or str(target.get("action_label")) == "Staff [E]":
+			text_to_set = "Staff [E]"
+			if _cached_staff_style != null:
+				action_button.add_theme_stylebox_override("normal", _cached_staff_style)
+		elif "Syndicate" in text_to_set or target.is_in_group("syndicate_hqs") or target.has_method("open_syndicate_modal") or str(target.get("action_label")) == "Syndicate [E]":
 			text_to_set = "Syndicate [E]"
 			if _cached_syndicate_style != null:
 				action_button.add_theme_stylebox_override("normal", _cached_syndicate_style)
@@ -596,7 +622,9 @@ func _update_action_button_visuals(label_text: String = "", is_active: bool = fa
 				action_button.add_theme_stylebox_override("normal", _cached_npc_style)
 	else:
 		# Explicit label provided without object reference
-		if "Syndicate" in text_to_set and _cached_syndicate_style != null:
+		if "Staff" in text_to_set and _cached_staff_style != null:
+			action_button.add_theme_stylebox_override("normal", _cached_staff_style)
+		elif "Syndicate" in text_to_set and _cached_syndicate_style != null:
 			action_button.add_theme_stylebox_override("normal", _cached_syndicate_style)
 		elif "IPO" in text_to_set and _cached_ipo_bell_style != null:
 			action_button.add_theme_stylebox_override("normal", _cached_ipo_bell_style)
