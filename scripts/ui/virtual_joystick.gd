@@ -1,4 +1,4 @@
-class_name VirtualJoystick
+class_name ArcadeVirtualJoystick # class_name VirtualJoystick
 extends Control
 
 ## Dynamic Virtual Floating Touch-Joystick for Godot 4.3 Mobile & Isometric 3D navigation.

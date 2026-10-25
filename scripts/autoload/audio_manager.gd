@@ -54,6 +54,15 @@ var _wav_ambient_bgm: AudioStreamWAV = null
 var _wav_confetti: AudioStreamWAV = null
 var _wav_bell: AudioStreamWAV = null
 
+# Phase 16 Milestone 3: Arcade Minigame SFX Streams
+var _wav_victory_jingle: AudioStreamWAV = null
+var _wav_steam_hiss: AudioStreamWAV = null
+var _wav_qte_correct: AudioStreamWAV = null
+var _wav_qte_wrong: AudioStreamWAV = null
+var _wav_hit_perfect: AudioStreamWAV = null
+var _wav_hit_good: AudioStreamWAV = null
+var _wav_hit_miss: AudioStreamWAV = null
+
 # Footstep throttle tracking
 var _last_footstep_msec: int = -10000
 
@@ -354,6 +363,44 @@ func play_sfx_confetti() -> void:
 func play_sfx_bell() -> void:
 	_play_sfx_stream(_wav_bell, "bell")
 
+## 11. Celebratory triumphant victory jingle for minigame completions and pitch triumphs.
+func play_sfx_victory_jingle() -> void:
+	_play_sfx_stream(_wav_victory_jingle, "victory_jingle")
+
+## Compatibility alias for play_sfx_victory_jingle.
+func play_sfx_victory() -> void:
+	play_sfx_victory_jingle()
+
+## 12. Pressurized steam release / manometer hiss for Barista Station.
+func play_sfx_steam_hiss() -> void:
+	_play_sfx_stream(_wav_steam_hiss, "steam_hiss")
+
+## 13. QTE reaction feedback for Pitch Stage buzzword selection.
+func play_sfx_qte_chime(is_correct: bool = true) -> void:
+	if is_correct:
+		_play_sfx_stream(_wav_qte_correct, "qte_correct")
+	else:
+		_play_sfx_stream(_wav_qte_wrong, "qte_wrong")
+
+func play_sfx_qte_correct() -> void:
+	play_sfx_qte_chime(true)
+
+func play_sfx_qte_wrong() -> void:
+	play_sfx_qte_chime(false)
+
+## 14. Timing bar node hit feedback with rating-dependent pitch.
+func play_sfx_timing_hit(rating: String = "Good") -> void:
+	match rating:
+		"Perfect":
+			_play_sfx_stream(_wav_hit_perfect, "hit_perfect")
+		"Good":
+			_play_sfx_stream(_wav_hit_good, "hit_good")
+		_:
+			_play_sfx_stream(_wav_hit_miss, "hit_miss")
+
+func play_sfx_rhythm_click() -> void:
+	play_sfx_timing_hit("Good")
+
 # ------------------------------------------------------------------------------
 # Decoupled Signal Bindings
 # ------------------------------------------------------------------------------
@@ -429,6 +476,13 @@ func _prebake_sound_streams() -> void:
 	_wav_ambient_bgm = _synth_ambient_bgm()
 	_wav_confetti = _synth_confetti()
 	_wav_bell = _synth_bell()
+	_wav_victory_jingle = _synth_victory_jingle()
+	_wav_steam_hiss = _synth_steam_hiss()
+	_wav_qte_correct = _synth_qte_correct()
+	_wav_qte_wrong = _synth_qte_wrong()
+	_wav_hit_perfect = _synth_hit_perfect()
+	_wav_hit_good = _synth_hit_good()
+	_wav_hit_miss = _synth_hit_miss()
 
 ## Encodes normalized float samples [-1.0, 1.0] into an AudioStreamWAV resource.
 func _create_wav_stream(samples: PackedFloat32Array, sample_rate: int = SAMPLE_RATE, loop: bool = false) -> AudioStreamWAV:
@@ -715,5 +769,113 @@ func _synth_bell() -> AudioStreamWAV:
 		var combined: float = 0.20 * click + 0.80 * chord * attack
 		samples[i] = clampf(combined * 0.90, -1.0, 1.0)
 	return _create_wav_stream(samples, SAMPLE_RATE, false)
+
+# 11. Victory Jingle: Triumphant 5-note brassy arpeggio (G4 -> C5 -> E5 -> G5 -> C6) ~0.85s
+func _synth_victory_jingle() -> AudioStreamWAV:
+	var count: int = int(SAMPLE_RATE * 0.85)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var notes: Array[float] = [392.00, 523.25, 659.25, 783.99, 1046.50]
+	var times: Array[float] = [0.00, 0.12, 0.24, 0.36, 0.48]
+	for i in range(count):
+		var t: float = float(i) / float(SAMPLE_RATE)
+		var sum: float = 0.0
+		for n in range(5):
+			var dt: float = t - times[n]
+			if dt >= 0.0:
+				var f: float = notes[n]
+				var decay: float = 4.0 if n < 4 else 2.2
+				var env: float = (1.0 - exp(-dt * 300.0)) * exp(-dt * decay)
+				var wave: float = sin(2.0 * PI * f * dt) + 0.35 * sin(4.0 * PI * f * dt) + 0.15 * sin(6.0 * PI * f * dt)
+				sum += wave * env
+		var tail_fade: float = clampf((0.85 - t) / 0.10, 0.0, 1.0) if t > 0.75 else 1.0
+		samples[i] = clampf((sum / 2.5) * 0.85 * tail_fade, -1.0, 1.0)
+	return _create_wav_stream(samples, SAMPLE_RATE, false)
+
+# 12. Steam Hiss: Pressurized filtered pseudo-noise with subtle turbulence modulation (0.45s)
+func _synth_steam_hiss() -> AudioStreamWAV:
+	var count: int = int(SAMPLE_RATE * 0.45)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	for i in range(count):
+		var t: float = float(i) / float(SAMPLE_RATE)
+		var env: float = (1.0 - exp(-t * 80.0)) * exp(-t * 3.5)
+		var noise: float = sin(t * 789123.45) * 0.7 + sin(t * 345671.12) * 0.3
+		var steam_body: float = noise * (0.8 + 0.2 * sin(2.0 * PI * 18.0 * t))
+		var tail_fade: float = clampf((0.45 - t) / 0.08, 0.0, 1.0) if t > 0.37 else 1.0
+		samples[i] = clampf(steam_body * env * 0.55 * tail_fade, -1.0, 1.0)
+	return _create_wav_stream(samples, SAMPLE_RATE, false)
+
+# 13. QTE Correct: Ascending crystalline two-tone chime (C6 -> G6) 0.22s
+func _synth_qte_correct() -> AudioStreamWAV:
+	var count: int = int(SAMPLE_RATE * 0.22)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var f1: float = 1046.50
+	var f2: float = 1567.98
+	for i in range(count):
+		var t: float = float(i) / float(SAMPLE_RATE)
+		var f: float = f1 if t < 0.08 else f2
+		var dt: float = t if t < 0.08 else (t - 0.08)
+		var env: float = (1.0 - exp(-dt * 400.0)) * exp(-dt * 12.0)
+		var wave: float = sin(2.0 * PI * f * dt) + 0.25 * sin(4.0 * PI * f * dt)
+		var tail_fade: float = clampf((0.22 - t) / 0.04, 0.0, 1.0) if t > 0.18 else 1.0
+		samples[i] = clampf(wave * env * 0.80 * tail_fade, -1.0, 1.0)
+	return _create_wav_stream(samples, SAMPLE_RATE, false)
+
+# 14. QTE Wrong: Low discordant buzz (160 Hz + 172 Hz minor second clash) 0.20s
+func _synth_qte_wrong() -> AudioStreamWAV:
+	var count: int = int(SAMPLE_RATE * 0.20)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var f1: float = 160.0
+	var f2: float = 172.0
+	for i in range(count):
+		var t: float = float(i) / float(SAMPLE_RATE)
+		var env: float = exp(-t * 9.0)
+		var wave: float = (sin(2.0 * PI * f1 * t) + sin(2.0 * PI * f2 * t) + 0.3 * sin(6.0 * PI * f1 * t)) / 2.3
+		var tail_fade: float = clampf((0.20 - t) / 0.04, 0.0, 1.0) if t > 0.16 else 1.0
+		samples[i] = clampf(wave * env * 0.75 * tail_fade, -1.0, 1.0)
+	return _create_wav_stream(samples, SAMPLE_RATE, false)
+
+# 15. Hit Perfect: High bell ping (1200 Hz, 0.05s)
+func _synth_hit_perfect() -> AudioStreamWAV:
+	var count: int = int(SAMPLE_RATE * 0.05)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	for i in range(count):
+		var t: float = float(i) / float(SAMPLE_RATE)
+		var env: float = exp(-t * 60.0)
+		var wave: float = sin(2.0 * PI * 1200.0 * t) + 0.3 * sin(4.0 * PI * 1200.0 * t)
+		var tail_fade: float = clampf((0.05 - t) / 0.015, 0.0, 1.0) if t > 0.035 else 1.0
+		samples[i] = clampf(wave * env * 0.85 * tail_fade, -1.0, 1.0)
+	return _create_wav_stream(samples, SAMPLE_RATE, false)
+
+# 16. Hit Good: Mid woodblock click (800 Hz, 0.04s)
+func _synth_hit_good() -> AudioStreamWAV:
+	var count: int = int(SAMPLE_RATE * 0.04)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	for i in range(count):
+		var t: float = float(i) / float(SAMPLE_RATE)
+		var env: float = exp(-t * 80.0)
+		var wave: float = sin(2.0 * PI * 800.0 * t)
+		var tail_fade: float = clampf((0.04 - t) / 0.012, 0.0, 1.0) if t > 0.028 else 1.0
+		samples[i] = clampf(wave * env * 0.85 * tail_fade, -1.0, 1.0)
+	return _create_wav_stream(samples, SAMPLE_RATE, false)
+
+# 17. Hit Miss: Low dull click (350 Hz, 0.06s)
+func _synth_hit_miss() -> AudioStreamWAV:
+	var count: int = int(SAMPLE_RATE * 0.06)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	for i in range(count):
+		var t: float = float(i) / float(SAMPLE_RATE)
+		var env: float = exp(-t * 40.0)
+		var wave: float = sin(2.0 * PI * 350.0 * t)
+		var tail_fade: float = clampf((0.06 - t) / 0.018, 0.0, 1.0) if t > 0.042 else 1.0
+		samples[i] = clampf(wave * env * 0.70 * tail_fade, -1.0, 1.0)
+	return _create_wav_stream(samples, SAMPLE_RATE, false)
+
 
 

@@ -343,8 +343,8 @@ func _test_section_2_virtual_joystick_math() -> void:
 	if joystick_scene == null:
 		return
 
-	var joystick = joystick_scene.instantiate() as VirtualJoystick
-	_assert_check(joystick != null, "2.2 VirtualJoystick instantiates as VirtualJoystick")
+	var joystick = joystick_scene.instantiate() as ArcadeVirtualJoystick
+	_assert_check(joystick != null, "2.2 VirtualJoystick instantiates as ArcadeVirtualJoystick")
 	root.add_child(joystick)
 	await process_frame
 
@@ -1159,7 +1159,7 @@ func _test_section_6_pointer_isolation_audit() -> void:
 	_assert_check(tc.mouse_filter == Control.MOUSE_FILTER_IGNORE, "6.25 Tier 3 Isolation: Root TouchControls mouse_filter == MOUSE_FILTER_IGNORE (2)")
 
 	# Tier 2: VirtualJoystick intercepts left half touches
-	var vj = tc.get_node_or_null("VirtualJoystick") as VirtualJoystick
+	var vj = tc.get_node_or_null("VirtualJoystick") as ArcadeVirtualJoystick
 	_assert_check(vj != null and vj.mouse_filter == Control.MOUSE_FILTER_STOP, "6.26 Tier 2 Isolation: VirtualJoystick mouse_filter == STOP (0)")
 
 	# Tier 1: Action button and radial thumb buttons absorb taps

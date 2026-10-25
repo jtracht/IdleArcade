@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://cybersync001scene"]
+[gd_scene load_steps=9 format=3 uid="uid://cybersync001scene"]
 
 [ext_resource type="Script" path="res://scripts/ui/cyber_sync_minigame.gd" id="1_cybersync"]
 
@@ -43,6 +43,16 @@ corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_good_zone"]
+bg_color = Color(0, 0.9, 1, 0.2)
+border_width_left = 1
+border_width_right = 1
+border_color = Color(0, 0.9, 1, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_target_zone"]
 bg_color = Color(0.1, 1, 0.4, 0.25)
@@ -260,6 +270,20 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_track_bg")
+
+[node name="GoodZone" type="Panel" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/TimingTrackContainer"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -85.0
+offset_right = 85.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_good_zone")
 
 [node name="TargetZone" type="Panel" parent="CenterContainer/ModalCard/MarginContainer/MainVBox/TimingTrackContainer"]
 unique_name_in_owner = true

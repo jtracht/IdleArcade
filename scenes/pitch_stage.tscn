@@ -162,6 +162,15 @@ font_size = 28
 outline_size = 6
 outline_color = Color(0.1, 0.08, 0.02, 0.9)
 
+[node name="StatusLabel3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+billboard = 1
+text = "[READY]"
+font_size = 20
+outline_size = 5
+outline_color = Color(0.02, 0.1, 0.04, 0.9)
+modulate = Color(0.101961, 1, 0.4, 1)
+
 [node name="Visuals" type="Node3D" parent="."]
 
 [node name="StagePlanks" type="MeshInstance3D" parent="Visuals"]

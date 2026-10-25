@@ -58,7 +58,7 @@ signal key_synthesized(keycode: Key)
 # Node References
 # ------------------------------------------------------------------------------
 
-@onready var virtual_joystick: VirtualJoystick = get_node_or_null("VirtualJoystick") as VirtualJoystick
+@onready var virtual_joystick: ArcadeVirtualJoystick = get_node_or_null("VirtualJoystick") as ArcadeVirtualJoystick
 @onready var action_button: Button = get_node_or_null("%ActionButton") if has_node("%ActionButton") else get_node_or_null("ActionButton")
 @onready var laptop_button: Button = get_node_or_null("%LaptopThumbButton") if has_node("%LaptopThumbButton") else get_node_or_null("LaptopThumbButton")
 @onready var campus_button: Button = get_node_or_null("%CampusThumbButton") if has_node("%CampusThumbButton") else get_node_or_null("CampusThumbButton")

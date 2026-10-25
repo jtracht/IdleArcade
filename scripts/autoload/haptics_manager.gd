@@ -305,6 +305,32 @@ func vibrate_gate() -> void:
 func vibrate_quest() -> void:
 	vibrate_heavy(DURATION_HEAVY_MS, true)
 
+## Alias for vibrate_success_pattern for direct minigame compatibility.
+func vibrate_success() -> void:
+	vibrate_success_pattern(40, 60, 80)
+
+## Sharp double-buzz error haptic feedback for incorrect QTE choices (bypasses cooldown).
+func vibrate_error() -> void:
+	if not haptics_enabled:
+		return
+	vibrate_custom(65, 0.75, true)
+
+## Tactile notch feedback when the pressure needle enters the golden sweet spot zone.
+func vibrate_sweet_spot() -> void:
+	if not haptics_enabled:
+		return
+	vibrate_custom(35, 0.70, true)
+
+## Haptic vibration scaled to timing bar hit rating.
+func vibrate_timing_hit(rating: String = "Good") -> void:
+	match rating:
+		"Perfect":
+			vibrate_custom(45, 0.80, true)
+		"Good":
+			vibrate_light(25, true)
+		_:
+			vibrate_custom(15, 0.35, true)
+
 # ------------------------------------------------------------------------------
 # Configuration & Control
 # ------------------------------------------------------------------------------

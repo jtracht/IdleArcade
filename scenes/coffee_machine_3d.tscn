@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://dm4coffeemach01"]
+[gd_scene load_steps=26 format=3 uid="uid://dm4coffeemach01"]
 
 [ext_resource type="Script" path="res://scripts/coffee_machine_3d.gd" id="1_coffee"]
 
@@ -105,6 +105,15 @@ albedo_color = Color(0.9, 0.9, 0.95, 0.6)
 
 [sub_resource type="BoxMesh" id="BoxMesh_steam"]
 material = SubResource("Mat_Steam")
+size = Vector3(0.04, 0.04, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_aroma"]
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(1, 0.82, 0.35, 0.85)
+
+[sub_resource type="BoxMesh" id="BoxMesh_aroma"]
+material = SubResource("StandardMaterial3D_aroma")
 size = Vector3(0.04, 0.04, 0.04)
 
 [node name="CoffeeMachine3D" type="StaticBody3D" groups=["coffee_machines", "interactables", "stations"]]
@@ -214,3 +223,20 @@ spread = 20.0
 initial_velocity_min = 0.5
 initial_velocity_max = 1.2
 color = Color(0.95, 0.92, 0.88, 0.7)
+
+[node name="AromaParticles" type="CPUParticles3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0.22)
+emitting = false
+amount = 20
+lifetime = 1.5
+one_shot = true
+explosiveness = 0.85
+mesh = SubResource("BoxMesh_aroma")
+direction = Vector3(0, 1, 0)
+spread = 35.0
+gravity = Vector3(0, 0.6, 0)
+initial_velocity_min = 0.8
+initial_velocity_max = 1.8
+angular_velocity_min = -90.0
+angular_velocity_max = 90.0
+color = Color(1, 0.82, 0.35, 0.85)

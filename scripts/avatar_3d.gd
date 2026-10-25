@@ -269,6 +269,10 @@ func set_input_enabled(enabled: bool) -> void:
 	if not input_enabled:
 		stop_movement()
 
+## Returns true if player locomotion inputs are currently enabled.
+func is_input_enabled() -> bool:
+	return input_enabled
+
 ## Directly injects movement input direction for player or headless tests
 func set_input_direction(dir: Vector3) -> void:
 	var horizontal: Vector3 = Vector3(dir.x, 0.0, dir.z)

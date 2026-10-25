@@ -149,6 +149,10 @@ func snap_camera_to_avatar() -> void:
 func add_screen_shake(amount: float) -> void:
 	trauma = clampf(trauma + amount, 0.0, 1.0)
 
+## Centralized alias for camera screen shake supporting alternative naming conventions
+func trigger_camera_shake(intensity: float) -> void:
+	add_screen_shake(intensity)
+
 ## Computes non-linear trauma decay and camera h_offset / v_offset oscillation
 func _update_screen_shake(delta: float) -> void:
 	if camera == null:
@@ -264,6 +268,33 @@ func is_hud_overlay_open() -> bool:
 		return hud_overlay_layer.visible
 	return _overlay_open
 
+## Centralized hook for stations or modals to pause campus exploration
+func pause_exploration_for_modal(_modal_node: Node = null) -> void:
+	if is_instance_valid(avatar) and avatar.has_method("set_input_enabled"):
+		avatar.set_input_enabled(false)
+	if is_instance_valid(touch_controls):
+		if touch_controls.has_method("fade_out_controls"):
+			touch_controls.fade_out_controls()
+		elif touch_controls.has_method("reset_controls"):
+			touch_controls.reset_controls()
+
+## Centralized hook for stations or modals to resume campus exploration
+func resume_exploration_from_modal(_modal_node: Node = null) -> void:
+	if is_instance_valid(avatar) and avatar.has_method("set_input_enabled"):
+		avatar.set_input_enabled(true)
+	if is_instance_valid(touch_controls) and touch_controls.has_method("fade_in_controls"):
+		touch_controls.fade_in_controls()
+
+## Returns or instantiates the dedicated CanvasLayer (Layer 9) for minigame overlays
+func get_minigame_layer() -> CanvasLayer:
+	var mg_layer = get_node_or_null("MinigameLayer") as CanvasLayer
+	if mg_layer == null:
+		mg_layer = CanvasLayer.new()
+		mg_layer.name = "MinigameLayer"
+		mg_layer.layer = 9
+		add_child(mg_layer)
+	return mg_layer
+
 # --- QuickHUD Live Data Binding ---
 
 func _connect_game_state_signals() -> void:
@@ -280,6 +311,8 @@ func _connect_game_state_signals() -> void:
 		gs.frenzy_updated.connect(_on_frenzy_updated)
 	if gs.has_signal("light_cycle_mode_changed"):
 		gs.light_cycle_mode_changed.connect(_on_light_cycle_mode_changed)
+	if gs.has_signal("camera_shake_requested") and not gs.camera_shake_requested.is_connected(add_screen_shake):
+		gs.camera_shake_requested.connect(add_screen_shake)
 
 func _setup_day_night_cycle() -> void:
 	if day_night_cycle == null:

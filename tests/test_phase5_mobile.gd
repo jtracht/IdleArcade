@@ -53,7 +53,7 @@ const VIEWPORT_WIDTH: float = 720.0
 const VIEWPORT_HEIGHT: float = 1280.0
 
 # Preloaded scripts for headless class resolution without editor cache
-const VirtualJoystick = preload("res://scripts/ui/virtual_joystick.gd")
+const ArcadeVirtualJoystick = preload("res://scripts/ui/virtual_joystick.gd")
 const TouchControls = preload("res://scripts/ui/touch_controls.gd")
 const Avatar3D = preload("res://scripts/avatar_3d.gd")
 const Main3D = preload("res://scripts/main_3d.gd")
@@ -218,9 +218,9 @@ func _run_all_tests() -> void:
 	var joystick_scene = load("res://scenes/ui/virtual_joystick.tscn")
 	_assert_check(joystick_scene != null, "1.1.1 scenes/ui/virtual_joystick.tscn loaded successfully")
 
-	var joystick: VirtualJoystick = null
+	var joystick: ArcadeVirtualJoystick = null
 	if joystick_scene != null:
-		joystick = joystick_scene.instantiate() as VirtualJoystick
+		joystick = joystick_scene.instantiate() as ArcadeVirtualJoystick
 		root.add_child(joystick)
 		await process_frame
 
@@ -935,9 +935,9 @@ func _run_all_tests() -> void:
 
 	var live_avatar = live_main.get_node_or_null("Avatar3D") as Avatar3D
 	var live_tc = live_main.find_child("TouchControls", true, false) as TouchControls
-	var live_joy: VirtualJoystick = null
+	var live_joy: ArcadeVirtualJoystick = null
 	if live_tc != null:
-		live_joy = live_tc.find_child("VirtualJoystick", true, false) as VirtualJoystick
+		live_joy = live_tc.find_child("VirtualJoystick", true, false) as ArcadeVirtualJoystick
 	var live_alex = live_main.get_node_or_null("NPCs/NPC_Alex") as NPC3D
 	var live_gate = live_main.get_node_or_null("ZoneGates/Gate_ServerRoom") as ZoneGate3D
 

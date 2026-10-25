@@ -35,6 +35,7 @@ signal server_overclock_buff_ended()
 # Phase 10 VFX & Milestone Signals
 signal level_up(new_level: int)
 signal screen_shake_changed(new_intensity: float)
+signal camera_shake_requested(amount: float)
 signal light_cycle_mode_changed(new_mode: String)
 
 # Phase 11 Narrative Story-Kampagne Signals
@@ -83,6 +84,10 @@ signal team_coffee_break_started(duration: float, speed_multiplier: float)
 signal team_coffee_break_ended()
 signal epiphany_collected(worker_id: String, bonus_energy: float)
 signal staff_bonus_updated(staff_multiplier: float, active_workers: int, avg_morale: float)
+
+# Phase 16 Campus Minigames & 3D Station Cooldown Signals
+signal station_cooldown_started(station_id: String, duration: float)
+signal station_cooldown_ended(station_id: String)
 
 # --- State Variables ---
 var energy: float = 0.0
@@ -178,6 +183,13 @@ var staff_hyper_focus_multiplier: float = 1.50
 var staff_coffee_break_active: bool = false
 var staff_coffee_break_timer: float = 0.0
 var staff_coffee_break_remaining: float = 0.0
+
+# Phase 16 3D Campus Station Persistent Cooldowns
+var station_cooldowns: Dictionary = {
+	"server_terminal": 0.0,
+	"pitch_stage": 0.0,
+	"coffee_machine": 0.0
+}
 
 var base_click_power: float = 1.0
 var base_passive_rps: float = 0.0
@@ -712,6 +724,13 @@ func reset_state() -> void:
 	staff_coffee_break_timer = 0.0
 	staff_coffee_break_remaining = 0.0
 
+	# Phase 16 3D Campus Station Cooldown Defaults
+	station_cooldowns = {
+		"server_terminal": 0.0,
+		"pitch_stage": 0.0,
+		"coffee_machine": 0.0
+	}
+
 func _process(delta: float) -> void:
 	var safe_delta: float = maxf(0.0, delta)
 	var clamped_delta: float = minf(0.1, safe_delta)
@@ -800,6 +819,15 @@ func _process(delta: float) -> void:
 			rps_changed.emit(get_effective_passive_rps())
 			staff_coffee_break_ended.emit()
 			team_coffee_break_ended.emit()
+
+	# Phase 16 Station Cooldowns Active Decay
+	for s_id in station_cooldowns.keys():
+		var current_cd: float = float(station_cooldowns[s_id])
+		if current_cd > 0.0:
+			var new_cd: float = maxf(0.0, current_cd - safe_delta)
+			station_cooldowns[s_id] = new_cd
+			if new_cd <= 0.0:
+				station_cooldown_ended.emit(s_id)
 
 # --- Interface Contract Methods ---
 
@@ -956,6 +984,63 @@ func activate_server_overclock_buff(duration: float = 25.0, multiplier: float = 
 	advance_daily_task("task_server_hack", 1)
 	rps_changed.emit(get_effective_passive_rps())
 	server_overclock_buff_started.emit(multiplier, duration)
+
+# ==============================================================================
+# Phase 16 Campus Minigames & 3D Station Persistent Cooldowns
+# ==============================================================================
+
+## Sets the persistent cooldown for a campus station (in seconds) and saves to disk on initiation.
+func set_station_cooldown(station_id: String, duration: float) -> void:
+	if station_id.is_empty():
+		return
+	var safe_duration: float = maxf(0.0, duration)
+	var prev_cd: float = float(station_cooldowns.get(station_id, 0.0))
+	if prev_cd <= 0.0 and (station_id == "coffee_machine_3d" or station_id == "barista_station"):
+		prev_cd = float(station_cooldowns.get("coffee_machine", 0.0))
+
+	station_cooldowns[station_id] = safe_duration
+	if station_id == "coffee_machine_3d" or station_id == "barista_station":
+		station_cooldowns["coffee_machine"] = safe_duration
+	elif station_id == "coffee_machine":
+		station_cooldowns["coffee_machine_3d"] = safe_duration
+
+	if safe_duration > 0.0:
+		# Emit started and persist to disk only on fresh initiation or explicit timer expansion
+		if prev_cd <= 0.0 or safe_duration > prev_cd:
+			station_cooldown_started.emit(station_id, safe_duration)
+			save_to_disk()
+	else:
+		if prev_cd > 0.0:
+			station_cooldown_ended.emit(station_id)
+			save_to_disk()
+
+## Returns remaining cooldown duration in seconds for a station (0.0 if ready).
+func get_station_cooldown(station_id: String) -> float:
+	if not station_cooldowns.has(station_id):
+		if station_id == "barista_station" and station_cooldowns.has("coffee_machine"):
+			return float(station_cooldowns.get("coffee_machine", 0.0))
+		if station_id == "coffee_machine_3d" and station_cooldowns.has("coffee_machine"):
+			return float(station_cooldowns.get("coffee_machine", 0.0))
+		return 0.0
+	var val = station_cooldowns.get(station_id, 0.0)
+	if val is float or val is int:
+		return maxf(0.0, float(val))
+	return 0.0
+
+## Returns true if the station is currently on cooldown (cooldown > 0.0).
+func is_station_on_cooldown(station_id: String) -> bool:
+	return get_station_cooldown(station_id) > 0.0
+
+## Returns true if the station is ready for interaction (not on cooldown).
+func is_station_ready(station_id: String) -> bool:
+	return not is_station_on_cooldown(station_id)
+
+## Resets all station cooldown timers to 0.0 and saves to disk.
+func reset_all_station_cooldowns() -> void:
+	for s_id in station_cooldowns.keys():
+		station_cooldowns[s_id] = 0.0
+		station_cooldown_ended.emit(s_id)
+	save_to_disk()
 
 # ==============================================================================
 # Phase 11 Narrative Story-Kampagne Methods ("The Unicorn Journey")
@@ -1277,6 +1362,7 @@ func save_to_disk() -> void:
 		"staff_hyper_focus_timer": staff_hyper_focus_timer,
 		"staff_hyper_focus_remaining": staff_hyper_focus_remaining,
 		"staff_hyper_focus_active": staff_hyper_focus_active,
+		"station_cooldowns": station_cooldowns.duplicate(),
 		"upgrades": {}
 	}
 	
@@ -1433,7 +1519,21 @@ func load_from_disk() -> bool:
 		energy += offline_gain
 		total_energy_earned += offline_gain
 		total_lifetime_energy += offline_gain
-		
+
+	# Phase 16 3D Campus Station Cooldowns Deserialization & Offline Decay
+	station_cooldowns = {
+		"server_terminal": 0.0,
+		"pitch_stage": 0.0,
+		"coffee_machine": 0.0
+	}
+	var raw_cooldowns = data.get("station_cooldowns", data.get("minigame_cooldowns", {}))
+	if raw_cooldowns is Dictionary:
+		for s_id in raw_cooldowns:
+			var raw_cd: float = float(raw_cooldowns[s_id])
+			if not is_nan(raw_cd) and not is_inf(raw_cd):
+				var remaining_cd: float = maxf(0.0, raw_cd - elapsed)
+				station_cooldowns[str(s_id)] = remaining_cd
+
 	# Phase 9 Audio Settings Deserialization
 	var audio_data = data.get("audio_settings", {})
 	if audio_data is Dictionary and not audio_data.is_empty():
@@ -1821,6 +1921,10 @@ func set_screen_shake_intensity(val: float) -> void:
 func get_screen_shake_intensity() -> float:
 	return screen_shake_intensity
 
+## Triggers a camera screen shake request across decoupled subscribers.
+func trigger_camera_shake(amount: float) -> void:
+	camera_shake_requested.emit(amount)
+
 # ==============================================================================
 # Phase 10 Day/Night Light Cycle Methods
 # ==============================================================================
@@ -1951,6 +2055,11 @@ func trigger_ipo() -> Dictionary:
 	for w in hired_workers:
 		if str(w.get("current_state", "")) == "break":
 			w["current_state"] = "working"
+
+	# Phase 16 Station Cooldown Reset on IPO
+	for s_id in station_cooldowns.keys():
+		station_cooldowns[s_id] = 0.0
+		station_cooldown_ended.emit(s_id)
 	
 	# 6. Recalculate stats from reset levels
 	recalculate_stats()

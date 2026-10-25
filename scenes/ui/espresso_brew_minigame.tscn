@@ -130,7 +130,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.8, 0.75, 1)
 theme_override_font_sizes/font_size = 13
-text = "Maintain pressure in the Sweet Spot (62-84 bar) for 3.0s to brew Unicorn Espresso!"
+text = "Hold [E] or pump button to maintain pressure in Golden Zone (62-84 bar) for 3.0s to heal staff burnout!"
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -149,7 +149,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.96, 0.75, 0.3, 1)
 theme_override_font_sizes/font_size = 15
-text = "PRESSURE: 20.0 BAR (LOW - PUMP NOW!)"
+text = "PRESSURE: 20.0 BAR (LOW - HOLD PUMP!)"
 horizontal_alignment = 1
 
 [node name="PressureProgressBar" type="ProgressBar" parent="CenterContainer/CardPanel/CardVBox/PressureCard/PressureVBox"]
@@ -201,7 +201,7 @@ custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.96, 0.75, 0.3, 1)
 theme_override_font_sizes/font_size = 14
-text = "Tap PUMP [E] to build extraction pressure!"
+text = "Hold PUMP [E] to build extraction pressure!"
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -218,4 +218,4 @@ mouse_filter = 0
 theme_override_colors/font_color = Color(1, 0.92, 0.8, 1)
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_pump_btn")
-text = "PUMP [E]"
+text = "HOLD TO BREW [E]"

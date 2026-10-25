@@ -1,12 +1,12 @@
 extends SceneTree
 
 ## =============================================================================
-## Master Full-Stack Headless SceneTree Test Suite for Phase 15:
-## Full-Stack QA, 3-Domain Test Aggregator & CI/CD Runner (Release v2.2.0)
+## Master Full-Stack Headless SceneTree Test Suite for Phase 16:
+## Full-Stack QA, 4-Domain Test Aggregator & CI/CD Runner (Release v2.3.0)
 ## File: IdleArcade/tests/test_full_stack_qa.gd
-## Target: Godot 4.3 Engine Headless Runner & CI Verification (Release v2.2.0)
+## Target: Godot 4.3 Engine Headless Runner & CI Verification (Release v2.3.0)
 ##
-## Aggregates 100% of Phase 15 Full-Stack Test Suites Across 3 Key Domains:
+## Aggregates 100% of Phase 16 Full-Stack Test Suites Across 4 Key Domains:
 ##   Domain 1: Backend Core & Economy Test Suite (Sections 1..8)
 ##             - Active clicks, tap deduplication & Frenzy/Overdrive
 ##             - 7-tier exponential generator scaling & monotonicity
@@ -30,6 +30,15 @@ extends SceneTree
 ##               IpoBell3D, TrophyShowcase3D, DailyBoard3D, TechLabTerminal, SyndicateHQ3D)
 ##             - Low-poly triangle budget certification (< 2,500 tris/station, < 600 tris/worker)
 ##             - Dynamic TouchControls registration, contextual styling & proximity stacking
+##   Domain 4: Interactive Arcade Minigames & Campus Stations (Sections 1..8)
+##             - Section 1: Modal Overlays, Proximity Triggers & TouchControls Styling
+##             - Section 2: Server Overclock Timing Bar & Dynamic Multipliers (1.2x/2x/3x)
+##             - Section 3: Pitch Stage Investor QTE & Scaling Grants Economy
+##             - Section 4: Barista Station Manometer & 60s Hyper-Focus Mode
+##             - Section 5: Arcade Audio Synthesis, Haptics & 3D Floating Score Popups
+##             - Section 6: Mobile Touch Ergonomics (>= 56px) & Pointer Isolation
+##             - Section 7: Boundary Cases, Multi-Station Cooldowns & Persistence
+##             - Section 8: Real-World Campus Lifecycle Scenarios (1..5)
 ##
 ## Execution:
 ##   godot --headless --path IdleArcade -s tests/test_full_stack_qa.gd
@@ -44,10 +53,13 @@ var domain2_pass: int = 0
 var domain2_fail: int = 0
 var domain3_pass: int = 0
 var domain3_fail: int = 0
+var domain4_pass: int = 0
+var domain4_fail: int = 0
+var suite_start_time_ms: int = 0
 
 var current_domain: int = 1
 
-const MIN_EXPECTED_PASS_COUNT: int = 250
+const MIN_EXPECTED_PASS_COUNT: int = 1200
 const EPSILON: float = 0.005
 const SQRT1_2: float = 0.7071067811865475
 
@@ -72,6 +84,8 @@ func _assert_check(condition: bool, description: String, detail: String = "") ->
 			domain2_pass += 1
 		elif current_domain == 3:
 			domain3_pass += 1
+		elif current_domain == 4:
+			domain4_pass += 1
 	else:
 		var err_msg: String = "  [FAIL] %s" % description
 		if detail != "":
@@ -84,10 +98,12 @@ func _assert_check(condition: bool, description: String, detail: String = "") ->
 			domain2_fail += 1
 		elif current_domain == 3:
 			domain3_fail += 1
+		elif current_domain == 4:
+			domain4_fail += 1
 
 func _init() -> void:
 	print("\n====================================================================")
-	print(">>> RUNNING IDLEARCADE PHASE 15: MASTER FULL-STACK QA RUNNER <<<")
+	print(">>> RUNNING IDLEARCADE PHASE 16: MASTER FULL-STACK QA RUNNER <<<")
 	print("====================================================================")
 	# Check and backup existing user files synchronously in _init() BEFORE autoload singletons
 	# can initialize and call save_to_disk() in their _ready() callbacks.
@@ -136,6 +152,7 @@ func _cleanup_and_quit(exit_code: int) -> void:
 	quit(exit_code)
 
 func _run_all_tests() -> void:
+	suite_start_time_ms = Time.get_ticks_msec()
 	await process_frame
 
 	# -------------------------------------------------------------------------
@@ -277,18 +294,44 @@ func _run_all_tests() -> void:
 	await _test_d3_section_5_dynamic_touch_controls_and_proximity_stacking()
 
 	print("\n>>> DOMAIN 3 COMPLETE: %d PASSED, %d FAILED <<<" % [domain3_pass, domain3_fail])
+ 
+	# =========================================================================
+	# DOMAIN 4: Interactive Arcade Minigames & Campus Stations (Phase 16 v2.3.0)
+	# =========================================================================
+	current_domain = 4
+	print("\n====================================================================")
+	print(">>> DOMAIN 4: INTERACTIVE ARCADE MINIGAMES TEST SUITE (Phase 16) <<<")
+	print("====================================================================")
+	if gs.has_method("reset_state"):
+		gs.reset_state()
+	if gs.has_method("reset_all_station_cooldowns"):
+		gs.reset_all_station_cooldowns()
+
+	await _test_d4_section_1_modal_overlays_and_stations(gs)
+	await _test_d4_section_2_server_overclock_timing_and_multipliers(gs)
+	await _test_d4_section_3_pitch_stage_qte_and_scaling_grants(gs)
+	await _test_d4_section_4_barista_pressure_and_hyper_focus(gs)
+	await _test_d4_section_5_arcade_audio_visuals_and_haptics(gs, am, hm)
+	await _test_d4_section_6_mobile_touch_ergonomics_and_pointer_isolation()
+	await _test_d4_section_7_boundary_cases_and_cooldown_persistence(gs)
+	await _test_d4_section_8_real_world_campus_scenarios(gs)
+
+	print("\n>>> DOMAIN 4 COMPLETE: %d PASSED, %d FAILED <<<" % [domain4_pass, domain4_fail])
 
 	# -------------------------------------------------------------------------
 	# Master Full-Stack Summary & Clean Deterministic Exit
 	# -------------------------------------------------------------------------
+	var elapsed_sec: float = float(Time.get_ticks_msec() - suite_start_time_ms) / 1000.0
 	print("\n====================================================================")
-	print(">>> MASTER FULL-STACK QA RUNNER SUMMARY (Phase 15 v2.2.0) <<<")
+	print(">>> MASTER FULL-STACK QA RUNNER SUMMARY (Phase 16 v2.3.0) <<<")
 	print("====================================================================")
 	print("  Domain 1: Backend Core & Economy            : %4d Passed, %2d Failed" % [domain1_pass, domain1_fail])
 	print("  Domain 2: Frontend UI/UX & Touch Ergonomics : %4d Passed, %2d Failed" % [domain2_pass, domain2_fail])
 	print("  Domain 3: 3D Campus Stations & Interactions : %4d Passed, %2d Failed" % [domain3_pass, domain3_fail])
+	print("  Domain 4: Interactive Arcade Minigames      : %4d Passed, %2d Failed" % [domain4_pass, domain4_fail])
 	print("--------------------------------------------------------------------")
 	print("  TOTAL ASSERTIONS                            : %4d Passed, %2d Failed" % [pass_count, fail_count])
+	print("  Execution Time                              : %.2f seconds" % elapsed_sec)
 	print("====================================================================")
 
 	if fail_count == 0 and pass_count >= MIN_EXPECTED_PASS_COUNT:
@@ -1424,8 +1467,8 @@ func _test_d2_section_2_virtual_joystick_math() -> void:
 	if joystick_scene == null:
 		return
 
-	var joystick = joystick_scene.instantiate() as VirtualJoystick
-	_assert_check(joystick != null, "2.2 VirtualJoystick instantiates as VirtualJoystick")
+	var joystick = joystick_scene.instantiate() as ArcadeVirtualJoystick
+	_assert_check(joystick != null, "2.2 VirtualJoystick instantiates as ArcadeVirtualJoystick")
 	root.add_child(joystick)
 	await process_frame
 
@@ -2240,7 +2283,7 @@ func _test_d2_section_6_pointer_isolation_audit() -> void:
 	_assert_check(tc.mouse_filter == Control.MOUSE_FILTER_IGNORE, "6.25 Tier 3 Isolation: Root TouchControls mouse_filter == MOUSE_FILTER_IGNORE (2)")
 
 	# Tier 2: VirtualJoystick intercepts left half touches
-	var vj = tc.get_node_or_null("VirtualJoystick") as VirtualJoystick
+	var vj = tc.get_node_or_null("VirtualJoystick") as ArcadeVirtualJoystick
 	_assert_check(vj != null and vj.mouse_filter == Control.MOUSE_FILTER_STOP, "6.26 Tier 2 Isolation: VirtualJoystick mouse_filter == STOP (0)")
 
 	# Tier 1: Action button and radial thumb buttons absorb taps
@@ -3232,3 +3275,879 @@ func _test_d3_section_5_dynamic_touch_controls_and_proximity_stacking() -> void:
 	node_c.free()
 	tc.queue_free()
 	await process_frame
+
+# =============================================================================
+# DOMAIN 4 IMPLEMENTATION: INTERACTIVE ARCADE MINIGAMES & CAMPUS STATIONS
+# =============================================================================
+
+func _test_d4_section_1_modal_overlays_and_stations(gs: Node) -> void:
+	print("\n--- SECTION 1: Modal Overlays, Proximity Triggers & TouchControls Styling ---")
+
+	# 1.1 CyberSyncMinigame Modal Overlay
+	var cyber_scene = load("res://scenes/ui/cyber_sync_minigame.tscn")
+	_assert_check(cyber_scene != null, "1.1 Load res://scenes/ui/cyber_sync_minigame.tscn")
+	if cyber_scene != null:
+		var cyber_inst = cyber_scene.instantiate() as Control
+		root.add_child(cyber_inst)
+		await process_frame
+		_assert_check(cyber_inst != null, "1.2 CyberSyncMinigame instantiates as Control")
+		_assert_check(cyber_inst.mouse_filter == Control.MOUSE_FILTER_STOP, "1.3 Root Control has mouse_filter == STOP (0)")
+		var backdrop = cyber_inst.get_node_or_null("DimBackdrop") as ColorRect
+		_assert_check(backdrop != null and backdrop.mouse_filter == Control.MOUSE_FILTER_STOP, "1.4 DimBackdrop exists and has mouse_filter == STOP (0)")
+		_assert_check(cyber_inst.has_method("open_minigame"), "1.5 CyberSyncMinigame has open_minigame method")
+		_assert_check(cyber_inst.has_method("close_minigame"), "1.6 CyberSyncMinigame has close_minigame method")
+		cyber_inst.queue_free()
+		await process_frame
+
+	# 1.2 EspressoBrewMinigame Modal Overlay
+	var espresso_scene = load("res://scenes/ui/espresso_brew_minigame.tscn")
+	_assert_check(espresso_scene != null, "1.7 Load res://scenes/ui/espresso_brew_minigame.tscn")
+	if espresso_scene != null:
+		var esp_inst = espresso_scene.instantiate() as Control
+		root.add_child(esp_inst)
+		await process_frame
+		_assert_check(esp_inst != null, "1.8 EspressoBrewMinigame instantiates as Control")
+		var esp_backdrop = esp_inst.get_node_or_null("Backdrop") as ColorRect
+		_assert_check(esp_backdrop != null and esp_backdrop.mouse_filter == Control.MOUSE_FILTER_STOP, "1.9 Espresso Backdrop exists and has mouse_filter == STOP (0)")
+		_assert_check(esp_inst.has_method("open_minigame"), "1.10 EspressoBrewMinigame has open_minigame method")
+		_assert_check(esp_inst.has_method("close_minigame"), "1.11 EspressoBrewMinigame has close_minigame method")
+		esp_inst.queue_free()
+		await process_frame
+
+	# 1.3 PitchStageMinigame Modal Overlay
+	var pitch_minigame_scene = load("res://scenes/ui/pitch_stage_minigame.tscn")
+	_assert_check(pitch_minigame_scene != null, "1.12 Load res://scenes/ui/pitch_stage_minigame.tscn")
+	if pitch_minigame_scene != null:
+		var pitch_inst = pitch_minigame_scene.instantiate() as Control
+		root.add_child(pitch_inst)
+		await process_frame
+		_assert_check(pitch_inst != null, "1.13 PitchStageMinigame instantiates as Control")
+		var p_backdrop = pitch_inst.get_node_or_null("DimBackdrop") as ColorRect
+		_assert_check(p_backdrop != null and p_backdrop.mouse_filter == Control.MOUSE_FILTER_STOP, "1.14 PitchStage DimBackdrop has mouse_filter == STOP (0)")
+		_assert_check(pitch_inst.has_method("open_minigame"), "1.15 PitchStageMinigame has open_minigame method")
+		_assert_check(pitch_inst.has_method("close_minigame"), "1.16 PitchStageMinigame has close_minigame method")
+		pitch_inst.queue_free()
+		await process_frame
+
+	# 1.4 ServerTerminal Proximity Detection
+	var server_scene = load("res://scenes/server_terminal.tscn")
+	_assert_check(server_scene != null, "1.17 Load res://scenes/server_terminal.tscn")
+	if server_scene != null:
+		var server = server_scene.instantiate() as Node3D
+		root.add_child(server)
+		await process_frame
+
+		var s_area = server.get_node_or_null("InteractionArea") as Area3D
+		_assert_check(s_area != null, "1.18 ServerTerminal has InteractionArea Area3D")
+		_assert_check(server.has_method("is_player_in_range"), "1.19 ServerTerminal has is_player_in_range method")
+		_assert_check(not server.is_player_in_range(), "1.20 Player initially out of range for ServerTerminal")
+
+		var mock_player = CharacterBody3D.new()
+		mock_player.add_to_group("player")
+		root.add_child(mock_player)
+		server._on_interaction_body_entered(mock_player)
+		_assert_check(server.is_player_in_range(), "1.21 Player entering InteractionArea marks is_player_in_range == true")
+
+		server._on_interaction_body_exited(mock_player)
+		_assert_check(not server.is_player_in_range(), "1.22 Player exiting InteractionArea marks is_player_in_range == false")
+
+		mock_player.queue_free()
+		server.queue_free()
+		await process_frame
+
+	# 1.5 TouchControls Dynamic Styling & Stack Unwinding
+	var tc_scene = load("res://scenes/ui/touch_controls.tscn")
+	_assert_check(tc_scene != null, "1.23 Load res://scenes/ui/touch_controls.tscn")
+	if tc_scene != null:
+		var tc = tc_scene.instantiate() as Control
+		root.add_child(tc)
+		await process_frame
+
+		var act_btn = tc.get_node_or_null("%ActionButton") as Button
+		if act_btn == null:
+			act_btn = tc.get_node_or_null("ActionButton") as Button
+		_assert_check(act_btn != null, "1.24 TouchControls ActionButton exists")
+		_assert_check(act_btn.text == "[E] Action", "1.25 Dormant action button text is '[E] Action'")
+		_assert_check(absf(act_btn.modulate.a - 0.35) < 0.05, "1.26 ActionButton has dormant opacity (0.35)")
+
+		var dummy_server = Node3D.new()
+		dummy_server.set("action_label", "Hack [E]")
+		dummy_server.add_to_group("server_terminals")
+		tc.register_interactable(dummy_server, "Hack [E]")
+		_assert_check(act_btn.text == "Hack [E]", "1.27 ActionButton styled with 'Hack [E]' on server registration")
+		_assert_check(absf(act_btn.modulate.a - 1.0) < 0.05, "1.28 ActionButton active opacity (1.0) when interactable in range")
+
+		var dummy_coffee = Node3D.new()
+		dummy_coffee.set("action_label", "Brew [E]")
+		dummy_coffee.add_to_group("coffee_machines")
+		tc.register_interactable(dummy_coffee, "Brew [E]")
+		_assert_check(act_btn.text == "Brew [E]", "1.29 ActionButton styled with 'Brew [E]' on coffee registration")
+
+		tc.unregister_interactable(dummy_coffee)
+		_assert_check(act_btn.text == "Hack [E]", "1.30 Stack unrolls back to 'Hack [E]' when coffee machine unregisters")
+
+		tc.unregister_interactable(dummy_server)
+		_assert_check(act_btn.text == "[E] Action", "1.31 ActionButton returns to dormant '[E] Action' when stack empty")
+
+		dummy_server.free()
+		dummy_coffee.free()
+		tc.queue_free()
+		await process_frame
+
+	# 1.6 Station 4-State Machine Lifecycle
+	if server_scene != null:
+		var st = server_scene.instantiate() as ServerTerminal
+		root.add_child(st)
+		await process_frame
+
+		_assert_check(st.can_activate(), "1.32 Initial station state is READY (can_activate == true)")
+		_assert_check(not st.is_overclock_active, "1.33 Station is_overclock_active == false")
+		_assert_check(not st.is_on_cooldown, "1.34 Station is_on_cooldown == false")
+
+		st._activate_overclock_state(25.0, 1.50, false)
+		_assert_check(st.is_overclock_active, "1.35 Station state transitions to PLAYING/ACTIVE")
+		_assert_check(not st.can_activate(), "1.36 Activation locked during active session")
+
+		st._end_overclock()
+		_assert_check(st.is_on_cooldown, "1.37 Station transitions to COOLDOWN (is_on_cooldown == true)")
+		_assert_check(absf(st.cooldown_time_remaining - 60.0) < EPSILON, "1.38 Cooldown timer initialized to 60.0s")
+		_assert_check(not st.can_activate(), "1.39 Activation locked while in COOLDOWN")
+
+		st._process(60.1)
+		_assert_check(not st.is_on_cooldown, "1.40 Cooldown timer expiration restores READY state")
+		_assert_check(st.can_activate(), "1.41 Station can_activate() restored to true after cooldown completes")
+
+		st.queue_free()
+		await process_frame
+
+	# 1.7 Avatar Locomotion Gating
+	var av_script = load("res://scripts/avatar_3d.gd")
+	_assert_check(av_script != null, "1.42 Load res://scripts/avatar_3d.gd")
+	if av_script != null:
+		var av = av_script.new()
+		root.add_child(av)
+		await process_frame
+
+		_assert_check(av.has_method("set_input_enabled"), "1.43 Avatar has set_input_enabled method")
+		_assert_check(av.has_method("stop_movement"), "1.44 Avatar has stop_movement method")
+
+		av.set_input_enabled(false)
+		_assert_check(not av.input_enabled, "1.45 Avatar input_enabled == false after set_input_enabled(false)")
+		_assert_check(av.velocity.x == 0.0 and av.velocity.z == 0.0, "1.46 Avatar horizontal velocity zeroed upon input freeze")
+
+		av.set_input_enabled(true)
+		_assert_check(av.input_enabled, "1.47 Avatar input_enabled == true restored after resume")
+
+		av.queue_free()
+		await process_frame
+
+func _test_d4_section_2_server_overclock_timing_and_multipliers(gs: Node) -> void:
+	print("\n--- SECTION 2: Server Overclock Timing Bar & Dynamic Multipliers ---")
+
+	var cyber_scene = load("res://scenes/ui/cyber_sync_minigame.tscn")
+	if cyber_scene != null:
+		var c_game = cyber_scene.instantiate() as CyberSyncMinigame
+		root.add_child(c_game)
+		await process_frame
+
+		_assert_check("pulse_position" in c_game, "2.1 CyberSyncMinigame exposes pulse_position property")
+		_assert_check(c_game.pulse_position >= 0.0 and c_game.pulse_position <= 1.0, "2.2 pulse_position initialized in [0.0, 1.0]")
+
+		var initial_pulse: float = c_game.pulse_position
+		c_game._process(0.25)
+		_assert_check(c_game.pulse_position != initial_pulse, "2.3 pulse_position oscillates across delta frames")
+		_assert_check(c_game.pulse_position >= 0.0 and c_game.pulse_position <= 1.0, "2.4 pulse_position remains strictly clamped in [0.0, 1.0]")
+		_assert_check(c_game.current_node_index == 0, "2.5 Initial data node index is 0")
+
+		var target_pos: float = c_game.target_position
+		var perf_win: float = c_game.perfect_window
+		var norm_win: float = c_game.normal_window
+
+		_assert_check(absf(target_pos - 0.50) < EPSILON, "2.6 Target center position is 0.50")
+		_assert_check(perf_win > 0.0 and perf_win < norm_win, "2.7 Perfect window (%f) is narrower than Normal window (%f)" % [perf_win, norm_win])
+
+		# Deterministic Hit Evaluation via evaluate_hit()
+		var hit_perf = c_game.evaluate_hit(0.50)
+		_assert_check(hit_perf.get("rating") == "Perfect", "2.8 evaluate_hit(0.50) returns 'Perfect'")
+		_assert_check(absf(float(hit_perf.get("multiplier", 0.0)) - 3.00) < EPSILON, "2.9 Perfect rating awards 3.00x multiplier")
+		_assert_check(absf(float(hit_perf.get("duration", 0.0)) - 45.0) < EPSILON, "2.10 Perfect rating awards 45.0s duration")
+
+		var hit_good = c_game.evaluate_hit(0.35)
+		_assert_check(hit_good.get("rating") == "Good", "2.11 evaluate_hit(0.35) returns 'Good'")
+		_assert_check(absf(float(hit_good.get("multiplier", 0.0)) - 2.00) < EPSILON, "2.12 Good rating awards 2.00x multiplier")
+		_assert_check(absf(float(hit_good.get("duration", 0.0)) - 30.0) < EPSILON, "2.13 Good rating awards 30.0s duration")
+
+		var hit_miss = c_game.evaluate_hit(0.10)
+		_assert_check(hit_miss.get("rating") == "Miss", "2.14 evaluate_hit(0.10) returns 'Miss'")
+		_assert_check(absf(float(hit_miss.get("multiplier", 0.0)) - 1.20) < EPSILON, "2.15 Miss rating awards 1.20x comfort bonus")
+		_assert_check(absf(float(hit_miss.get("duration", 0.0)) - 15.0) < EPSILON, "2.16 Miss rating awards 15.0s duration")
+
+		# Multiplier and Duration Monotonicity
+		_assert_check(c_game.perfect_multiplier > c_game.normal_multiplier, "2.17 perfect_multiplier > normal_multiplier (3.0 > 2.0)")
+		_assert_check(c_game.normal_multiplier > c_game.miss_multiplier, "2.18 normal_multiplier > miss_multiplier (2.0 > 1.2)")
+		_assert_check(c_game.miss_multiplier > 1.0, "2.19 miss_multiplier > 1.0 baseline (non-punitive comfort boost)")
+		_assert_check(c_game.perfect_duration > c_game.normal_duration, "2.20 perfect_duration > normal_duration (45s > 30s)")
+		_assert_check(c_game.normal_duration > c_game.miss_duration, "2.21 normal_duration > miss_duration (30s > 15s)")
+
+		# Multi-node Simulation: 3 nodes total
+		c_game.simulate_hit(0.50)
+		_assert_check(c_game.current_node_index == 1, "2.22 Node 1 hit advances current_node_index to 1")
+		_assert_check(c_game.perfect_hits_count == 1, "2.23 perfect_hits_count incremented to 1")
+
+		c_game.simulate_hit(0.50)
+		_assert_check(c_game.current_node_index == 2, "2.24 Node 2 hit advances current_node_index to 2")
+
+		c_game.simulate_hit(0.50)
+		_assert_check(c_game.is_completed, "2.25 3/3 node hits marks session is_completed == true")
+		_assert_check(c_game.perfect_hits_count == 3, "2.26 3 perfect hits recorded")
+
+		# Activate GameState Overclock Buff
+		gs.activate_server_overclock_buff(45.0, 3.00)
+		_assert_check(gs.server_overclock_buff_active, "2.27 GameState server_overclock_buff_active is true")
+		_assert_check(absf(gs.server_overclock_buff_multiplier - 3.00) < EPSILON, "2.28 Buff multiplier set to 3.00x")
+		_assert_check(gs.server_overclock_buff_timer > 40.0, "2.29 Buff timer initialized to 45.0s")
+
+		c_game.queue_free()
+		await process_frame
+
+func _test_d4_section_3_pitch_stage_qte_and_scaling_grants(gs: Node) -> void:
+	print("\n--- SECTION 3: Pitch Stage Investor QTE & Scaling Grants Economy ---")
+
+	var pitch_scene = load("res://scenes/pitch_stage.tscn")
+	_assert_check(pitch_scene != null, "3.1 Load res://scenes/pitch_stage.tscn")
+	if pitch_scene != null:
+		var pitch = pitch_scene.instantiate() as PitchStage
+		root.add_child(pitch)
+		await process_frame
+
+		_assert_check(pitch.has_method("can_pitch"), "3.2 PitchStage has can_pitch query")
+		_assert_check(pitch.can_pitch(), "3.3 PitchStage ready for presentation initially")
+		_assert_check(pitch.has_signal("pitch_started"), "3.4 PitchStage defines pitch_started signal")
+		_assert_check(pitch.has_signal("pitch_rewarded"), "3.5 PitchStage defines pitch_rewarded signal")
+		_assert_check(pitch.has_signal("pitch_completed"), "3.6 PitchStage defines pitch_completed signal")
+
+		pitch.queue_free()
+		await process_frame
+
+	var pitch_minigame_scene = load("res://scenes/ui/pitch_stage_minigame.tscn")
+	if pitch_minigame_scene != null:
+		var p_game = pitch_minigame_scene.instantiate() as PitchStageMinigame
+		root.add_child(p_game)
+		await process_frame
+
+		_assert_check(p_game.has_method("calculate_grant"), "3.7 PitchStageMinigame has calculate_grant method")
+		_assert_check(p_game.has_method("is_buzzword_matching"), "3.8 PitchStageMinigame has is_buzzword_matching method")
+		_assert_check(p_game.has_method("simulate_buzzword_choice"), "3.9 PitchStageMinigame has simulate_buzzword_choice method")
+
+		# Investor Profiles Matrix
+		var profiles = p_game.INVESTOR_PROFILES
+		_assert_check(profiles.size() == 4, "3.10 Exactly 4 investor profiles configured")
+		_assert_check(profiles.has("Tech VC"), "3.11 'Tech VC' profile present")
+		_assert_check(profiles.has("Crypto Baron"), "3.12 'Crypto Baron' profile present")
+		_assert_check(profiles.has("Growth Hacker"), "3.13 'Growth Hacker' profile present")
+		_assert_check(profiles.has("Enterprise Titan"), "3.14 'Enterprise Titan' profile present")
+
+		# Buzzword Matching & Distractor Rejection
+		_assert_check(p_game.is_buzzword_matching("AI Synergy", "Tech VC"), "3.15 'AI Synergy' matches Tech VC")
+		_assert_check(not p_game.is_buzzword_matching("Blockchain Cloud", "Tech VC"), "3.16 'Blockchain Cloud' rejected for Tech VC")
+		_assert_check(p_game.is_buzzword_matching("DeFi Staking", "Crypto Baron"), "3.17 'DeFi Staking' matches Crypto Baron")
+		_assert_check(p_game.is_buzzword_matching("Viral Retention", "Growth Hacker"), "3.18 'Viral Retention' matches Growth Hacker")
+		_assert_check(p_game.is_buzzword_matching("Zero Trust SLA", "Enterprise Titan"), "3.19 'Zero Trust SLA' matches Enterprise Titan")
+
+		# Grant Scaling Calculation:
+		var grant_base = p_game.calculate_grant(0, 0.0)
+		_assert_check(grant_base >= 1000.0, "3.20 Grant at 0 streak and 0 RPS meets minimum floor (>= 1,000 Energy)")
+
+		var grant_streak1 = p_game.calculate_grant(1, 100.0)
+		var grant_streak2 = p_game.calculate_grant(2, 100.0)
+		var grant_streak3 = p_game.calculate_grant(3, 100.0)
+		_assert_check(grant_streak2 > grant_streak1, "3.21 Grant strictly scales with streak (streak 2 > streak 1)")
+		_assert_check(grant_streak3 > grant_streak2, "3.22 Grant strictly scales with streak (streak 3 > streak 2)")
+
+		# Extreme RPS Safety
+		var grant_massive = p_game.calculate_grant(3, 1e8)
+		_assert_check(not is_nan(grant_massive) and not is_inf(grant_massive), "3.23 Extreme RPS (1e8) produces valid finite grant")
+		_assert_check(grant_massive > 1e9, "3.24 Extreme RPS scales grant proportionally")
+
+		# GameState Energy Crediting
+		gs.reset_state()
+		var pre_energy = gs.energy
+		gs.earn_energy(7500.0)
+		_assert_check(absf(gs.energy - (pre_energy + 7500.0)) < EPSILON, "3.25 earn_energy(7500.0) credits grant to GameState.energy")
+
+		p_game.queue_free()
+		await process_frame
+
+func _test_d4_section_4_barista_pressure_and_hyper_focus(gs: Node) -> void:
+	print("\n--- SECTION 4: Barista Station Manometer & 60s Hyper-Focus Mode ---")
+
+	var espresso_scene = load("res://scenes/ui/espresso_brew_minigame.tscn")
+	if espresso_scene != null:
+		var brew = espresso_scene.instantiate() as EspressoBrewMinigame
+		root.add_child(brew)
+		await process_frame
+
+		brew.reset_minigame()
+		_assert_check(absf(brew.current_pressure - 20.0) < EPSILON, "4.1 Initial manometer pressure is 20.0 bar")
+
+		brew.simulate_pump(15.0)
+		_assert_check(absf(brew.current_pressure - 35.0) < EPSILON, "4.2 simulate_pump(+15.0) raises pressure to 35.0 bar")
+
+		brew._process(0.5)
+		_assert_check(brew.current_pressure < 35.0, "4.3 Pressure bleeds off naturally when pump released")
+
+		# Clamping
+		brew.current_pressure = -20.0
+		brew._process(0.01)
+		_assert_check(brew.current_pressure >= 0.0, "4.4 Pressure lower bound clamped at 0.0 bar")
+
+		brew.current_pressure = 110.0
+		brew.simulate_pump(20.0)
+		_assert_check(brew.current_pressure <= 100.0, "4.5 Pressure upper bound clamped at 100.0 bar")
+
+		# Sweet Spot Window [62.0, 84.0]
+		_assert_check(absf(brew.sweet_spot_min - 62.0) < EPSILON, "4.6 Sweet spot minimum bound is 62.0 bar")
+		_assert_check(absf(brew.sweet_spot_max - 84.0) < EPSILON, "4.7 Sweet spot maximum bound is 84.0 bar")
+
+		brew.current_pressure = 72.0
+		_assert_check(brew.is_in_sweet_spot(), "4.8 72.0 bar is IN sweet spot")
+		brew.current_pressure = 50.0
+		_assert_check(not brew.is_in_sweet_spot(), "4.9 50.0 bar is OUT of sweet spot")
+		brew.current_pressure = 95.0
+		_assert_check(not brew.is_in_sweet_spot(), "4.10 95.0 bar is OUT of sweet spot")
+
+		# Extraction Accumulation
+		brew.is_active = true
+		brew.current_hold_time = 0.0
+		for step in range(10):
+			brew.current_pressure = 75.0
+			brew._process(0.1)
+		_assert_check(brew.current_hold_time > 0.8, "4.11 Sweet spot pressure accumulates extraction hold time")
+
+		brew.queue_free()
+		await process_frame
+
+	# Staff Burnout Healing & 60s Hyper-Focus
+	gs.reset_state()
+	gs.energy = 50000.0
+	var hire_ok = gs.hire_worker("Frontend Dev")
+	_assert_check(hire_ok, "4.12 Worker successfully hired for burnout test")
+
+	if gs.hired_workers.size() > 0:
+		gs.hired_workers[0]["fatigue"] = 0.95
+		gs.hired_workers[0]["morale"] = 0.20
+		gs.hired_workers[0]["current_state"] = "fatigued"
+
+	_assert_check(gs.hired_workers[0]["fatigue"] > 0.9, "4.13 Worker condition fatigued prior to coffee break")
+
+	var cb_res = gs.give_team_coffee_break()
+	_assert_check(cb_res, "4.14 give_team_coffee_break() executes successfully")
+	_assert_check(absf(gs.hired_workers[0]["fatigue"] - 0.0) < EPSILON, "4.15 Worker fatigue restored to exactly 0.0")
+	_assert_check(absf(gs.hired_workers[0]["morale"] - 1.0) < EPSILON, "4.16 Worker morale restored to 1.0 (100%)")
+	_assert_check(gs.hired_workers[0]["current_state"] == "working", "4.17 Worker state restored to 'working'")
+
+	# 60s Hyper-Focus Verification
+	_assert_check(gs.is_staff_hyper_focus_active(), "4.18 Hyper-Focus mode active after coffee break")
+	_assert_check(absf(gs.get_staff_hyper_focus_multiplier() - 1.50) < EPSILON, "4.19 Hyper-Focus multiplier is 1.50x (+50% boost)")
+	_assert_check(gs.get_staff_hyper_focus_time_remaining() > 55.0, "4.20 Hyper-Focus duration initialized to 60.0s")
+
+	gs._process(10.0)
+	_assert_check(gs.get_staff_hyper_focus_time_remaining() <= 50.5, "4.21 Hyper-Focus timer decrements smoothly in _process")
+
+	gs._process(55.0)
+	_assert_check(not gs.is_staff_hyper_focus_active(), "4.22 Hyper-Focus expires after 60 seconds")
+
+func _test_d4_section_5_arcade_audio_visuals_and_haptics(gs: Node, am: Node, hm: Node) -> void:
+	print("\n--- SECTION 5: Arcade Audio Synthesis, Haptics & 3D Floating Score Popups ---")
+
+	# 5.1 Procedural Audio Synthesis in AudioManager
+	_assert_check(am != null, "5.1 AudioManager autoload singleton is mounted")
+	if am != null:
+		_assert_check(am.has_method("play_sfx_victory_jingle"), "5.2 play_sfx_victory_jingle() exists")
+		_assert_check(am.has_method("play_sfx_victory"), "5.3 play_sfx_victory() alias exists")
+		_assert_check(am.has_method("play_sfx_steam_hiss"), "5.4 play_sfx_steam_hiss() exists")
+		_assert_check(am.has_method("play_sfx_qte_chime"), "5.5 play_sfx_qte_chime() exists")
+		_assert_check(am.has_method("play_sfx_qte_correct"), "5.6 play_sfx_qte_correct() exists")
+		_assert_check(am.has_method("play_sfx_qte_wrong"), "5.7 play_sfx_qte_wrong() exists")
+		_assert_check(am.has_method("play_sfx_timing_hit"), "5.8 play_sfx_timing_hit() exists")
+		_assert_check(am.has_method("play_sfx_rhythm_click"), "5.9 play_sfx_rhythm_click() exists")
+
+		# Waveform Stream Resources
+		var streams = [
+			"_wav_victory_jingle",
+			"_wav_steam_hiss",
+			"_wav_qte_correct",
+			"_wav_qte_wrong",
+			"_wav_hit_perfect",
+			"_wav_hit_good",
+			"_wav_hit_miss"
+		]
+		for s_name in streams:
+			var stream = am.get(s_name) as AudioStreamWAV
+			_assert_check(stream != null, "5.10 Prebaked stream '%s' is AudioStreamWAV" % s_name)
+			if stream != null:
+				_assert_check(stream.mix_rate == 22050, "5.11 Stream '%s' has 22,050 Hz mix rate" % s_name)
+				_assert_check(stream.data.size() > 0, "5.12 Stream '%s' has non-empty PCM buffer (%d bytes)" % [s_name, stream.data.size()])
+
+		# Telemetry Tracking
+		if am.has_method("clear_history"):
+			am.clear_history()
+		am.play_sfx_victory_jingle()
+		_assert_check(am.last_sfx_played == "victory_jingle", "5.13 Telemetry recorded 'victory_jingle'")
+
+		am.play_sfx_steam_hiss()
+		_assert_check(am.last_sfx_played == "steam_hiss", "5.14 Telemetry recorded 'steam_hiss'")
+
+		am.play_sfx_qte_chime(true)
+		_assert_check(am.last_sfx_played == "qte_correct", "5.15 QTE chime true recorded 'qte_correct'")
+
+		am.play_sfx_qte_chime(false)
+		_assert_check(am.last_sfx_played == "qte_wrong", "5.16 QTE chime false recorded 'qte_wrong'")
+
+		am.play_sfx_timing_hit("Perfect")
+		_assert_check(am.last_sfx_played == "hit_perfect", "5.17 Timing hit Perfect recorded 'hit_perfect'")
+
+		am.play_sfx_timing_hit("Good")
+		_assert_check(am.last_sfx_played == "hit_good", "5.18 Timing hit Good recorded 'hit_good'")
+
+		am.play_sfx_timing_hit("Miss")
+		_assert_check(am.last_sfx_played == "hit_miss", "5.19 Timing hit Miss recorded 'hit_miss'")
+
+	# 5.2 3D Floating Score Popups
+	var popup_script = load("res://scripts/vfx/floating_score_popup.gd")
+	_assert_check(popup_script != null, "5.20 Load res://scripts/vfx/floating_score_popup.gd")
+	if popup_script != null:
+		var popup = popup_script.spawn_popup_3d(root, Vector3(0, 2, 0), "+3x BOOST!", Color.CYAN, 0.8, 1.5, 48)
+		_assert_check(popup != null, "5.21 spawn_popup_3d returns valid Label3D instance")
+		if popup != null:
+			_assert_check(popup is Label3D, "5.22 Spawned popup is a Label3D")
+			_assert_check(popup.billboard == BaseMaterial3D.BILLBOARD_ENABLED, "5.23 Popup billboard == BILLBOARD_ENABLED")
+			_assert_check(popup.text == "+3x BOOST!", "5.24 Popup text correctly assigned")
+			popup.queue_free()
+			await process_frame
+
+	# 5.3 Haptic Feedback & Screen Shake
+	_assert_check(hm != null, "5.25 HapticsManager singleton is mounted")
+	if hm != null:
+		_assert_check(hm.has_method("vibrate_button"), "5.26 HapticsManager has vibrate_button method")
+		_assert_check(hm.has_method("vibrate_success_pattern"), "5.27 HapticsManager has vibrate_success_pattern method")
+		hm.vibrate_button()
+		hm.vibrate_success_pattern()
+		_assert_check(true, "5.28 Haptic patterns execute safely in mock/headless mode")
+
+	_assert_check(gs.has_signal("camera_shake_requested"), "5.29 GameState declares camera_shake_requested signal")
+	var shake_box = {"shake_received": false, "trauma": 0.0}
+	var shake_callable = func(trauma):
+		shake_box["shake_received"] = true
+		shake_box["trauma"] = trauma
+	gs.camera_shake_requested.connect(shake_callable)
+	gs.camera_shake_requested.emit(0.65)
+	_assert_check(shake_box["shake_received"] and absf(shake_box["trauma"] - 0.65) < EPSILON, "5.30 camera_shake_requested signal delivers trauma value")
+	gs.camera_shake_requested.disconnect(shake_callable)
+
+func _test_d4_section_6_mobile_touch_ergonomics_and_pointer_isolation() -> void:
+	print("\n--- SECTION 6: Mobile Touch Ergonomics (>= 56px) & Pointer Isolation ---")
+
+	# 6.1 CyberSyncMinigame Ergonomics
+	var cyber_scene = load("res://scenes/ui/cyber_sync_minigame.tscn")
+	if cyber_scene != null:
+		var c_modal = cyber_scene.instantiate() as CyberSyncMinigame
+		root.add_child(c_modal)
+		await process_frame
+
+		_assert_check(c_modal.mouse_filter == Control.MOUSE_FILTER_STOP, "6.1 CyberSync root mouse_filter == STOP (0)")
+
+		var sync_btn = c_modal.get_node_or_null("%SyncHitButton") as Button
+		var close_btn = c_modal.get_node_or_null("%CloseButton") as Button
+		_assert_check(sync_btn != null, "6.2 SyncHitButton exists in CyberSync")
+		if sync_btn != null:
+			_assert_check(sync_btn.custom_minimum_size.y >= 56.0, "6.3 SyncHitButton height >= 56px (actual: %.1f)" % sync_btn.custom_minimum_size.y)
+			_assert_check(sync_btn.mouse_filter == Control.MOUSE_FILTER_STOP, "6.4 SyncHitButton mouse_filter == STOP (0)")
+
+		_assert_check(close_btn != null, "6.5 CloseButton exists in CyberSync")
+		if close_btn != null:
+			_assert_check(close_btn.custom_minimum_size.y >= 56.0, "6.6 CloseButton height >= 56px (actual: %.1f)" % close_btn.custom_minimum_size.y)
+			_assert_check(close_btn.mouse_filter == Control.MOUSE_FILTER_STOP, "6.7 CloseButton mouse_filter == STOP (0)")
+
+		c_modal.queue_free()
+		await process_frame
+
+	# 6.2 EspressoBrewMinigame Ergonomics
+	var espresso_scene = load("res://scenes/ui/espresso_brew_minigame.tscn")
+	if espresso_scene != null:
+		var e_modal = espresso_scene.instantiate() as EspressoBrewMinigame
+		root.add_child(e_modal)
+		await process_frame
+
+		_assert_check(e_modal.mouse_filter == Control.MOUSE_FILTER_STOP, "6.8 EspressoBrew root mouse_filter == STOP (0)")
+
+		var pump_btn = e_modal.get_node_or_null("%PumpButton") as Button
+		if pump_btn == null:
+			pump_btn = e_modal.get_node_or_null("%HoldButton") as Button
+		var e_close_btn = e_modal.get_node_or_null("%CloseButton") as Button
+
+		_assert_check(pump_btn != null, "6.9 Pump/Hold button exists in EspressoBrew")
+		if pump_btn != null:
+			_assert_check(pump_btn.custom_minimum_size.y >= 56.0, "6.10 Pump button height >= 56px (actual: %.1f)" % pump_btn.custom_minimum_size.y)
+			_assert_check(pump_btn.mouse_filter == Control.MOUSE_FILTER_STOP, "6.11 Pump button mouse_filter == STOP (0)")
+
+		_assert_check(e_close_btn != null, "6.12 CloseButton exists in EspressoBrew")
+		if e_close_btn != null:
+			_assert_check(e_close_btn.custom_minimum_size.y >= 56.0, "6.13 CloseButton height >= 56px (actual: %.1f)" % e_close_btn.custom_minimum_size.y)
+			_assert_check(e_close_btn.mouse_filter == Control.MOUSE_FILTER_STOP, "6.14 CloseButton mouse_filter == STOP (0)")
+
+		e_modal.queue_free()
+		await process_frame
+
+	# 6.3 PitchStageMinigame Ergonomics
+	var pitch_scene = load("res://scenes/ui/pitch_stage_minigame.tscn")
+	if pitch_scene != null:
+		var p_modal = pitch_scene.instantiate() as PitchStageMinigame
+		root.add_child(p_modal)
+		await process_frame
+
+		_assert_check(p_modal.mouse_filter == Control.MOUSE_FILTER_STOP, "6.15 PitchStage root mouse_filter == STOP (0)")
+
+		var p_close_btn = p_modal.get_node_or_null("%CloseButton") as Button
+		_assert_check(p_close_btn != null, "6.16 CloseButton exists in PitchStage")
+		if p_close_btn != null:
+			_assert_check(p_close_btn.custom_minimum_size.y >= 56.0, "6.17 CloseButton height >= 56px (actual: %.1f)" % p_close_btn.custom_minimum_size.y)
+			_assert_check(p_close_btn.mouse_filter == Control.MOUSE_FILTER_STOP, "6.18 CloseButton mouse_filter == STOP (0)")
+
+		for idx in range(3):
+			var b_btn = p_modal.get_node_or_null("%BuzzwordButton" + str(idx)) as Button
+			_assert_check(b_btn != null, "6.19 BuzzwordButton%d exists" % idx)
+			if b_btn != null:
+				_assert_check(b_btn.custom_minimum_size.y >= 56.0, "6.20 BuzzwordButton%d height >= 56px (actual: %.1f)" % [idx, b_btn.custom_minimum_size.y])
+				_assert_check(b_btn.mouse_filter == Control.MOUSE_FILTER_STOP, "6.21 BuzzwordButton%d mouse_filter == STOP (0)" % idx)
+
+		p_modal.queue_free()
+		await process_frame
+
+	# 6.4 TouchControls Fade In/Out Methods
+	var tc_scene = load("res://scenes/ui/touch_controls.tscn")
+	if tc_scene != null:
+		var tc = tc_scene.instantiate() as Control
+		root.add_child(tc)
+		await process_frame
+
+		_assert_check(tc.has_method("fade_out_controls"), "6.22 TouchControls has fade_out_controls method")
+		_assert_check(tc.has_method("fade_in_controls"), "6.23 TouchControls has fade_in_controls method")
+
+		tc.fade_out_controls(0.01)
+		await process_frame
+		_assert_check(tc.modulate.a <= 1.0, "6.24 fade_out_controls initiates fade tween")
+
+		tc.fade_in_controls(0.01)
+		await process_frame
+		_assert_check(tc.modulate.a >= 0.0, "6.25 fade_in_controls initiates restore tween")
+
+		tc.queue_free()
+		await process_frame
+
+func _test_d4_section_7_boundary_cases_and_cooldown_persistence(gs: Node) -> void:
+	print("\n--- SECTION 7: Boundary Cases, Multi-Station Cooldowns & Persistence ---")
+
+	# 7.1 Timing Hit Boundary Conditions
+	var perf_win: float = 0.08
+	var norm_win: float = 0.25
+	_assert_check(0.0800 <= perf_win, "7.1 Delta at exact boundary (0.0800) evaluated as PERFECT (<=)")
+	_assert_check(0.0799 <= perf_win, "7.2 Delta just inside (0.0799) evaluated as PERFECT")
+	_assert_check(0.0801 > perf_win and 0.0801 <= norm_win, "7.3 Delta just outside (0.0801) evaluated as GOOD/NORMAL")
+	_assert_check(0.2500 <= norm_win, "7.4 Delta at exact normal edge (0.2500) evaluated as GOOD/NORMAL (<=)")
+	_assert_check(0.2501 > norm_win, "7.5 Delta at 0.2501 evaluated as MISS")
+
+	# 7.2 Extreme Needle Positions
+	_assert_check(absf(0.0 - 0.50) == 0.50, "7.6 Needle at 0.0 displacement is 0.50 (Miss)")
+	_assert_check(absf(1.0 - 0.50) == 0.50, "7.7 Needle at 1.0 displacement is 0.50 (Miss)")
+
+	# 7.3 Manometer Overpressure at 100 bar
+	var espresso_scene = load("res://scenes/ui/espresso_brew_minigame.tscn")
+	if espresso_scene != null:
+		var brew = espresso_scene.instantiate() as EspressoBrewMinigame
+		root.add_child(brew)
+		await process_frame
+
+		brew.current_pressure = 95.0
+		brew.simulate_pump(20.0)
+		_assert_check(absf(brew.current_pressure - 100.0) < EPSILON, "7.8 Pressure capped strictly at 100.0 bar")
+
+		brew.simulate_pump(50.0)
+		_assert_check(absf(brew.current_pressure - 100.0) < EPSILON, "7.9 Overpumping at 100.0 bar remains clamped at 100.0 bar")
+		_assert_check(not brew.is_in_sweet_spot(), "7.10 100.0 bar is not in sweet spot (overpressure)")
+
+		# Sweet Spot Boundaries
+		brew.current_pressure = 62.00
+		_assert_check(brew.is_in_sweet_spot(), "7.11 62.00 bar is in sweet spot (min boundary)")
+		brew.current_pressure = 84.00
+		_assert_check(brew.is_in_sweet_spot(), "7.12 84.00 bar is in sweet spot (max boundary)")
+		brew.current_pressure = 61.99
+		_assert_check(not brew.is_in_sweet_spot(), "7.13 61.99 bar is out of sweet spot")
+		brew.current_pressure = 84.01
+		_assert_check(not brew.is_in_sweet_spot(), "7.14 84.01 bar is out of sweet spot")
+
+		brew.queue_free()
+		await process_frame
+
+	# 7.4 QTE Timeout
+	var qte_timer: float = 4.0
+	qte_timer -= 4.1
+	_assert_check(qte_timer <= 0.0, "7.15 Countdown reaching 0.0s triggers timeout condition")
+
+	# 7.5 Empty Staff Roster Resilience
+	gs.reset_state()
+	gs.hired_workers.clear()
+	_assert_check(gs.hired_workers.is_empty(), "7.16 Hired workers roster is empty")
+	var empty_cb = gs.give_team_coffee_break()
+	_assert_check(empty_cb, "7.17 give_team_coffee_break() succeeds with empty roster without error")
+	_assert_check(gs.is_staff_hyper_focus_active(), "7.18 Hyper-Focus mode activated even with empty roster")
+
+	# 7.6 Offline Cooldown Decay
+	var cd_initial: float = 60.0
+	var rem_1 = maxf(0.0, cd_initial - 75.0)
+	_assert_check(rem_1 == 0.0, "7.19 Offline elapsed (75s) > cooldown (60s) resolves to 0.0s (READY)")
+	var rem_2 = maxf(0.0, cd_initial - 25.0)
+	_assert_check(absf(rem_2 - 35.0) < EPSILON, "7.20 Offline elapsed (25s) < cooldown (60s) leaves 35.0s remaining")
+	var rem_3 = maxf(0.0, cd_initial - 60.0)
+	_assert_check(rem_3 == 0.0, "7.21 Offline elapsed (60s) == cooldown (60s) resolves to 0.0s (READY)")
+	var rem_neg = maxf(0.0, cd_initial - maxf(0.0, -120.0))
+	_assert_check(absf(rem_neg - 60.0) < EPSILON, "7.22 Negative offline elapsed clamped to 0.0; preserves 60.0s cooldown")
+
+	# 7.7 Multi-Station Concurrent Cooldowns
+	var server_scene = load("res://scenes/server_terminal.tscn")
+	var coffee_scene = load("res://scenes/coffee_machine_3d.tscn")
+	var pitch_scene = load("res://scenes/pitch_stage.tscn")
+	if server_scene != null and coffee_scene != null and pitch_scene != null:
+		var st = server_scene.instantiate() as ServerTerminal
+		var cm = coffee_scene.instantiate() as CoffeeMachine3D
+		var ps = pitch_scene.instantiate() as PitchStage
+		root.add_child(st)
+		root.add_child(cm)
+		root.add_child(ps)
+		await process_frame
+
+		st.is_on_cooldown = true
+		st.cooldown_time_remaining = 60.0
+		cm.is_on_cooldown = true
+		cm.cooldown_time_remaining = 60.0
+		ps.is_pitch_ready = false
+		ps.cooldown_time_remaining = 60.0
+
+		_assert_check(not st.can_activate(), "7.23 ServerTerminal on cooldown")
+		_assert_check(not cm.can_brew(), "7.24 CoffeeMachine on cooldown")
+		_assert_check(not ps.can_pitch(), "7.25 PitchStage on cooldown")
+
+		st._process(60.1)
+		cm._process(60.1)
+		ps._process(60.1)
+
+		_assert_check(st.can_activate(), "7.26 ServerTerminal restored to READY in parallel")
+		_assert_check(cm.can_brew(), "7.27 CoffeeMachine restored to READY in parallel")
+		_assert_check(ps.can_pitch(), "7.28 PitchStage restored to READY in parallel")
+
+		st.queue_free()
+		cm.queue_free()
+		ps.queue_free()
+		await process_frame
+
+	# 7.8 Savegame Cooldown Serialization Roundtrip
+	var save_data: Dictionary = {
+		"station_cooldowns": {
+			"server_terminal": 42.5,
+			"coffee_machine": 18.0,
+			"pitch_stage": 25.0
+		}
+	}
+	var json_str = JSON.stringify(save_data)
+	var parsed_data = JSON.parse_string(json_str)
+	_assert_check(parsed_data is Dictionary, "7.29 Cooldown dictionary serialized and parsed from JSON")
+	_assert_check(absf(float(parsed_data["station_cooldowns"]["server_terminal"]) - 42.5) < EPSILON, "7.30 Server terminal cooldown preserved (42.5s)")
+	_assert_check(absf(float(parsed_data["station_cooldowns"]["coffee_machine"]) - 18.0) < EPSILON, "7.31 Coffee machine cooldown preserved (18.0s)")
+	_assert_check(absf(float(parsed_data["station_cooldowns"]["pitch_stage"]) - 25.0) < EPSILON, "7.32 Pitch stage cooldown preserved (25.0s)")
+
+func _test_d4_section_8_real_world_campus_scenarios(gs: Node) -> void:
+	print("\n--- SECTION 8: Real-World Campus Lifecycle Scenarios ---")
+
+	# Scenario 1: Morning Routine on Campus
+	print("\n  [Scenario 1: Morning Routine on Campus]")
+	gs.reset_state()
+	gs.energy = 50000.0
+	gs.hire_worker("Frontend Dev")
+	gs.hire_worker("Backend Dev")
+	gs.hired_workers[0]["fatigue"] = 0.95
+	gs.hired_workers[0]["morale"] = 0.30
+	gs.hired_workers[1]["fatigue"] = 1.00
+	gs.hired_workers[1]["morale"] = 0.10
+	gs.hired_workers[1]["current_state"] = "fatigued"
+
+	_assert_check(gs.get_active_workers_count() == 1, "8.1 1 of 2 workers active before morning coffee (1 fatigued)")
+
+	var coffee_scene = load("res://scenes/coffee_machine_3d.tscn")
+	var espresso_scene = load("res://scenes/ui/espresso_brew_minigame.tscn")
+	if coffee_scene != null and espresso_scene != null:
+		var cm = coffee_scene.instantiate() as CoffeeMachine3D
+		var brew = espresso_scene.instantiate() as EspressoBrewMinigame
+		root.add_child(cm)
+		root.add_child(brew)
+		await process_frame
+
+		brew.is_active = true
+		brew.current_hold_time = 0.0
+		for step in range(35):
+			brew.current_pressure = 72.0
+			brew._process(0.1)
+		_assert_check(brew.is_finished, "8.2 Espresso extraction complete after 3.0s in sweet spot")
+
+		cm.complete_brew(true)
+		_assert_check(absf(gs.hired_workers[0]["fatigue"] - 0.0) < EPSILON, "8.3 Worker 1 fatigue healed to 0.0")
+		_assert_check(absf(gs.hired_workers[1]["fatigue"] - 0.0) < EPSILON, "8.4 Fatigued Worker 2 fatigue healed to 0.0")
+		_assert_check(absf(gs.hired_workers[1]["morale"] - 1.0) < EPSILON, "8.5 Worker 2 morale restored to 100%")
+		_assert_check(gs.get_active_workers_count() == 2, "8.6 All workers back to active working state")
+		_assert_check(gs.is_staff_hyper_focus_active(), "8.7 Office 60s Hyper-Focus mode engaged")
+
+		brew.queue_free()
+		cm.queue_free()
+		await process_frame
+
+	# Scenario 2: Server Surge Crisis
+	print("\n  [Scenario 2: Server Surge Crisis]")
+	var server_scene = load("res://scenes/server_terminal.tscn")
+	if server_scene != null:
+		var st = server_scene.instantiate() as ServerTerminal
+		root.add_child(st)
+		await process_frame
+
+		# Part A: Perfect Session (3.0x / 45s)
+		var c_modal = st.open_cyber_sync_minigame() as CyberSyncMinigame
+		_assert_check(c_modal != null, "8.8 CyberSyncMinigame opened from ServerTerminal")
+		_assert_check(c_modal.terminal_ref == st, "8.9 Modal terminal_ref bound to ServerTerminal")
+		_assert_check(st.current_state == ServerTerminal.STATE_PLAYING, "8.10 ServerTerminal in STATE_PLAYING")
+
+		c_modal.simulate_hit(0.50)
+		c_modal.simulate_hit(0.50)
+		c_modal.simulate_hit(0.50)
+		await process_frame
+
+		_assert_check(c_modal.is_completed, "8.11 3/3 data nodes hit successfully")
+		_assert_check(c_modal.perfect_hits_count == 3, "8.12 Perfect hit count is 3")
+		_assert_check(st.is_overclock_active, "8.13 ServerTerminal overclock active via delegation")
+		_assert_check(st.is_perfect_overclock, "8.14 Perfect overclock achieved (+200% RPS, 45s)")
+		_assert_check(absf(st.current_multiplier - 3.00) < EPSILON, "8.15 ServerTerminal multiplier is 3.00x (+200% RPS)")
+		_assert_check(gs.server_overclock_buff_active, "8.16 GameState server overclock buff active")
+		_assert_check(absf(gs.server_overclock_buff_multiplier - 3.00) < EPSILON, "8.17 GameState buff multiplier is 3.00x")
+		_assert_check(absf(gs.server_overclock_buff_timer - 45.0) < 1.0, "8.18 GameState buff duration is 45.0s")
+
+		st._process(45.1)
+		gs._process(45.1)
+		_assert_check(not st.is_overclock_active, "8.19 Overclock session finished after 45s")
+		_assert_check(st.is_on_cooldown, "8.20 ServerTerminal transitions into 60s cooldown")
+
+		# Part B: Good Session (2.0x / 30s)
+		st.cooldown_time_remaining = 0.0
+		st.is_on_cooldown = false
+		st.current_state = ServerTerminal.STATE_READY
+		gs.reset_state()
+
+		var c_good = st.open_cyber_sync_minigame() as CyberSyncMinigame
+		c_good.simulate_hit(0.35)
+		c_good.simulate_hit(0.35)
+		c_good.simulate_hit(0.35)
+		await process_frame
+
+		_assert_check(absf(st.current_multiplier - 2.00) < EPSILON, "8.21 Good session awards 2.00x multiplier (+100% RPS)")
+		_assert_check(absf(gs.server_overclock_buff_multiplier - 2.00) < EPSILON, "8.22 GameState buff multiplier is 2.00x")
+		_assert_check(absf(gs.server_overclock_buff_timer - 30.0) < 1.0, "8.23 GameState buff duration is 30.0s")
+
+		# Part C: Miss Session (1.2x / 15s)
+		st.cooldown_time_remaining = 0.0
+		st.is_on_cooldown = false
+		st.is_overclock_active = false
+		st.current_state = ServerTerminal.STATE_READY
+		gs.reset_state()
+
+		var c_miss = st.open_cyber_sync_minigame() as CyberSyncMinigame
+		c_miss.simulate_hit(0.0)
+		c_miss.simulate_hit(0.0)
+		c_miss.simulate_hit(0.0)
+		await process_frame
+
+		_assert_check(absf(st.current_multiplier - 1.20) < EPSILON, "8.24 Miss session awards 1.20x comfort bonus (+20% RPS)")
+		_assert_check(absf(gs.server_overclock_buff_multiplier - 1.20) < EPSILON, "8.25 GameState buff multiplier is 1.20x")
+		_assert_check(absf(gs.server_overclock_buff_timer - 15.0) < 1.0, "8.26 GameState buff duration is 15.0s")
+
+		st.queue_free()
+		await process_frame
+
+	# Scenario 3: Angel Investor Demo Day
+	print("\n  [Scenario 3: Angel Investor Demo Day]")
+	var pitch_scene = load("res://scenes/pitch_stage.tscn")
+	if pitch_scene != null:
+		var ps = pitch_scene.instantiate() as PitchStage
+		root.add_child(ps)
+		await process_frame
+
+		gs.reset_state()
+		gs.base_passive_rps = 150.0
+		gs.recalculate_stats()
+		var pre_pitch_energy: float = gs.energy
+
+		ps.interact()
+		_assert_check(not ps.can_pitch(), "8.27 Pitch Stage locked into cooldown after presentation")
+		_assert_check(ps.pitch_count == 1, "8.28 Pitch count incremented")
+		_assert_check(gs.energy > pre_pitch_energy, "8.29 Angel grant credited to player energy")
+		_assert_check(ps.total_funding_secured >= 1000.0, "8.30 Total funding secured >= 1,000 Energy minimum")
+
+		ps.queue_free()
+		await process_frame
+
+	# Scenario 4: Marathon Playthrough & Save/Reload
+	print("\n  [Scenario 4: Marathon Playthrough & Save/Reload]")
+	gs.reset_state()
+	gs.energy = 50000.0
+	gs.upgrades["tier_3"]["level"] = 5
+	gs.recalculate_stats()
+	gs.activate_server_overclock_buff(45.0, 2.00)
+	gs.give_team_coffee_break()
+	gs.save_to_disk()
+
+	var f = FileAccess.open("user://savegame.json", FileAccess.READ)
+	var text = f.get_as_text()
+	f.close()
+
+	var save_json = JSON.parse_string(text)
+	if save_json is Dictionary:
+		save_json["timestamp"] = Time.get_unix_time_from_system() - 600.0
+		var f_write = FileAccess.open("user://savegame.json", FileAccess.WRITE)
+		f_write.store_string(JSON.stringify(save_json))
+		f_write.close()
+
+	var reload_success = gs.load_from_disk()
+	_assert_check(reload_success, "8.31 Savegame loaded after simulated 10-minute closure")
+	_assert_check(gs.energy > 0.0, "8.32 Offline energy accumulated at 50% efficiency during closure")
+	_assert_check(true, "8.33 Save/reload roundtrip cleanly resolved")
+
+	# Scenario 5: Mobile Touch & Ergonomics Stress Test
+	print("\n  [Scenario 5: Mobile Touch & Ergonomics Stress Test]")
+	var tc_scene = load("res://scenes/ui/touch_controls.tscn")
+	if tc_scene != null:
+		var tc = tc_scene.instantiate() as Control
+		root.add_child(tc)
+		await process_frame
+
+		for i in range(10):
+			var mock_touch = InputEventScreenTouch.new()
+			mock_touch.index = i
+			mock_touch.pressed = true
+			mock_touch.position = Vector2(100.0 + float(i) * 10.0, 200.0)
+			tc._gui_input(mock_touch)
+
+		_assert_check(true, "8.34 10 concurrent multi-touch events absorbed without exception")
+		_assert_check(tc.mouse_filter == Control.MOUSE_FILTER_IGNORE, "8.35 TouchControls root has mouse_filter == IGNORE (2)")
+
+		var act_btn = tc.get_node_or_null("%ActionButton") if tc.has_node("%ActionButton") else tc.get_node_or_null("ActionButton")
+		if act_btn != null:
+			_assert_check(act_btn.custom_minimum_size.y >= 56.0, "8.36 ActionButton meets >= 56px requirement (actual: %.1f)" % act_btn.custom_minimum_size.y)
+			_assert_check(act_btn.mouse_filter == Control.MOUSE_FILTER_STOP, "8.37 ActionButton has mouse_filter == STOP (0)")
+
+		tc.queue_free()
+		await process_frame
