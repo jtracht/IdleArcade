@@ -21,15 +21,48 @@ import math
 import os
 import random
 import re
+import shutil
 import subprocess
 import sys
 from itertools import permutations
 from typing import Any, Dict, List, Tuple
 
-GAME_ROOT = os.path.abspath(r"c:\Projects\Game\IdleArcade")
+
+def find_game_root() -> str:
+    if os.path.exists("project.godot"):
+        return os.path.abspath(".")
+    if os.path.exists(os.path.join("IdleArcade", "project.godot")):
+        return os.path.abspath("IdleArcade")
+    this_dir = os.path.dirname(os.path.abspath(__file__))
+    parent = os.path.dirname(this_dir)
+    if os.path.exists(os.path.join(parent, "project.godot")):
+        return parent
+    return os.path.abspath(r"c:\Projects\Game\IdleArcade")
+
+
+def find_godot_cmd() -> str:
+    if "GODOT_BIN" in os.environ and os.path.exists(os.environ["GODOT_BIN"]):
+        return os.environ["GODOT_BIN"]
+    for candidate in ["godot", "godot4", "godot-ci", "godot.exe", "godot.cmd"]:
+        found = shutil.which(candidate)
+        if found:
+            return found
+    fallbacks = [
+        r"C:\Users\julia\.cargo\bin\godot.cmd",
+        r"C:\Users\julia\.local\bin\godot.exe",
+        "/usr/local/bin/godot",
+        "/usr/bin/godot",
+    ]
+    for fb in fallbacks:
+        if os.path.exists(fb):
+            return fb
+    return "godot"
+
+
+GAME_ROOT = find_game_root()
 TEST_GD = os.path.join(GAME_ROOT, "tests", "test_backend_core_economy.gd")
 GS_GD = os.path.join(GAME_ROOT, "scripts", "autoload", "game_state.gd")
-GODOT_CMD = r"C:\Users\julia\.cargo\bin\godot.cmd"
+GODOT_CMD = find_godot_cmd()
 
 
 class TestTracker:
@@ -350,13 +383,14 @@ def test_godot_test_suite_execution(tracker: TestTracker):
     print("CHALLENGE 5: Empirical Headless Godot Test Execution & Defect Analysis")
     print("=" * 80)
 
-    cmd = [GODOT_CMD, "--headless", "--path", "IdleArcade", "-s", "tests/test_backend_core_economy.gd"]
-    print(f"Running command: {' '.join(cmd)}")
+    godot_cmd = find_godot_cmd()
+    cmd = [godot_cmd, "--headless", "--path", ".", "-s", "tests/test_backend_core_economy.gd"]
+    print(f"Running command: {' '.join(cmd)} (cwd={GAME_ROOT})")
 
     try:
         proc = subprocess.run(
             cmd,
-            cwd=r"c:\Projects\Game",
+            cwd=GAME_ROOT,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -366,6 +400,9 @@ def test_godot_test_suite_execution(tracker: TestTracker):
         exit_code = proc.returncode
     except subprocess.TimeoutExpired as e:
         output = e.stdout.decode("utf-8", errors="replace") if e.stdout else "TIMEOUT"
+        exit_code = -1
+    except Exception as e:
+        output = f"Execution failed: {e}"
         exit_code = -1
 
     # Check for SCRIPT ERROR
