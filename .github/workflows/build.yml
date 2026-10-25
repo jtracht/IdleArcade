@@ -62,6 +62,7 @@ jobs:
           python3 $TARGET_DIR/tests/test_phase12_verify.py
           python3 $TARGET_DIR/tests/test_phase13_verify.py
           python3 $TARGET_DIR/tests/test_phase14_verify.py
+          python3 $TARGET_DIR/tests/test_phase15_qa_verify.py
 
       - name: Run Godot Headless Phase 5 Mobile Tests
         run: |
@@ -142,6 +143,14 @@ jobs:
             TARGET_DIR="IdleArcade"
           fi
           godot --headless --path "$TARGET_DIR" -s tests/test_phase14_workers.gd
+
+      - name: Run Godot Headless Phase 15 Master Full-Stack QA Runner
+        run: |
+          TARGET_DIR="."
+          if [ -d "IdleArcade" ]; then
+            TARGET_DIR="IdleArcade"
+          fi
+          godot --headless --path "$TARGET_DIR" -s tests/test_full_stack_qa.gd
 
   export-web:
     name: Export Web

@@ -339,7 +339,10 @@ func _test_section_4_server_terminal(gs: Node) -> void:
 		_assert_check(prompt.visible == true, "4.12 Prompt becomes visible on entrance")
 
 	# Baseline RPS before overclock
-	gs.upgrades["viral_memes"]["level"] = 10
+	if gs.upgrades.has("tier_1"):
+		gs.upgrades["tier_1"]["level"] = 10
+	elif gs.upgrades.has("viral_memes"):
+		gs.upgrades["viral_memes"]["level"] = 10
 	gs.recalculate_stats()
 	var base_rps = gs.get_effective_passive_rps()
 	_assert_check(base_rps > 0.0, "4.13 Baseline passive RPS established (%.2f RPS)" % base_rps)

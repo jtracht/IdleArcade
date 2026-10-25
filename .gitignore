@@ -3,6 +3,8 @@
 !res://.godot/
 build/
 *.translation
+*.uid
+*.import
 
 # OS specific
 .DS_Store

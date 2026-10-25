@@ -327,7 +327,7 @@ func _test_section_3_mobile_syndicate_modal(gs: Node) -> void:
 	var close_btn = modal.get_node_or_null("%CloseButton") as Button
 	_assert_check(close_btn != null, "3.5 %CloseButton exists")
 	if close_btn != null:
-		_assert_check(close_btn.custom_minimum_size.y >= 56.0, "3.6 %CloseButton height >= 56px (actual: %f)" % close_btn.custom_minimum_size.y)
+		_assert_check(close_btn.custom_minimum_size.y >= 56.0, "3.6 %%CloseButton height >= 56px (actual: %.1f)" % close_btn.custom_minimum_size.y)
 		_assert_check(close_btn.mouse_filter == Control.MOUSE_FILTER_STOP, "3.7 %CloseButton mouse_filter = STOP")
 
 	# 3.3 Three Ergonomic Tabs

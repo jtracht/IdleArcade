@@ -241,7 +241,10 @@ func _test_section_3_gameplay_effects(gs: Node) -> void:
 	
 	# 3.3 Server Overclock (+25% RPS)
 	# Give base upgrades for passive RPS
-	gs.upgrades["viral_memes"]["level"] = 10
+	if gs.upgrades.has("tier_1"):
+		gs.upgrades["tier_1"]["level"] = 10
+	elif gs.upgrades.has("viral_memes"):
+		gs.upgrades["viral_memes"]["level"] = 10
 	gs.recalculate_stats()
 	var rps_before = gs.get_effective_passive_rps()
 	_assert_check(rps_before > 0.0, "3.4 Baseline passive RPS established (%.2f RPS)" % rps_before)
