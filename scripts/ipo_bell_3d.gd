@@ -107,6 +107,11 @@ func interact() -> void:
 	ipo_bell_interacted.emit()
 	bell_rung.emit()
 
+	var tm = get_node_or_null("/root/TutorialManager")
+	if tm != null and tm.has_method("trigger_contextual_hint"):
+		tm.trigger_contextual_hint("hint_ipo_bell")
+
+
 	# 1. Play procedural bell audio chime
 	var am = get_node_or_null("/root/AudioManager")
 	if am != null:

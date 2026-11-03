@@ -172,6 +172,11 @@ func open(_args: Dictionary = {}) -> void:
 	visible = true
 	_connect_game_state_signals()
 	_update_ui()
+	var tm = get_node_or_null("/root/TutorialManager")
+	if tm != null and tm.has_method("trigger_contextual_hint"):
+		var target_card = _card_nodes.get("tech_coffee_automation", self) if _card_nodes is Dictionary else self
+		tm.trigger_contextual_hint("hint_tech_tree", target_card)
+
 
 ## Lifecycle close method. Emits closed signal and frees instance.
 func close() -> void:

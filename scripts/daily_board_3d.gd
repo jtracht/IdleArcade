@@ -91,6 +91,11 @@ func interact() -> void:
 	board_interacted.emit()
 	board_opened.emit()
 
+	var tm = get_node_or_null("/root/TutorialManager")
+	if tm != null and tm.has_method("trigger_contextual_hint"):
+		tm.trigger_contextual_hint("hint_daily_board")
+
+
 	# 1. Play UI click/board sound
 	var am = get_node_or_null("/root/AudioManager")
 	if am != null:

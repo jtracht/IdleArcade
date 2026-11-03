@@ -73,6 +73,11 @@ func _ready() -> void:
 	if am != null and am.has_method("start_ambient_bgm"):
 		am.start_ambient_bgm()
 
+	# Notify TutorialManager if tutorial continuation is active
+	var tm = get_node_or_null("/root/TutorialManager")
+	if tm != null and tm.has_method("on_scene_ready"):
+		tm.on_scene_ready(self)
+
 func _process(delta: float) -> void:
 	_update_screen_shake(delta)
 

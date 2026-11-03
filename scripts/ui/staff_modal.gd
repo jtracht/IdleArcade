@@ -74,6 +74,8 @@ func _ready() -> void:
 	_connect_game_state_signals()
 	switch_tab(active_tab_index)
 	refresh_all()
+	_check_staff_hint()
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():
@@ -606,6 +608,13 @@ func open() -> void:
 	visible = true
 	_play_sfx_click()
 	refresh_all()
+	_check_staff_hint()
+
+func _check_staff_hint() -> void:
+	var tm = get_node_or_null("/root/TutorialManager")
+	if tm != null and tm.has_method("trigger_contextual_hint"):
+		tm.trigger_contextual_hint("hint_staff", recruit_button if recruit_button != null else self)
+
 
 func close() -> void:
 	_play_sfx_click()

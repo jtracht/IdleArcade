@@ -23,6 +23,19 @@ func _ready() -> void:
 		spark_spawn_timer.timeout.connect(_on_spark_spawn_timer_timeout)
 	if auto_save_timer:
 		auto_save_timer.timeout.connect(_on_auto_save_timer_timeout)
+
+	# Check and start onboarding tutorial for first-time players
+	var tm = get_node_or_null("/root/TutorialManager")
+	if tm != null:
+		if tm.has_method("on_scene_ready"):
+			tm.on_scene_ready(self)
+		var should_start: bool = false
+		if GameState != null and GameState.has_method("is_first_time_player"):
+			should_start = GameState.is_first_time_player()
+		elif not FileAccess.file_exists("user://savegame.json"):
+			should_start = true
+		if should_start and tm.has_method("start_linear_intro"):
+			tm.call_deferred("start_linear_intro")
 	
 	# Spawn an introductory spark after 5 seconds to prompt active gameplay
 	get_tree().create_timer(5.0).timeout.connect(spawn_bonus_spark)

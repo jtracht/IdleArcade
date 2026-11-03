@@ -10,6 +10,8 @@ signal quest_completed(quest_id: String)
 signal closed()
 signal choice_selected(choice_id: String, reward_type: String, reward_value: float)
 signal campaign_advanced(chapter: int)
+signal tutorial_advanced()
+signal hint_dismissed(hint_id: String)
 
 @onready var name_label: Label = get_node_or_null("%NPCNameLabel")
 @onready var title_label: Label = get_node_or_null("%NPCTitleLabel")
@@ -28,6 +30,11 @@ signal campaign_advanced(chapter: int)
 @onready var close_button: Button = get_node_or_null("%CloseButton")
 @onready var avatar_badge: ColorRect = get_node_or_null("%AvatarBadge")
 
+# Dynamic layout & modal control nodes
+@onready var dim_backdrop: ColorRect = get_node_or_null("DimBackdrop")
+@onready var center_container: CenterContainer = get_node_or_null("CenterContainer")
+@onready var card_panel: PanelContainer = get_node_or_null("CenterContainer/CardPanel")
+
 var _current_npc_id: String = ""
 var _current_quest_id: String = ""
 var _quest_target: int = 1
@@ -38,6 +45,12 @@ var _current_chapter: int = 1
 var _current_choices: Array = []
 var _current_quest_title: String = ""
 var _current_quest_desc: String = ""
+
+# Tutorial & Hint state variables
+var _is_hint_mode: bool = false
+var _is_tutorial_mode: bool = false
+var _current_hint_id: String = ""
+var _hint_countdown: float = -1.0
 
 # Predefined branched narrative dialogue data for 3 chapters
 const CHAPTER_CHOICES: Dictionary = {
@@ -122,6 +135,7 @@ const CHAPTER_CHOICES: Dictionary = {
 }
 
 func _ready() -> void:
+	_ensure_dialogue_nodes()
 	if accept_button != null:
 		accept_button.pressed.connect(_on_accept_pressed)
 	if complete_button != null:
@@ -135,8 +149,29 @@ func _ready() -> void:
 	if choice_button_3 != null:
 		choice_button_3.pressed.connect(func(): _on_choice_pressed(2))
 		
+	var card = card_panel if card_panel != null else get_node_or_null("CenterContainer/CardPanel")
+	if card != null and not card.gui_input.is_connected(_on_card_panel_gui_input):
+		card.gui_input.connect(_on_card_panel_gui_input)
+
+	# Process only when hint countdown is active
+	set_process(false)
 	# Listen for Escape key to close
 	set_process_unhandled_input(true)
+
+func _process(delta: float) -> void:
+	if _is_hint_mode and _hint_countdown > 0.0:
+		_hint_countdown -= delta
+		if _hint_countdown <= 0.0:
+			_hint_countdown = -1.0
+			dismiss_hint()
+
+func _on_card_panel_gui_input(event: InputEvent) -> void:
+	if not _is_hint_mode:
+		return
+	if (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT) \
+			or (event is InputEventScreenTouch and event.pressed):
+		dismiss_hint()
+		accept_event()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
@@ -162,6 +197,13 @@ func open_for_npc(
 	choices: Array = [],
 	chapter: int = 0
 ) -> void:
+	_ensure_dialogue_nodes()
+	_is_hint_mode = false
+	_is_tutorial_mode = false
+	_hint_countdown = -1.0
+	set_process(false)
+	_restore_default_ui_state()
+
 	_current_npc_id = npc_id
 	_current_quest_id = quest_id
 	_current_quest_title = quest_title
@@ -366,7 +408,278 @@ func _on_complete_pressed() -> void:
 	_refresh_quest_ui(_current_quest_title, _current_quest_desc)
 
 func close_dialogue() -> void:
+	if _is_hint_mode:
+		dismiss_hint()
+		return
+	if _is_tutorial_mode:
+		advance_tutorial_step()
+		return
+
 	visible = false
-	if _avatar_ref != null and _avatar_ref.has_method("set_input_enabled"):
+	_restore_default_ui_state()
+	if _avatar_ref != null and is_instance_valid(_avatar_ref) and _avatar_ref.has_method("set_input_enabled"):
 		_avatar_ref.set_input_enabled(true)
 	closed.emit()
+
+## Opens the panel formatted for a Linear Intro tutorial step.
+## Presents the mascot dialogue without freezing avatar movement
+## and allows clicks outside the card to reach active game targets.
+func open_for_tutorial_step(
+	speaker_name: String,
+	title: String,
+	text: String,
+	badge_color: Color = Color(1.0, 0.84, 0.0)
+) -> void:
+	_ensure_dialogue_nodes()
+	_is_hint_mode = false
+	_is_tutorial_mode = true
+	_hint_countdown = -1.0
+	set_process(false)
+
+	# In tutorial step mode, never freeze avatar input
+	if _avatar_ref != null and is_instance_valid(_avatar_ref) and _avatar_ref.has_method("set_input_enabled"):
+		_avatar_ref.set_input_enabled(true)
+
+	# Hide DimBackdrop so TutorialOverlay spotlight cutout remains unoccluded
+	var backdrop = dim_backdrop if dim_backdrop != null else get_node_or_null("DimBackdrop")
+	if backdrop != null:
+		backdrop.visible = false
+		backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# Root & CenterContainer allow clicks to pass through to underlying buttons
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var cc = center_container if center_container != null else get_node_or_null("CenterContainer")
+	if cc != null:
+		cc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		cc.anchor_top = 0.05
+		cc.anchor_bottom = 0.45
+		cc.anchor_left = 0.0
+		cc.anchor_right = 1.0
+
+	var card = card_panel if card_panel != null else get_node_or_null("CenterContainer/CardPanel")
+	if card != null:
+		card.mouse_filter = Control.MOUSE_FILTER_STOP
+		card.custom_minimum_size = Vector2(460, 220)
+
+	if name_label != null:
+		name_label.text = speaker_name
+		name_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	if title_label != null:
+		title_label.text = title
+		title_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	if dialogue_label != null:
+		dialogue_label.text = text
+		dialogue_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	if avatar_badge != null:
+		avatar_badge.color = badge_color
+
+	# Hide NPC quest & choice containers
+	if choice_container != null:
+		choice_container.visible = false
+	if quest_box != null:
+		quest_box.visible = false
+	if accept_button != null:
+		accept_button.visible = false
+	if complete_button != null:
+		complete_button.visible = false
+
+	# Enable CloseButton as "Weiter ➔" (>= 56px)
+	if close_button != null:
+		close_button.visible = true
+		close_button.text = "Weiter ➔"
+		close_button.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	visible = true
+
+## Shows a non-blocking contextual hint popup with auto-dismiss after duration (default 5.0s)
+## or immediate dismissal upon tapping the hint card.
+## Passes input through to the game world so the player can continue playing.
+func show_hint_popup(
+	title: String,
+	text: String,
+	duration: float = 5.0,
+	target_rect: Rect2 = Rect2(),
+	hint_id: String = ""
+) -> void:
+	_ensure_dialogue_nodes()
+	_is_hint_mode = true
+	_is_tutorial_mode = false
+	_current_hint_id = hint_id if not hint_id.is_empty() else title
+	_hint_countdown = duration
+	set_process(duration > 0.0)
+
+	# Never freeze avatar input for contextual hints
+	if _avatar_ref != null and is_instance_valid(_avatar_ref) and _avatar_ref.has_method("set_input_enabled"):
+		_avatar_ref.set_input_enabled(true)
+
+	# DimBackdrop must be completely hidden & non-blocking
+	var backdrop = dim_backdrop if dim_backdrop != null else get_node_or_null("DimBackdrop")
+	if backdrop != null:
+		backdrop.visible = false
+		backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# Root & CenterContainer ignore input so player can interact with the game
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var cc = center_container if center_container != null else get_node_or_null("CenterContainer")
+	if cc != null:
+		cc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		cc.anchor_left = 0.0
+		cc.anchor_right = 1.0
+
+		# Intelligently position card to avoid occluding target_rect
+		var vp_height = get_viewport_rect().size.y if is_inside_tree() else 1280.0
+		if target_rect != Rect2() and target_rect.size != Vector2.ZERO:
+			if target_rect.position.y > vp_height * 0.5:
+				# Target in bottom half -> hint banner in top half
+				cc.anchor_top = 0.08
+				cc.anchor_bottom = 0.38
+			else:
+				# Target in top half -> hint banner in bottom half
+				cc.anchor_top = 0.62
+				cc.anchor_bottom = 0.92
+		else:
+			# Default top banner position
+			cc.anchor_top = 0.08
+			cc.anchor_bottom = 0.38
+
+	var card = card_panel if card_panel != null else get_node_or_null("CenterContainer/CardPanel")
+	if card != null:
+		card.mouse_filter = Control.MOUSE_FILTER_STOP
+		card.custom_minimum_size = Vector2(420, 160)
+
+	# Labels pass clicks so CardPanel.gui_input receives taps anywhere on the card
+	if name_label != null:
+		name_label.text = title
+		name_label.mouse_filter = Control.MOUSE_FILTER_PASS
+	if title_label != null:
+		title_label.text = "💡 Hinweis (Tippen zum Schließen)"
+		title_label.mouse_filter = Control.MOUSE_FILTER_PASS
+	if dialogue_label != null:
+		dialogue_label.text = text
+		dialogue_label.mouse_filter = Control.MOUSE_FILTER_PASS
+	if avatar_badge != null:
+		avatar_badge.color = Color(1.0, 0.84, 0.0)
+
+	if choice_container != null:
+		choice_container.visible = false
+	if quest_box != null:
+		quest_box.visible = false
+	if accept_button != null:
+		accept_button.visible = false
+	if complete_button != null:
+		complete_button.visible = false
+
+	# Compact OK button
+	if close_button != null:
+		close_button.visible = true
+		close_button.text = "OK"
+		close_button.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	visible = true
+
+## Dismisses an active contextual hint popup and emits hint_dismissed and closed.
+func dismiss_hint() -> void:
+	if not _is_hint_mode:
+		return
+	_is_hint_mode = false
+	_hint_countdown = -1.0
+	set_process(false)
+	visible = false
+	_restore_default_ui_state()
+
+	if _avatar_ref != null and is_instance_valid(_avatar_ref) and _avatar_ref.has_method("set_input_enabled"):
+		_avatar_ref.set_input_enabled(true)
+
+	var dismissed_id: String = _current_hint_id
+	_current_hint_id = ""
+	hint_dismissed.emit(dismissed_id)
+	closed.emit()
+
+## Advances the linear tutorial step and emits tutorial_advanced and closed.
+func advance_tutorial_step() -> void:
+	if not _is_tutorial_mode:
+		return
+	_is_tutorial_mode = false
+	visible = false
+	_restore_default_ui_state()
+
+	if _avatar_ref != null and is_instance_valid(_avatar_ref) and _avatar_ref.has_method("set_input_enabled"):
+		_avatar_ref.set_input_enabled(true)
+
+	tutorial_advanced.emit()
+	closed.emit()
+
+## Restores default full-screen modal anchors, sizes, and mouse filters for normal NPC dialogues.
+func _restore_default_ui_state() -> void:
+	mouse_filter = Control.MOUSE_FILTER_STOP
+	var backdrop = dim_backdrop if dim_backdrop != null else get_node_or_null("DimBackdrop")
+	if backdrop != null:
+		backdrop.visible = true
+		backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
+	var cc = center_container if center_container != null else get_node_or_null("CenterContainer")
+	if cc != null:
+		cc.mouse_filter = Control.MOUSE_FILTER_STOP
+		cc.anchor_top = 0.0
+		cc.anchor_bottom = 1.0
+		cc.anchor_left = 0.0
+		cc.anchor_right = 1.0
+	var card = card_panel if card_panel != null else get_node_or_null("CenterContainer/CardPanel")
+	if card != null:
+		card.mouse_filter = Control.MOUSE_FILTER_STOP
+		card.custom_minimum_size = Vector2(500, 480)
+	if dialogue_label != null:
+		dialogue_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	if name_label != null:
+		name_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	if title_label != null:
+		title_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	if close_button != null:
+		close_button.text = "Close [Esc]"
+
+func _ensure_dialogue_nodes() -> void:
+	if name_label == null:
+		name_label = get_node_or_null("%NPCNameLabel")
+	if title_label == null:
+		title_label = get_node_or_null("%NPCTitleLabel")
+	if dialogue_label == null:
+		dialogue_label = get_node_or_null("%DialogueLabel")
+	if choice_container == null:
+		choice_container = get_node_or_null("%ChoiceContainer")
+	if choice_button_1 == null:
+		choice_button_1 = get_node_or_null("%ChoiceButton1")
+	if choice_button_2 == null:
+		choice_button_2 = get_node_or_null("%ChoiceButton2")
+	if choice_button_3 == null:
+		choice_button_3 = get_node_or_null("%ChoiceButton3")
+	if quest_box == null:
+		quest_box = get_node_or_null("%QuestBox")
+	if quest_title_label == null:
+		quest_title_label = get_node_or_null("%QuestTitleLabel")
+	if quest_desc_label == null:
+		quest_desc_label = get_node_or_null("%QuestDescLabel")
+	if quest_progress_label == null:
+		quest_progress_label = get_node_or_null("%QuestProgressLabel")
+	if quest_reward_label == null:
+		quest_reward_label = get_node_or_null("%QuestRewardLabel")
+	if accept_button == null:
+		accept_button = get_node_or_null("%AcceptButton")
+	if complete_button == null:
+		complete_button = get_node_or_null("%CompleteButton")
+	if close_button == null:
+		close_button = get_node_or_null("%CloseButton")
+	if avatar_badge == null:
+		avatar_badge = get_node_or_null("%AvatarBadge")
+	if dim_backdrop == null:
+		dim_backdrop = get_node_or_null("DimBackdrop")
+	if center_container == null:
+		center_container = get_node_or_null("CenterContainer")
+	if card_panel == null:
+		card_panel = get_node_or_null("CenterContainer/CardPanel")
+
+## Query helper methods for tests and state machine coordination.
+func is_hint_active() -> bool:
+	return visible and _is_hint_mode
+
+func is_tutorial_active() -> bool:
+	return visible and _is_tutorial_mode
+

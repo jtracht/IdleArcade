@@ -17,10 +17,13 @@ signal haptics_toggled(enabled: bool)
 signal battery_saver_toggled(enabled: bool)
 signal screen_shake_changed(intensity: float)
 signal light_cycle_mode_changed(mode: String)
+signal tutorial_replay_triggered()
 
 # Node References
 @onready var backdrop: ColorRect = get_node_or_null("Backdrop")
 @onready var close_button: Button = get_node_or_null("%CloseButton")
+@onready var replay_tutorial_button: Button = get_node_or_null("%ReplayTutorialButton")
+@onready var tutorial_status_label: Label = get_node_or_null("%TutorialStatusLabel")
 
 @onready var master_slider: HSlider = get_node_or_null("%MasterVolumeSlider")
 @onready var master_value_label: Label = get_node_or_null("%MasterVolumeValue")
@@ -108,6 +111,9 @@ func _bind_controls() -> void:
 		light_cycle_day_btn.pressed.connect(_on_light_cycle_day_pressed)
 	if light_cycle_night_btn != null and not light_cycle_night_btn.pressed.is_connected(_on_light_cycle_night_pressed):
 		light_cycle_night_btn.pressed.connect(_on_light_cycle_night_pressed)
+
+	if replay_tutorial_button != null and not replay_tutorial_button.pressed.is_connected(_on_replay_tutorial_pressed):
+		replay_tutorial_button.pressed.connect(_on_replay_tutorial_pressed)
 
 ## Connects to GameState audio & VFX settings signals for real-time external synchronization.
 func _connect_game_state_signals() -> void:
@@ -636,3 +642,35 @@ func _fallback_set_bus_mute(bus_name: String, muted: bool) -> void:
 	var idx: int = AudioServer.get_bus_index(bus_name)
 	if idx != -1:
 		AudioServer.set_bus_mute(idx, muted)
+
+func _on_replay_tutorial_pressed() -> void:
+	var am = _get_audio_manager()
+	if am != null and am.has_method("play_sfx_click"):
+		am.play_sfx_click()
+
+	var gs = _get_game_state()
+	if gs != null and gs.has_method("reset_tutorial_state"):
+		gs.reset_tutorial_state()
+
+	var tm = get_node_or_null("/root/TutorialManager")
+	if tm != null and tm.has_method("reset_tutorial"):
+		tm.reset_tutorial()
+
+	if tutorial_status_label != null:
+		tutorial_status_label.text = "✓ Zurückgesetzt!"
+		tutorial_status_label.visible = true
+
+	if replay_tutorial_button != null:
+		replay_tutorial_button.text = "✓ Tutorial zurückgesetzt!"
+		replay_tutorial_button.disabled = true
+
+	tutorial_replay_triggered.emit()
+
+	# Safe scene reload: only transition if running in actual game scene (avoid disrupting test runners)
+	if is_inside_tree() and get_tree() != null:
+		var cur = get_tree().current_scene
+		if cur != null and (cur.name == "Main" or cur.name == "Main3D"):
+			await get_tree().create_timer(0.6).timeout
+			close()
+			get_tree().change_scene_to_file("res://scenes/main.tscn")
+

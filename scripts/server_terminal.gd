@@ -494,6 +494,10 @@ func complete_cyber_sync(is_perfect: bool = true, rating: String = "", custom_du
 ## Primary interaction method
 func interact() -> void:
 	terminal_interacted.emit()
+
+	var tm = get_node_or_null("/root/TutorialManager")
+	if tm != null and tm.has_method("trigger_contextual_hint"):
+		tm.trigger_contextual_hint("hint_minigame")
 	
 	if not can_activate():
 		var am_fail = get_node_or_null("/root/AudioManager")

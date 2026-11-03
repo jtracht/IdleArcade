@@ -75,6 +75,10 @@ func _on_interaction_body_entered(body: Node3D) -> void:
 			var tc = _find_touch_controls()
 			if tc != null and tc.has_method("register_interactable"):
 				tc.register_interactable(self, "Unlock [E]")
+
+			var tm = get_node_or_null("/root/TutorialManager")
+			if tm != null and tm.has_method("trigger_contextual_hint"):
+				tm.trigger_contextual_hint("hint_zone_gate")
 				
 		if auto_unlock_on_level and not _is_unlocked:
 			var gs = get_node_or_null("/root/GameState")

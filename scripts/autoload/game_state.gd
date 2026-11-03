@@ -89,6 +89,10 @@ signal staff_bonus_updated(staff_multiplier: float, active_workers: int, avg_mor
 signal station_cooldown_started(station_id: String, duration: float)
 signal station_cooldown_ended(station_id: String)
 
+# Phase 17 Hybrid Tutorial & Onboarding System Signals
+signal tutorial_state_changed()
+signal contextual_hint_registered(hint_id: String)
+
 # --- State Variables ---
 var energy: float = 0.0
 var total_energy_earned: float = 0.0
@@ -190,6 +194,13 @@ var station_cooldowns: Dictionary = {
 	"pitch_stage": 0.0,
 	"coffee_machine": 0.0
 }
+
+# Phase 17 Hybrid Tutorial & Onboarding System State Variables
+var tutorial_current_step: int = 0
+var tutorial_completed: bool = false
+var tutorial_skipped: bool = false
+var tutorial_replay_requested: bool = false
+var tutorial_seen_hints: Dictionary = {}
 
 var base_click_power: float = 1.0
 var base_passive_rps: float = 0.0
@@ -730,6 +741,54 @@ func reset_state() -> void:
 		"pitch_stage": 0.0,
 		"coffee_machine": 0.0
 	}
+
+	# Phase 17 Hybrid Tutorial & Onboarding Defaults
+	tutorial_current_step = 0
+	tutorial_completed = false
+	tutorial_skipped = false
+	tutorial_replay_requested = false
+	tutorial_seen_hints.clear()
+
+# ==============================================================================
+# Phase 17 Hybrid Tutorial & Onboarding Methods
+# ==============================================================================
+
+## Returns true if the player should experience the linear onboarding tutorial.
+## Evaluates: true on a fresh install (no save on disk) OR when replay was explicitly requested,
+## OR when a save exists but tutorial is in progress, provided it has not already been completed or skipped.
+func is_first_time_player() -> bool:
+	if tutorial_replay_requested:
+		return true
+	if not FileAccess.file_exists(SAVE_PATH):
+		return true
+	return not tutorial_completed and not tutorial_skipped
+
+
+## Non-destructively resets tutorial progression state while leaving economy intact.
+func reset_tutorial_state() -> void:
+	tutorial_current_step = 0
+	tutorial_completed = false
+	tutorial_skipped = false
+	tutorial_replay_requested = true
+	tutorial_seen_hints.clear()
+	var tm = get_node_or_null("/root/TutorialManager")
+	if tm != null and tm.has_method("reset_tutorial"):
+		tm.reset_tutorial()
+	save_to_disk()
+	tutorial_state_changed.emit()
+
+## Marks a specific contextual hint as seen and persists to disk.
+func mark_contextual_hint_seen(hint_id: String) -> void:
+	if hint_id.is_empty():
+		return
+	if not tutorial_seen_hints.get(hint_id, false):
+		tutorial_seen_hints[hint_id] = true
+		save_to_disk()
+		contextual_hint_registered.emit(hint_id)
+
+## Returns true if the player has already seen the specified contextual hint.
+func has_seen_contextual_hint(hint_id: String) -> bool:
+	return tutorial_seen_hints.get(hint_id, false) == true
 
 func _process(delta: float) -> void:
 	var safe_delta: float = maxf(0.0, delta)
@@ -1363,6 +1422,12 @@ func save_to_disk() -> void:
 		"staff_hyper_focus_remaining": staff_hyper_focus_remaining,
 		"staff_hyper_focus_active": staff_hyper_focus_active,
 		"station_cooldowns": station_cooldowns.duplicate(),
+		# Phase 17 Hybrid Tutorial & Onboarding Persistence
+		"tutorial_current_step": tutorial_current_step,
+		"tutorial_completed": tutorial_completed,
+		"tutorial_skipped": tutorial_skipped,
+		"tutorial_replay_requested": tutorial_replay_requested,
+		"tutorial_seen_hints": tutorial_seen_hints.duplicate(true),
 		"upgrades": {}
 	}
 	
@@ -1720,7 +1785,37 @@ func load_from_disk() -> bool:
 		staff_coffee_break_remaining = staff_hyper_focus_timer
 		staff_hyper_focus_active = staff_hyper_focus_timer > 0.0
 		staff_coffee_break_active = staff_hyper_focus_active
-			
+
+	# Phase 17 Hybrid Tutorial & Onboarding Deserialization
+	var raw_step = data.get("tutorial_current_step", 0)
+	if raw_step is int or raw_step is float:
+		tutorial_current_step = maxi(0, int(raw_step))
+	elif raw_step is String and raw_step.is_valid_int():
+		tutorial_current_step = maxi(0, raw_step.to_int())
+	else:
+		tutorial_current_step = 0
+	var raw_comp = data.get("tutorial_completed", false)
+	tutorial_completed = raw_comp if raw_comp is bool else false
+	var raw_skip = data.get("tutorial_skipped", false)
+	tutorial_skipped = raw_skip if raw_skip is bool else false
+	var raw_replay = data.get("tutorial_replay_requested", false)
+	tutorial_replay_requested = raw_replay if raw_replay is bool else false
+	tutorial_seen_hints.clear()
+	var raw_hints = data.get("tutorial_seen_hints", {})
+	if raw_hints is Dictionary:
+		for hint_id in raw_hints:
+			if hint_id is String and not str(hint_id).strip_edges().is_empty():
+				var clean_id: String = str(hint_id).strip_edges()
+				var raw_val = raw_hints[hint_id]
+				if raw_val is bool:
+					tutorial_seen_hints[clean_id] = raw_val
+				elif raw_val is int or raw_val is float:
+					tutorial_seen_hints[clean_id] = (raw_val != 0)
+				elif raw_val is String:
+					var s_val: String = raw_val.to_lower().strip_edges()
+					tutorial_seen_hints[clean_id] = (s_val == "true" or s_val == "1" or s_val == "seen")
+				else:
+					tutorial_seen_hints[clean_id] = false
 	energy_changed.emit(energy, offline_gain)
 	rps_changed.emit(get_effective_passive_rps())
 	frenzy_updated.emit(frenzy_multiplier, 0.0)

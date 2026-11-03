@@ -1,12 +1,12 @@
 extends SceneTree
 
 ## =============================================================================
-## Master Full-Stack Headless SceneTree Test Suite for Phase 16:
-## Full-Stack QA, 4-Domain Test Aggregator & CI/CD Runner (Release v2.3.0)
+## Master Full-Stack Headless SceneTree Test Suite for Phase 17:
+## Full-Stack QA, 5-Domain Test Aggregator & CI/CD Runner (Release v2.4.0)
 ## File: IdleArcade/tests/test_full_stack_qa.gd
-## Target: Godot 4.3 Engine Headless Runner & CI Verification (Release v2.3.0)
+## Target: Godot 4.3 Engine Headless Runner & CI Verification (Release v2.4.0)
 ##
-## Aggregates 100% of Phase 16 Full-Stack Test Suites Across 4 Key Domains:
+## Aggregates 100% of Phase 17 Full-Stack Test Suites Across 5 Key Domains:
 ##   Domain 1: Backend Core & Economy Test Suite (Sections 1..8)
 ##             - Active clicks, tap deduplication & Frenzy/Overdrive
 ##             - 7-tier exponential generator scaling & monotonicity
@@ -39,6 +39,13 @@ extends SceneTree
 ##             - Section 6: Mobile Touch Ergonomics (>= 56px) & Pointer Isolation
 ##             - Section 7: Boundary Cases, Multi-Station Cooldowns & Persistence
 ##             - Section 8: Real-World Campus Lifecycle Scenarios (1..5)
+##   Domain 5: Tutorial & First-Time User Experience (FTUE) (Sections 1..6)
+##             - Section 1: Tutorial State Machine & Intro Flow (F3-F9, Steps 1..6 & Skip)
+##             - Section 2: DialoguePanel Integration & Angel Investor Persona (F1)
+##             - Section 3: Spotlight Overlay & Viewport Touch Passthrough (F2)
+##             - Section 4: Contextual Hint Delivery & Exactly-Once Invariant (F10-F15)
+##             - Section 5: Save/Load Serialization & Truth Table (F16-F17)
+##             - Section 6: Replay Flow & Progression Non-Destruction (F18)
 ##
 ## Execution:
 ##   godot --headless --path IdleArcade -s tests/test_full_stack_qa.gd
@@ -55,11 +62,13 @@ var domain3_pass: int = 0
 var domain3_fail: int = 0
 var domain4_pass: int = 0
 var domain4_fail: int = 0
+var domain5_pass: int = 0
+var domain5_fail: int = 0
 var suite_start_time_ms: int = 0
 
 var current_domain: int = 1
 
-const MIN_EXPECTED_PASS_COUNT: int = 1200
+const MIN_EXPECTED_PASS_COUNT: int = 1500
 const EPSILON: float = 0.005
 const SQRT1_2: float = 0.7071067811865475
 
@@ -86,6 +95,8 @@ func _assert_check(condition: bool, description: String, detail: String = "") ->
 			domain3_pass += 1
 		elif current_domain == 4:
 			domain4_pass += 1
+		elif current_domain == 5:
+			domain5_pass += 1
 	else:
 		var err_msg: String = "  [FAIL] %s" % description
 		if detail != "":
@@ -100,10 +111,12 @@ func _assert_check(condition: bool, description: String, detail: String = "") ->
 			domain3_fail += 1
 		elif current_domain == 4:
 			domain4_fail += 1
+		elif current_domain == 5:
+			domain5_fail += 1
 
 func _init() -> void:
 	print("\n====================================================================")
-	print(">>> RUNNING IDLEARCADE PHASE 16: MASTER FULL-STACK QA RUNNER <<<")
+	print(">>> RUNNING IDLEARCADE PHASE 17: MASTER FULL-STACK QA RUNNER <<<")
 	print("====================================================================")
 	# Check and backup existing user files synchronously in _init() BEFORE autoload singletons
 	# can initialize and call save_to_disk() in their _ready() callbacks.
@@ -235,6 +248,17 @@ func _run_all_tests() -> void:
 		_mounted_nodes.append(lem)
 	_assert_check(lem != null, "0.12 LiveEventManager mounted at /root/LiveEventManager")
 
+	# 0.7 TutorialManager
+	var tm_script = load("res://scripts/autoload/tutorial_manager.gd")
+	_assert_check(tm_script != null, "0.13 Load res://scripts/autoload/tutorial_manager.gd")
+	var tm = root.get_node_or_null("TutorialManager")
+	if tm == null and tm_script != null:
+		tm = tm_script.new()
+		tm.name = "TutorialManager"
+		root.add_child(tm)
+		_mounted_nodes.append(tm)
+	_assert_check(tm != null, "0.14 TutorialManager mounted at /root/TutorialManager")
+
 	await process_frame
 
 	# =========================================================================
@@ -318,17 +342,39 @@ func _run_all_tests() -> void:
 
 	print("\n>>> DOMAIN 4 COMPLETE: %d PASSED, %d FAILED <<<" % [domain4_pass, domain4_fail])
 
+	# =========================================================================
+	current_domain = 5
+	print("\n====================================================================")
+	print(">>> DOMAIN 5: TUTORIAL & FIRST-TIME USER EXPERIENCE (FTUE) (Phase 17) <<<")
+	print("====================================================================")
+	if gs.has_method("reset_state"):
+		gs.reset_state()
+	if gs.has_method("reset_tutorial_state"):
+		gs.reset_tutorial_state()
+	if tm != null and tm.has_method("reset_tutorial"):
+		tm.reset_tutorial()
+
+	await _test_d5_section_1_tutorial_state_machine_and_intro(gs, tm)
+	await _test_d5_section_2_dialogue_panel_and_angel_investor(gs, tm)
+	await _test_d5_section_3_spotlight_overlay_and_touch_passthrough(tm)
+	await _test_d5_section_4_contextual_hints_and_exactly_once(gs, tm)
+	await _test_d5_section_5_save_load_serialization_and_truth_table(gs, tm)
+	await _test_d5_section_6_replay_flow_and_non_destructive_reset(gs, tm)
+
+	print("\n>>> DOMAIN 5 COMPLETE: %d PASSED, %d FAILED <<<" % [domain5_pass, domain5_fail])
+
 	# -------------------------------------------------------------------------
 	# Master Full-Stack Summary & Clean Deterministic Exit
 	# -------------------------------------------------------------------------
 	var elapsed_sec: float = float(Time.get_ticks_msec() - suite_start_time_ms) / 1000.0
 	print("\n====================================================================")
-	print(">>> MASTER FULL-STACK QA RUNNER SUMMARY (Phase 16 v2.3.0) <<<")
+	print(">>> MASTER FULL-STACK QA RUNNER SUMMARY (Phase 17 v2.4.0) <<<")
 	print("====================================================================")
 	print("  Domain 1: Backend Core & Economy            : %4d Passed, %2d Failed" % [domain1_pass, domain1_fail])
 	print("  Domain 2: Frontend UI/UX & Touch Ergonomics : %4d Passed, %2d Failed" % [domain2_pass, domain2_fail])
 	print("  Domain 3: 3D Campus Stations & Interactions : %4d Passed, %2d Failed" % [domain3_pass, domain3_fail])
 	print("  Domain 4: Interactive Arcade Minigames      : %4d Passed, %2d Failed" % [domain4_pass, domain4_fail])
+	print("  Domain 5: Tutorial & FTUE Onboarding        : %4d Passed, %2d Failed" % [domain5_pass, domain5_fail])
 	print("--------------------------------------------------------------------")
 	print("  TOTAL ASSERTIONS                            : %4d Passed, %2d Failed" % [pass_count, fail_count])
 	print("  Execution Time                              : %.2f seconds" % elapsed_sec)
@@ -4151,3 +4197,485 @@ func _test_d4_section_8_real_world_campus_scenarios(gs: Node) -> void:
 
 		tc.queue_free()
 		await process_frame
+
+# =============================================================================
+# DOMAIN 5 IMPLEMENTATION: TUTORIAL & FIRST-TIME USER EXPERIENCE (FTUE)
+# =============================================================================
+
+func _test_d5_section_1_tutorial_state_machine_and_intro(gs: Node, tm: Node) -> void:
+	print("\n--- SECTION 1: Tutorial State Machine & Intro Flow (F3-F9) ---")
+	_assert_check(tm != null, "1.1 TutorialManager instance is mounted")
+	_assert_check(tm.has_signal("step_started"), "1.2 TutorialManager declares signal step_started")
+	_assert_check(tm.has_signal("step_completed"), "1.3 TutorialManager declares signal step_completed")
+	_assert_check(tm.has_signal("tutorial_completed"), "1.4 TutorialManager declares signal tutorial_completed")
+	_assert_check(tm.has_signal("tutorial_skipped"), "1.5 TutorialManager declares signal tutorial_skipped")
+	_assert_check(tm.has_signal("contextual_hint_triggered"), "1.6 TutorialManager declares signal contextual_hint_triggered")
+
+	_assert_check(tm.has_method("start_linear_intro"), "1.7 TutorialManager defines start_linear_intro()")
+	_assert_check(tm.has_method("advance_step"), "1.8 TutorialManager defines advance_step()")
+	_assert_check(tm.has_method("skip_tutorial"), "1.9 TutorialManager defines skip_tutorial()")
+	_assert_check(tm.has_method("reset_tutorial"), "1.10 TutorialManager defines reset_tutorial()")
+	_assert_check(tm.has_method("get_current_step"), "1.11 TutorialManager defines get_current_step()")
+	_assert_check(tm.has_method("is_tutorial_active"), "1.12 TutorialManager defines is_tutorial_active()")
+
+	tm.reset_tutorial()
+	gs.reset_tutorial_state()
+	gs.energy = 0.0
+	await process_frame
+
+	_assert_check(tm.get_current_step() == 0, "1.13 Initial step after reset is 0 (IDLE)")
+	_assert_check(not tm.is_tutorial_active(), "1.14 is_tutorial_active() is false after reset")
+
+	var step_started_events: Array[Dictionary] = []
+	var tut_completed_events: Array = []
+	var tut_skipped_events: Array = []
+
+	var cb_st = func(s_idx: int, t_name: String): step_started_events.append({"step": s_idx, "target": t_name})
+	var cb_comp = func(): tut_completed_events.append(true)
+	var cb_skip = func(): tut_skipped_events.append(true)
+
+	tm.step_started.connect(cb_st)
+	tm.tutorial_completed.connect(cb_comp)
+	tm.tutorial_skipped.connect(cb_skip)
+
+	# Step 1: Core reactor tap
+	tm.start_linear_intro()
+	await process_frame
+
+	_assert_check(tm.get_current_step() == 1, "1.15 Step 1 started: INTRO_STEP_1_TAP")
+	_assert_check(tm.is_tutorial_active(), "1.16 is_tutorial_active() returns true during intro")
+	_assert_check(step_started_events.size() >= 1 and step_started_events[-1]["step"] == 1, "1.17 step_started(1, 'Core') emitted")
+	_assert_check(step_started_events[-1]["target"] == "Core", "1.18 Target is 'Core'")
+	_assert_check(tm.tutorial_overlay != null and tm.tutorial_overlay.get_node("%SkipButton").visible, "1.19 SkipButton is visible during Step 1")
+
+	# Tap Core Reactor -> awards +30 seed energy & advances to Step 2
+	gs.tap_core()
+	await process_frame
+
+	_assert_check(gs.energy >= 30.0, "1.20 Step 1 awards +30 seed energy (actual: %.1f)" % gs.energy)
+	_assert_check(tm.get_current_step() == 2, "1.21 Step 2 active: INTRO_STEP_2_UPGRADE")
+	_assert_check(step_started_events.size() >= 2 and step_started_events[-1]["step"] == 2, "1.22 step_started(2, 'UpgradeShop') emitted")
+	_assert_check(step_started_events[-1]["target"] == "UpgradeShop", "1.23 Target is 'UpgradeShop'")
+
+	# Step 2: First generator upgrade
+	gs.buy_upgrade("tier_1")
+	await process_frame
+
+	_assert_check(tm.get_current_step() == 3, "1.24 Step 3 active: INTRO_STEP_3_FRENZY")
+	_assert_check(step_started_events.size() >= 3 and step_started_events[-1]["step"] == 3, "1.25 step_started(3, 'FrenzyMeter') emitted")
+	_assert_check(step_started_events[-1]["target"] == "FrenzyMeter", "1.26 Target is 'FrenzyMeter'")
+
+	# Step 3: Frenzy meter update
+	gs.frenzy_meter = 25.0
+	gs.frenzy_updated.emit(1.0, 0.25)
+	await process_frame
+
+	_assert_check(tm.get_current_step() == 4, "1.27 Step 4 active: INTRO_STEP_4_CAMPUS")
+	_assert_check(step_started_events.size() >= 4 and step_started_events[-1]["step"] == 4, "1.28 step_started(4, 'VirtualJoystick') emitted")
+	_assert_check(step_started_events[-1]["target"] == "VirtualJoystick", "1.29 Target is 'VirtualJoystick'")
+
+	# Step 4: 3D Campus navigation
+	tm.advance_step()
+	await process_frame
+
+	_assert_check(tm.get_current_step() == 5, "1.30 Step 5 active: INTRO_STEP_5_COLLECTIBLE")
+	_assert_check(step_started_events.size() >= 5 and step_started_events[-1]["step"] == 5, "1.31 step_started(5, 'Collectible') emitted")
+	_assert_check(step_started_events[-1]["target"] == "Collectible", "1.32 Target is 'Collectible'")
+
+	# Step 5: Collectible pickup
+	gs.collectible_picked_up.emit("briefcase", 1)
+	await process_frame
+
+	_assert_check(tm.get_current_step() == 6, "1.33 Step 6 active: INTRO_STEP_6_STATION")
+	_assert_check(step_started_events.size() >= 6 and step_started_events[-1]["step"] == 6, "1.34 step_started(6, 'ServerTerminal') emitted")
+	_assert_check(step_started_events[-1]["target"] == "ServerTerminal", "1.35 Target is 'ServerTerminal'")
+
+	# Step 6: Station interaction & completion
+	tm.advance_step()
+	await process_frame
+
+	_assert_check(tm.get_current_step() == 7, "1.36 current_step transitioned to COMPLETED (7)")
+	_assert_check(not tm.is_tutorial_active(), "1.37 is_tutorial_active() is false after intro completion")
+	_assert_check(tut_completed_events.size() >= 1, "1.38 tutorial_completed signal emitted on completion")
+	_assert_check(gs.tutorial_completed == true, "1.39 GameState.tutorial_completed flag set to true")
+	_assert_check(not tm.tutorial_overlay.get_node("%SkipButton").visible, "1.40 SkipButton hidden after completion")
+
+	# Skip Flow (Feature F9)
+	tm.reset_tutorial()
+	gs.reset_tutorial_state()
+	await process_frame
+
+	tm.start_linear_intro()
+	await process_frame
+	_assert_check(tm.is_tutorial_active(), "1.41 Intro active before skip")
+
+	tut_skipped_events.clear()
+	tut_completed_events.clear()
+	tm.skip_tutorial()
+	await process_frame
+
+	_assert_check(tut_skipped_events.size() >= 1, "1.42 tutorial_skipped emitted on skip_tutorial()")
+	_assert_check(tut_completed_events.size() >= 1, "1.43 tutorial_completed emitted on skip_tutorial()")
+	_assert_check(tm.get_current_step() == 7, "1.44 Step is COMPLETED (7) after skip")
+	_assert_check(not tm.is_tutorial_active(), "1.45 Tutorial inactive after skip")
+	_assert_check(gs.tutorial_skipped == true, "1.46 GameState.tutorial_skipped is true")
+	_assert_check(gs.tutorial_completed == true, "1.47 GameState.tutorial_completed is true")
+
+func _test_d5_section_2_dialogue_panel_and_angel_investor(gs: Node, tm: Node) -> void:
+	print("\n--- SECTION 2: DialoguePanel Integration & Angel Investor Persona (F1) ---")
+	var dp_scene = load("res://scenes/dialogue_panel.tscn")
+	_assert_check(dp_scene != null, "2.1 scenes/dialogue_panel.tscn loaded")
+	if dp_scene == null:
+		return
+	var dp = dp_scene.instantiate() as DialoguePanel
+	root.add_child(dp)
+	await process_frame
+
+	# Strict Invariant: Exactly 6 Button nodes in dialogue_panel.tscn
+	var buttons: Array[Node] = []
+	var find_btns = func(n: Node, rec: Callable) -> void:
+		if n is Button:
+			buttons.append(n)
+		for c in n.get_children():
+			rec.call(c, rec)
+	find_btns.call(dp, find_btns)
+	_assert_check(buttons.size() == 6, "2.2 Strict Invariant: dialogue_panel.tscn contains exactly 6 Button nodes (found: %d)" % buttons.size())
+
+	_assert_check(dp.has_method("open_for_tutorial_step"), "2.3 DialoguePanel defines open_for_tutorial_step()")
+	_assert_check(dp.has_method("show_hint_popup"), "2.4 DialoguePanel defines show_hint_popup()")
+	_assert_check(dp.has_method("dismiss_hint"), "2.5 DialoguePanel defines dismiss_hint()")
+	_assert_check(dp.has_method("is_hint_active"), "2.6 DialoguePanel defines is_hint_active()")
+	_assert_check(dp.has_signal("tutorial_advanced"), "2.7 DialoguePanel declares tutorial_advanced")
+	_assert_check(dp.has_signal("hint_dismissed"), "2.8 DialoguePanel declares hint_dismissed")
+
+	# Mascot Persona in Tutorial Mode
+	dp.open_for_tutorial_step("Angel Investor", "Pre-Seed // Start", "Tippe auf den Kern!", Color(1.0, 0.84, 0.0))
+	_assert_check(dp.visible, "2.9 DialoguePanel visible in tutorial step mode")
+	_assert_check(dp.name_label.text == "Angel Investor", "2.10 Mascot name is 'Angel Investor'")
+	_assert_check(dp.title_label.text == "Pre-Seed // Start", "2.11 Mascot title formatted correctly")
+	_assert_check(dp.dialogue_label.text == "Tippe auf den Kern!", "2.12 Dialogue text matches")
+	_assert_check(dp.avatar_badge.color == Color(1.0, 0.84, 0.0), "2.13 Badge color set to venture gold")
+	_assert_check(dp.mouse_filter == Control.MOUSE_FILTER_IGNORE, "2.14 Root mouse_filter is IGNORE during tutorial step")
+	_assert_check(not dp.dim_backdrop.visible, "2.15 DimBackdrop hidden during tutorial step")
+	_assert_check(dp.close_button.text == "Weiter ➔", "2.16 CloseButton styled with 'Weiter ➔'")
+	_assert_check(dp.close_button.custom_minimum_size.y >= 56.0, "2.17 CloseButton meets >= 56px requirement (actual: %.1f)" % dp.close_button.custom_minimum_size.y)
+
+	var adv_events: Array = []
+	dp.tutorial_advanced.connect(func(): adv_events.append(true), CONNECT_ONE_SHOT)
+	dp.close_dialogue()
+	_assert_check(adv_events.size() > 0, "2.18 close_dialogue() emits tutorial_advanced")
+	_assert_check(not dp.visible, "2.19 DialoguePanel hidden after advancing")
+
+	# Mascot Persona in Hint Mode
+	dp.show_hint_popup("💡 Zonentor", "Dieses Tor ist verriegelt!", 2.0, Rect2(), "hint_zone_gate")
+	_assert_check(dp.visible, "2.20 DialoguePanel visible for hint popup")
+	_assert_check(dp.is_hint_active(), "2.21 is_hint_active() returns true")
+	_assert_check(dp.mouse_filter == Control.MOUSE_FILTER_IGNORE, "2.22 Root mouse_filter is IGNORE during hint popup")
+	_assert_check(not dp.dim_backdrop.visible, "2.23 DimBackdrop hidden during hint popup")
+	_assert_check(dp.name_label.text == "💡 Zonentor", "2.24 Hint title correctly displayed in name_label")
+
+	# Tap-to-dismiss via card panel GUI input
+	var click_ev = InputEventMouseButton.new()
+	click_ev.pressed = true
+	click_ev.button_index = MOUSE_BUTTON_LEFT
+	var hint_d_events: Array = []
+	dp.hint_dismissed.connect(func(hid: String): hint_d_events.append(hid), CONNECT_ONE_SHOT)
+	dp._on_card_panel_gui_input(click_ev)
+
+	_assert_check(not dp.visible, "2.25 Card click immediately dismisses hint popup")
+	_assert_check(hint_d_events.size() > 0 and hint_d_events[-1] == "hint_zone_gate", "2.26 hint_dismissed emitted with 'hint_zone_gate'")
+
+	# Persona Cleanse & NPC Restoration
+	dp.open_for_npc("ceo_alex", "Alex", "Founder & CEO", "Hallo Gründer!")
+	_assert_check(not dp.is_hint_active(), "2.27 open_for_npc clears hint mode")
+	_assert_check(not dp.is_tutorial_active(), "2.28 open_for_npc clears tutorial mode")
+	_assert_check(dp.dim_backdrop.visible, "2.29 open_for_npc restores DimBackdrop visibility")
+	_assert_check(dp.dim_backdrop.mouse_filter == Control.MOUSE_FILTER_STOP, "2.30 DimBackdrop mouse_filter restored to STOP")
+	_assert_check(dp.mouse_filter == Control.MOUSE_FILTER_STOP, "2.31 Root mouse_filter restored to STOP")
+	dp.close_dialogue()
+	_assert_check(not dp.visible, "2.32 DialoguePanel closed cleanly")
+
+	dp.queue_free()
+	await process_frame
+
+func _test_d5_section_3_spotlight_overlay_and_touch_passthrough(tm: Node) -> void:
+	print("\n--- SECTION 3: Spotlight Overlay & Viewport Touch Passthrough (F2) ---")
+	var ov_scene = load("res://scenes/ui/tutorial_overlay.tscn")
+	_assert_check(ov_scene != null, "3.1 scenes/ui/tutorial_overlay.tscn loaded")
+	if ov_scene == null:
+		return
+	var ov = ov_scene.instantiate() as TutorialOverlay
+	root.add_child(ov)
+	await process_frame
+
+	_assert_check(ov is CanvasLayer, "3.2 TutorialOverlay extends CanvasLayer")
+	_assert_check(ov.layer == 95, "3.3 TutorialOverlay layer is 95")
+
+	var top_b = ov.get_node_or_null("TopBlocker") as ColorRect
+	var bot_b = ov.get_node_or_null("BottomBlocker") as ColorRect
+	var left_b = ov.get_node_or_null("LeftBlocker") as ColorRect
+	var right_b = ov.get_node_or_null("RightBlocker") as ColorRect
+	_assert_check(top_b != null, "3.4 TopBlocker node exists")
+	_assert_check(bot_b != null, "3.5 BottomBlocker node exists")
+	_assert_check(left_b != null, "3.6 LeftBlocker node exists")
+	_assert_check(right_b != null, "3.7 RightBlocker node exists")
+
+	_assert_check(top_b.mouse_filter == Control.MOUSE_FILTER_STOP, "3.8 TopBlocker mouse_filter is STOP (0)")
+	_assert_check(bot_b.mouse_filter == Control.MOUSE_FILTER_STOP, "3.9 BottomBlocker mouse_filter is STOP (0)")
+	_assert_check(left_b.mouse_filter == Control.MOUSE_FILTER_STOP, "3.10 LeftBlocker mouse_filter is STOP (0)")
+	_assert_check(right_b.mouse_filter == Control.MOUSE_FILTER_STOP, "3.11 RightBlocker mouse_filter is STOP (0)")
+
+	# Geometry & area partition
+	var target_rect = Rect2(300, 500, 120, 80)
+	ov.highlight_target_rect(target_rect, 0.0)
+	_assert_check(top_b.size.y == 500.0, "3.12 TopBlocker height is 500.0")
+	_assert_check(bot_b.position.y == 580.0, "3.13 BottomBlocker position.y is 580.0")
+	_assert_check(left_b.position.y == 500.0 and left_b.size.y == 80.0, "3.14 LeftBlocker vertical range matches cutout")
+	_assert_check(right_b.position.x == 420.0, "3.15 RightBlocker position.x is 420.0")
+
+	var vp_dims = ov.get_viewport_dimensions()
+	var total_vp_area = vp_dims.x * vp_dims.y
+	var cutout_area = target_rect.size.x * target_rect.size.y
+	var blocker_area = (top_b.size.x * top_b.size.y) + (bot_b.size.x * bot_b.size.y) + (left_b.size.x * left_b.size.y) + (right_b.size.x * right_b.size.y)
+	_assert_check(is_equal_approx(total_vp_area, cutout_area + blocker_area), "3.16 Area partition identity holds (%.0f px^2)" % total_vp_area)
+
+	# Cutout passthrough containment
+	_assert_check(ov.is_point_in_cutout(Vector2(360, 540)), "3.17 Center of cutout is within cutout bounds")
+	_assert_check(not ov.is_point_in_blocker(Vector2(360, 540)), "3.18 Center of cutout is unblocked")
+	_assert_check(ov.is_point_in_blocker(Vector2(100, 100)), "3.19 Point (100, 100) is blocked by TopBlocker")
+	_assert_check(ov.is_point_in_blocker(Vector2(360, 800)), "3.20 Point (360, 800) is blocked by BottomBlocker")
+
+	# Directional Arrow Math
+	var arrow = ov.get_node_or_null("ArrowIndicator") as Control
+	_assert_check(arrow != null, "3.21 ArrowIndicator node exists")
+	var vp = Vector2(720, 1280)
+	var tf_lower = ov.calculate_arrow_transform(Rect2(300, 800, 120, 80), vp)
+	_assert_check(tf_lower.direction == Vector2.DOWN, "3.22 Arrow points DOWN for lower-half target")
+	_assert_check(tf_lower.position.y < 800.0, "3.23 Arrow positioned above lower-half target")
+	_assert_check(is_equal_approx(tf_lower.rotation, PI * 0.5), "3.24 Downward arrow rotation is PI/2")
+
+	var tf_upper = ov.calculate_arrow_transform(Rect2(300, 200, 120, 80), vp)
+	_assert_check(tf_upper.direction == Vector2.UP, "3.25 Arrow points UP for upper-half target")
+	_assert_check(tf_upper.position.y > 280.0, "3.26 Arrow positioned below upper-half target")
+	_assert_check(is_equal_approx(tf_upper.rotation, -PI * 0.5), "3.27 Upward arrow rotation is -PI/2")
+
+	# Skip Button Ergonomics
+	var skip_btn = ov.get_node_or_null("%SkipButton") as Button
+	_assert_check(skip_btn != null, "3.28 SkipButton exists in TutorialOverlay")
+	_assert_check(skip_btn.custom_minimum_size.y >= 56.0, "3.29 SkipButton height >= 56px (actual: %.1f)" % skip_btn.custom_minimum_size.y)
+	_assert_check(skip_btn.custom_minimum_size.x >= 120.0, "3.30 SkipButton width >= 120px (actual: %.1f)" % skip_btn.custom_minimum_size.x)
+	_assert_check(skip_btn.mouse_filter == Control.MOUSE_FILTER_STOP, "3.31 SkipButton mouse_filter is STOP (0)")
+	_assert_check("Überspringen" in skip_btn.text, "3.32 SkipButton German label 'Überspringen' present")
+
+	var skip_p_events: Array = []
+	ov.skip_pressed.connect(func(): skip_p_events.append(true), CONNECT_ONE_SHOT)
+	skip_btn.pressed.emit()
+	_assert_check(skip_p_events.size() > 0, "3.33 skip_pressed emitted on button press")
+
+	ov.clear_highlight()
+	_assert_check(not ov.is_highlight_active(), "3.34 is_highlight_active() is false after clear_highlight()")
+
+	ov.queue_free()
+	await process_frame
+
+func _test_d5_section_4_contextual_hints_and_exactly_once(gs: Node, tm: Node) -> void:
+	print("\n--- SECTION 4: Contextual Hint Delivery & Exactly-Once Invariant (F10-F15) ---")
+	gs.tutorial_seen_hints.clear()
+	var hints: Array[String] = [
+		"hint_zone_gate",
+		"hint_tech_tree",
+		"hint_staff",
+		"hint_minigame",
+		"hint_daily_board",
+		"hint_ipo_bell"
+	]
+
+	var triggered_hints: Array[String] = []
+	var cb_trig = func(hid: String): triggered_hints.append(hid)
+	tm.contextual_hint_triggered.connect(cb_trig)
+
+	var dp = tm.get_dialogue_panel()
+	_assert_check(dp != null, "4.1 DialoguePanel accessible for contextual hint testing")
+
+	# Pass 1: All 6 hints triggered first time
+	for i in range(hints.size()):
+		var hid = hints[i]
+		_assert_check(not gs.has_seen_contextual_hint(hid), "4.%d.1 Hint '%s' initially unseen" % [i + 2, hid])
+		tm.trigger_contextual_hint(hid)
+		await process_frame
+
+		_assert_check(triggered_hints.has(hid), "4.%d.2 Hint '%s' emitted contextual_hint_triggered signal" % [i + 2, hid])
+		_assert_check(gs.has_seen_contextual_hint(hid), "4.%d.3 GameState marked '%s' as seen" % [i + 2, hid])
+		_assert_check(dp.visible, "4.%d.4 DialoguePanel visible for '%s'" % [i + 2, hid])
+		_assert_check(dp.is_hint_active(), "4.%d.5 DialoguePanel is_hint_active() is true for '%s'" % [i + 2, hid])
+
+		dp.dismiss_hint()
+		await process_frame
+		_assert_check(not dp.visible, "4.%d.6 DialoguePanel dismissed for '%s'" % [i + 2, hid])
+
+	# Pass 2: Exactly-once suppression pass
+	print("\n  [Exactly-Once Suppression Pass]")
+	triggered_hints.clear()
+	for i in range(hints.size()):
+		var hid = hints[i]
+		tm.trigger_contextual_hint(hid)
+		await process_frame
+
+		_assert_check(not triggered_hints.has(hid), "4.8.%d Duplicate trigger for '%s' suppressed (0 signals)" % [i + 1, hid])
+		_assert_check(not dp.visible, "4.8.%d DialoguePanel remained closed for '%s'" % [i + 1, hid])
+
+	# Hook Points Scene Verification
+	print("\n  [Contextual Hint 6-Station Hook Verification]")
+	var hook_files = [
+		{"name": "ZoneGate3D", "path": "res://scenes/zone_gate_3d.tscn"},
+		{"name": "TechTreeModal", "path": "res://scenes/ui/tech_tree_modal.tscn"},
+		{"name": "StaffModal", "path": "res://scenes/ui/staff_modal.tscn"},
+		{"name": "ServerTerminal", "path": "res://scenes/server_terminal.tscn"},
+		{"name": "DailyBoard3D", "path": "res://scenes/daily_board_3d.tscn"},
+		{"name": "IpoBell3D", "path": "res://scenes/ipo_bell_3d.tscn"}
+	]
+	for h in hook_files:
+		var scene_res = load(h["path"])
+		_assert_check(scene_res != null, "4.9 Hook scene loadable: %s" % h["name"])
+
+func _test_d5_section_5_save_load_serialization_and_truth_table(gs: Node, tm: Node) -> void:
+	print("\n--- SECTION 5: Save/Load Serialization & Truth Table (F16-F17) ---")
+	gs.reset_state()
+	gs.tutorial_current_step = 3
+	gs.tutorial_completed = false
+	gs.tutorial_skipped = false
+	gs.tutorial_replay_requested = false
+	gs.tutorial_seen_hints = {"hint_zone_gate": true, "hint_tech_tree": true}
+	gs.save_to_disk()
+
+	_assert_check(FileAccess.file_exists("user://savegame.json"), "5.1 save_to_disk() created user://savegame.json")
+	var f = FileAccess.open("user://savegame.json", FileAccess.READ)
+	var json_dict = JSON.parse_string(f.get_as_text())
+	f.close()
+
+	_assert_check(json_dict is Dictionary, "5.2 Savegame parses as JSON Dictionary")
+	_assert_check(json_dict.get("tutorial_current_step") == 3, "5.3 JSON contains tutorial_current_step: 3")
+	_assert_check(json_dict.get("tutorial_completed") == false, "5.4 JSON contains tutorial_completed: false")
+	_assert_check(json_dict.get("tutorial_skipped") == false, "5.5 JSON contains tutorial_skipped: false")
+	_assert_check(json_dict.get("tutorial_replay_requested") == false, "5.6 JSON contains tutorial_replay_requested: false")
+
+	gs.tutorial_current_step = 0
+	gs.tutorial_seen_hints.clear()
+	var l_ok = gs.load_from_disk()
+	_assert_check(l_ok, "5.7 load_from_disk() succeeded")
+	_assert_check(gs.tutorial_current_step == 3, "5.8 Roundtrip restored tutorial_current_step == 3")
+	_assert_check(gs.has_seen_contextual_hint("hint_zone_gate"), "5.9 Roundtrip restored hint_zone_gate as seen")
+	_assert_check(gs.has_seen_contextual_hint("hint_tech_tree"), "5.10 Roundtrip restored hint_tech_tree as seen")
+	_assert_check(not gs.has_seen_contextual_hint("hint_staff"), "5.11 Unseen hint_staff remains false")
+
+	# Corrupted Save Immunity
+	var corrupted_payload = {
+		"tutorial_current_step": "4",
+		"tutorial_completed": 0,
+		"tutorial_skipped": "false",
+		"tutorial_replay_requested": null,
+		"tutorial_seen_hints": {
+			"hint_zone_gate": "seen",
+			"hint_tech_tree": 1,
+			"hint_staff": "false",
+			"hint_minigame": null,
+			"hint_daily_board": ["corrupt"],
+			"": true
+		}
+	}
+	var f_corrupt = FileAccess.open("user://savegame.json", FileAccess.WRITE)
+	f_corrupt.store_string(JSON.stringify(corrupted_payload))
+	f_corrupt.close()
+
+	var corrupt_ok = gs.load_from_disk()
+	_assert_check(corrupt_ok, "5.12 Corrupted save loaded cleanly without crash")
+	_assert_check(gs.tutorial_current_step == 4, "5.13 Sanitized step string '4' -> int 4")
+	_assert_check(gs.has_seen_contextual_hint("hint_zone_gate") == true, "5.14 Token 'seen' safely converted to true")
+	_assert_check(gs.has_seen_contextual_hint("hint_tech_tree") == true, "5.15 Integer 1 safely converted to true")
+	_assert_check(gs.has_seen_contextual_hint("hint_staff") == false, "5.16 String 'false' safely converted to false")
+	_assert_check(gs.has_seen_contextual_hint("hint_minigame") == false, "5.17 Null safely converted to false")
+	_assert_check(gs.has_seen_contextual_hint("hint_daily_board") == false, "5.18 Corrupted list safely converted to false")
+	_assert_check(not gs.tutorial_seen_hints.has(""), "5.19 Empty string key ignored")
+
+	# 5-Case Truth Table
+	print("\n  [5-Case First-Time Player Truth Table]")
+	if FileAccess.file_exists("user://savegame.json"):
+		DirAccess.remove_absolute("user://savegame.json")
+	gs.tutorial_completed = false
+	gs.tutorial_skipped = false
+	gs.tutorial_replay_requested = false
+	_assert_check(gs.is_first_time_player() == true, "5.20 Case 1: Fresh game -> is_first_time_player() == true")
+	_assert_check(tm.should_start_intro() == true, "5.21 Case 1: should_start_intro() == true")
+
+	gs.tutorial_current_step = 2
+	gs.save_to_disk()
+	_assert_check(gs.is_first_time_player() == true, "5.22 Case 2: Save exists, in progress -> is_first_time_player() == true")
+	_assert_check(tm.should_start_intro() == true, "5.23 Case 2: should_start_intro() == true")
+
+	gs.tutorial_completed = true
+	gs.tutorial_skipped = false
+	gs.save_to_disk()
+	_assert_check(gs.is_first_time_player() == false, "5.24 Case 3: Save exists, completed -> is_first_time_player() == false")
+	_assert_check(tm.should_start_intro() == false, "5.25 Case 3: should_start_intro() == false")
+
+	gs.tutorial_completed = true
+	gs.tutorial_skipped = true
+	gs.save_to_disk()
+	_assert_check(gs.is_first_time_player() == false, "5.26 Case 4: Save exists, skipped -> is_first_time_player() == false")
+	_assert_check(tm.should_start_intro() == false, "5.27 Case 4: should_start_intro() == false")
+
+	gs.reset_tutorial_state()
+	_assert_check(gs.tutorial_replay_requested == true, "5.28 reset_tutorial_state() sets replay_requested = true")
+	_assert_check(gs.is_first_time_player() == true, "5.29 Case 5: Replay requested -> is_first_time_player() == true")
+	_assert_check(tm.should_start_intro() == true, "5.30 Case 5: should_start_intro() == true")
+
+func _test_d5_section_6_replay_flow_and_non_destructive_reset(gs: Node, tm: Node) -> void:
+	print("\n--- SECTION 6: Replay Flow & Progression Non-Destruction (F18) ---")
+	var sm_scene = load("res://scenes/ui/settings_modal.tscn")
+	_assert_check(sm_scene != null, "6.1 scenes/ui/settings_modal.tscn loaded")
+	if sm_scene == null:
+		return
+	var sm = sm_scene.instantiate() as Control
+	root.add_child(sm)
+	await process_frame
+
+	var replay_btn = sm.get_node_or_null("%ReplayTutorialButton") as Button
+	_assert_check(replay_btn != null, "6.2 %ReplayTutorialButton exists in SettingsModal")
+	_assert_check(replay_btn.custom_minimum_size.y >= 56.0, "6.3 ReplayTutorialButton height >= 56px (actual: %.1f)" % replay_btn.custom_minimum_size.y)
+	_assert_check(replay_btn.mouse_filter == Control.MOUSE_FILTER_STOP, "6.4 ReplayTutorialButton mouse_filter == STOP (0)")
+
+	# Set veteran progression to test non-destructive reset
+	gs.reset_state()
+	gs.energy = 50000.0
+	gs.total_energy_earned = 250000.0
+	gs.upgrades["tier_1"]["level"] = 15
+	gs.upgrades["tier_2"]["level"] = 8
+	gs.angel_shares = 12
+	gs.tutorial_completed = true
+	gs.tutorial_skipped = false
+	gs.tutorial_seen_hints = {"hint_zone_gate": true, "hint_tech_tree": true, "hint_minigame": true}
+	gs.save_to_disk()
+
+	_assert_check(not gs.is_first_time_player(), "6.5 Veteran player confirmed before button press")
+
+	# Click Replay Tutorial Button
+	replay_btn.pressed.emit()
+	await process_frame
+
+	# Verify Tutorial State Reset
+	_assert_check(gs.tutorial_replay_requested == true, "6.6 tutorial_replay_requested set to true")
+	_assert_check(gs.tutorial_completed == false, "6.7 tutorial_completed reset to false")
+	_assert_check(gs.tutorial_skipped == false, "6.8 tutorial_skipped reset to false")
+	_assert_check(gs.tutorial_current_step == 0, "6.9 tutorial_current_step reset to 0")
+	_assert_check(gs.tutorial_seen_hints.is_empty(), "6.10 tutorial_seen_hints cleared")
+	_assert_check(gs.is_first_time_player() == true, "6.11 is_first_time_player() now returns true")
+
+	# Verify Non-Destructive Isolation (Economy & stats 100% intact)
+	_assert_check(absf(gs.energy - 50000.0) < EPSILON, "6.12 Non-destructive: energy intact (50,000.0)")
+	_assert_check(absf(gs.total_energy_earned - 250000.0) < EPSILON, "6.13 Non-destructive: total_energy_earned intact (250,000.0)")
+	_assert_check(gs.upgrades["tier_1"]["level"] == 15, "6.14 Non-destructive: tier_1 generator level intact (15)")
+	_assert_check(gs.upgrades["tier_2"]["level"] == 8, "6.15 Non-destructive: tier_2 generator level intact (8)")
+	_assert_check(gs.angel_shares == 12, "6.16 Non-destructive: angel_shares intact (12)")
+
+	sm.queue_free()
+	await process_frame
