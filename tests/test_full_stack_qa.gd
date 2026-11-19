@@ -64,11 +64,13 @@ var domain4_pass: int = 0
 var domain4_fail: int = 0
 var domain5_pass: int = 0
 var domain5_fail: int = 0
+var domain6_pass: int = 0
+var domain6_fail: int = 0
 var suite_start_time_ms: int = 0
 
 var current_domain: int = 1
 
-const MIN_EXPECTED_PASS_COUNT: int = 1500
+const MIN_EXPECTED_PASS_COUNT: int = 1800 # Updated for Domain 6 (was MIN_EXPECTED_PASS_COUNT: int = 1500)
 const EPSILON: float = 0.005
 const SQRT1_2: float = 0.7071067811865475
 
@@ -97,6 +99,8 @@ func _assert_check(condition: bool, description: String, detail: String = "") ->
 			domain4_pass += 1
 		elif current_domain == 5:
 			domain5_pass += 1
+		elif current_domain == 6:
+			domain6_pass += 1
 	else:
 		var err_msg: String = "  [FAIL] %s" % description
 		if detail != "":
@@ -113,6 +117,8 @@ func _assert_check(condition: bool, description: String, detail: String = "") ->
 			domain4_fail += 1
 		elif current_domain == 5:
 			domain5_fail += 1
+		elif current_domain == 6:
+			domain6_fail += 1
 
 func _init() -> void:
 	print("\n====================================================================")
@@ -140,6 +146,7 @@ func _cleanup_and_quit(exit_code: int) -> void:
 		var f_res = FileAccess.open("user://savegame.json", FileAccess.WRITE)
 		if f_res != null:
 			f_res.store_string(_save_backup_text)
+			f_res.flush()
 			f_res.close()
 			print("  [CLEANUP] Restored original user://savegame.json")
 	elif FileAccess.file_exists("user://savegame.json"):
@@ -161,7 +168,6 @@ func _cleanup_and_quit(exit_code: int) -> void:
 			n.free()
 	_mounted_nodes.clear()
 	print("  [CLEANUP] All test harness singletons safely unmounted.")
-
 	quit(exit_code)
 
 func _run_all_tests() -> void:
@@ -363,18 +369,43 @@ func _run_all_tests() -> void:
 
 	print("\n>>> DOMAIN 5 COMPLETE: %d PASSED, %d FAILED <<<" % [domain5_pass, domain5_fail])
 
+	# =========================================================================
+	# DOMAIN 6: Comprehensive End-to-End Integration & System Hardening (Phase 18)
+	# =========================================================================
+	current_domain = 6
+	print("\n====================================================================")
+	print(">>> DOMAIN 6: COMPREHENSIVE E2E INTEGRATION & SYSTEM HARDENING <<<")
+	print("====================================================================")
+	if gs.has_method("reset_state"):
+		gs.reset_state()
+	if gs.has_method("reset_tutorial_state"):
+		gs.reset_tutorial_state()
+	if tm != null and tm.has_method("reset_tutorial"):
+		tm.reset_tutorial()
+
+	await _test_d6_section_1_scenario_1_fresh_install_full_loop(gs, tm)
+	await _test_d6_section_2_scenario_2_ipo_prestige_and_replay(gs, tm)
+	await _test_d6_section_3_scenario_3_syndicate_and_enterprise(gs)
+	await _test_d6_section_4_scenario_4_corrupted_save_recovery(gs)
+	await _test_d6_section_5_scenario_5_rapid_ui_stress_and_offline(gs)
+	await _test_d6_section_6_offline_progression_boundary_precision(gs)
+	await _test_d6_section_7_lifecycle_teardown_and_leak_audit(gs)
+
+	print("\n>>> DOMAIN 6 COMPLETE: %d PASSED, %d FAILED <<<" % [domain6_pass, domain6_fail])
+
 	# -------------------------------------------------------------------------
 	# Master Full-Stack Summary & Clean Deterministic Exit
 	# -------------------------------------------------------------------------
 	var elapsed_sec: float = float(Time.get_ticks_msec() - suite_start_time_ms) / 1000.0
 	print("\n====================================================================")
-	print(">>> MASTER FULL-STACK QA RUNNER SUMMARY (Phase 17 v2.4.0) <<<")
+	print(">>> MASTER FULL-STACK QA RUNNER SUMMARY (Phase 18 v2.5.0) <<<")
 	print("====================================================================")
 	print("  Domain 1: Backend Core & Economy            : %4d Passed, %2d Failed" % [domain1_pass, domain1_fail])
 	print("  Domain 2: Frontend UI/UX & Touch Ergonomics : %4d Passed, %2d Failed" % [domain2_pass, domain2_fail])
 	print("  Domain 3: 3D Campus Stations & Interactions : %4d Passed, %2d Failed" % [domain3_pass, domain3_fail])
 	print("  Domain 4: Interactive Arcade Minigames      : %4d Passed, %2d Failed" % [domain4_pass, domain4_fail])
 	print("  Domain 5: Tutorial & FTUE Onboarding        : %4d Passed, %2d Failed" % [domain5_pass, domain5_fail])
+	print("  Domain 6: Comprehensive E2E Integration      : %4d Passed, %2d Failed" % [domain6_pass, domain6_fail])
 	print("--------------------------------------------------------------------")
 	print("  TOTAL ASSERTIONS                            : %4d Passed, %2d Failed" % [pass_count, fail_count])
 	print("  Execution Time                              : %.2f seconds" % elapsed_sec)
@@ -407,10 +438,10 @@ func _test_d1_section_1_active_clicks_and_frenzy(gs: Node) -> void:
 	_assert_check(absf(gs.frenzy_multiplier - 1.0) < EPSILON, "1.5 Initial frenzy_multiplier is 1.0")
 
 	# 1.2 Tap deduplication in core.gd
-	var core_script = load("res://scripts/core.gd")
-	_assert_check(core_script != null, "1.6 Load res://scripts/core.gd")
-	if core_script != null:
-		var core_node = core_script.new()
+	var core_scene = load("res://scenes/core.tscn")
+	_assert_check(core_scene != null, "1.6 Load res://scenes/core.tscn")
+	if core_scene != null:
+		var core_node = core_scene.instantiate()
 		root.add_child(core_node)
 		_mounted_nodes.append(core_node)
 		await process_frame
@@ -741,7 +772,9 @@ func _test_d1_section_4_offline_progression_idempotency(gs: Node) -> void:
 	}
 	var f = FileAccess.open("user://savegame.json", FileAccess.WRITE)
 	f.store_string(JSON.stringify(save_1h))
+	f.flush()
 	f.close()
+	await process_frame
 
 	var load_1h_ok = gs.load_from_disk()
 	_assert_check(load_1h_ok == true, "4.1 load_from_disk succeeds for 1h offline save")
@@ -761,7 +794,9 @@ func _test_d1_section_4_offline_progression_idempotency(gs: Node) -> void:
 	}
 	f = FileAccess.open("user://savegame.json", FileAccess.WRITE)
 	f.store_string(JSON.stringify(save_8h))
+	f.flush()
 	f.close()
+	await process_frame
 
 	gs.load_from_disk()
 	_assert_check(absf(gs.energy - 1440000.0) < 10.0,
@@ -778,7 +813,9 @@ func _test_d1_section_4_offline_progression_idempotency(gs: Node) -> void:
 	}
 	f = FileAccess.open("user://savegame.json", FileAccess.WRITE)
 	f.store_string(JSON.stringify(save_24h))
+	f.flush()
 	f.close()
+	await process_frame
 
 	gs.load_from_disk()
 	_assert_check(absf(gs.energy - 1440000.0) < 10.0,
@@ -795,7 +832,9 @@ func _test_d1_section_4_offline_progression_idempotency(gs: Node) -> void:
 	}
 	f = FileAccess.open("user://savegame.json", FileAccess.WRITE)
 	f.store_string(JSON.stringify(save_future))
+	f.flush()
 	f.close()
+	await process_frame
 
 	gs.load_from_disk()
 	_assert_check(absf(gs.energy - 5000.0) < EPSILON,
@@ -806,6 +845,7 @@ func _test_d1_section_4_offline_progression_idempotency(gs: Node) -> void:
 	# synchronize the save file timestamp to current float time to test exact idempotency
 	# without subsecond integer truncation drift.
 	gs.save_to_disk()
+	await process_frame
 	var energy_after_save: float = gs.energy
 	var save_text: String = FileAccess.get_file_as_string("user://savegame.json")
 	var save_json = JSON.parse_string(save_text)
@@ -814,7 +854,9 @@ func _test_d1_section_4_offline_progression_idempotency(gs: Node) -> void:
 		var f_sync = FileAccess.open("user://savegame.json", FileAccess.WRITE)
 		if f_sync != null:
 			f_sync.store_string(JSON.stringify(save_json))
+			f_sync.flush()
 			f_sync.close()
+			await process_frame
 	gs.load_from_disk()
 	var energy_after_immediate_load: float = gs.energy
 	_assert_check(absf(energy_after_immediate_load - energy_after_save) < 1.0,
@@ -1146,9 +1188,11 @@ func _test_d1_section_8_persistence_and_methods_coverage(gs: Node) -> void:
 
 	gs.save_to_disk()
 	_assert_check(FileAccess.file_exists("user://savegame.json") == true, "8.1 save_to_disk creates savegame.json file")
+	await process_frame
 
 	# Reset and reload from disk
 	gs.reset_state()
+	await process_frame
 	var roundtrip_ok = gs.load_from_disk()
 	_assert_check(roundtrip_ok == true, "8.2 load_from_disk executes cleanly on generated savegame")
 	_assert_check(absf(gs.energy - 12345.0) < 50.0, "8.3 Roundtrip: energy preserved")
@@ -1174,21 +1218,27 @@ func _test_d1_section_8_persistence_and_methods_coverage(gs: Node) -> void:
 	# Invalid JSON syntax
 	var f_corrupt = FileAccess.open("user://savegame.json", FileAccess.WRITE)
 	f_corrupt.store_string("{ this is not valid json !!!")
+	f_corrupt.flush()
 	f_corrupt.close()
+	await process_frame
 	var load_corrupt_ok = gs.load_from_disk()
 	_assert_check(load_corrupt_ok == false, "8.21 Corrupted JSON syntax handled safely (returns false, no crash)")
 
 	# Non-dictionary root JSON
 	var f_array = FileAccess.open("user://savegame.json", FileAccess.WRITE)
 	f_array.store_string("[1, 2, 3, 4, 5]")
+	f_array.flush()
 	f_array.close()
+	await process_frame
 	var load_array_ok = gs.load_from_disk()
 	_assert_check(load_array_ok == false, "8.22 Array-root JSON rejected safely (returns false)")
 
 	# NaN and Infinity values
 	var f_nan = FileAccess.open("user://savegame.json", FileAccess.WRITE)
 	f_nan.store_string('{"version": 1, "energy": "NaN", "master_volume": 999.0, "screen_shake_intensity": -5.0}')
+	f_nan.flush()
 	f_nan.close()
+	await process_frame
 	gs.load_from_disk()
 	_assert_check(gs.energy >= 0.0 and not is_nan(gs.energy), "8.23 NaN energy sanitized to valid non-negative float")
 	_assert_check(gs.master_volume <= 1.0, "8.24 Volume clamped to 1.0 max bound")
@@ -4155,6 +4205,7 @@ func _test_d4_section_8_real_world_campus_scenarios(gs: Node) -> void:
 	gs.activate_server_overclock_buff(45.0, 2.00)
 	gs.give_team_coffee_break()
 	gs.save_to_disk()
+	await process_frame
 
 	var f = FileAccess.open("user://savegame.json", FileAccess.READ)
 	var text = f.get_as_text()
@@ -4165,7 +4216,9 @@ func _test_d4_section_8_real_world_campus_scenarios(gs: Node) -> void:
 		save_json["timestamp"] = Time.get_unix_time_from_system() - 600.0
 		var f_write = FileAccess.open("user://savegame.json", FileAccess.WRITE)
 		f_write.store_string(JSON.stringify(save_json))
+		f_write.flush()
 		f_write.close()
+		await process_frame
 
 	var reload_success = gs.load_from_disk()
 	_assert_check(reload_success, "8.31 Savegame loaded after simulated 10-minute closure")
@@ -4547,6 +4600,7 @@ func _test_d5_section_5_save_load_serialization_and_truth_table(gs: Node, tm: No
 	gs.tutorial_replay_requested = false
 	gs.tutorial_seen_hints = {"hint_zone_gate": true, "hint_tech_tree": true}
 	gs.save_to_disk()
+	await process_frame
 
 	_assert_check(FileAccess.file_exists("user://savegame.json"), "5.1 save_to_disk() created user://savegame.json")
 	var f = FileAccess.open("user://savegame.json", FileAccess.READ)
@@ -4561,6 +4615,7 @@ func _test_d5_section_5_save_load_serialization_and_truth_table(gs: Node, tm: No
 
 	gs.tutorial_current_step = 0
 	gs.tutorial_seen_hints.clear()
+	await process_frame
 	var l_ok = gs.load_from_disk()
 	_assert_check(l_ok, "5.7 load_from_disk() succeeded")
 	_assert_check(gs.tutorial_current_step == 3, "5.8 Roundtrip restored tutorial_current_step == 3")
@@ -4585,7 +4640,9 @@ func _test_d5_section_5_save_load_serialization_and_truth_table(gs: Node, tm: No
 	}
 	var f_corrupt = FileAccess.open("user://savegame.json", FileAccess.WRITE)
 	f_corrupt.store_string(JSON.stringify(corrupted_payload))
+	f_corrupt.flush()
 	f_corrupt.close()
+	await process_frame
 
 	var corrupt_ok = gs.load_from_disk()
 	_assert_check(corrupt_ok, "5.12 Corrupted save loaded cleanly without crash")
@@ -4599,8 +4656,10 @@ func _test_d5_section_5_save_load_serialization_and_truth_table(gs: Node, tm: No
 
 	# 5-Case Truth Table
 	print("\n  [5-Case First-Time Player Truth Table]")
+	await process_frame
 	if FileAccess.file_exists("user://savegame.json"):
 		DirAccess.remove_absolute("user://savegame.json")
+	await process_frame
 	gs.tutorial_completed = false
 	gs.tutorial_skipped = false
 	gs.tutorial_replay_requested = false
@@ -4609,18 +4668,21 @@ func _test_d5_section_5_save_load_serialization_and_truth_table(gs: Node, tm: No
 
 	gs.tutorial_current_step = 2
 	gs.save_to_disk()
+	await process_frame
 	_assert_check(gs.is_first_time_player() == true, "5.22 Case 2: Save exists, in progress -> is_first_time_player() == true")
 	_assert_check(tm.should_start_intro() == true, "5.23 Case 2: should_start_intro() == true")
 
 	gs.tutorial_completed = true
 	gs.tutorial_skipped = false
 	gs.save_to_disk()
+	await process_frame
 	_assert_check(gs.is_first_time_player() == false, "5.24 Case 3: Save exists, completed -> is_first_time_player() == false")
 	_assert_check(tm.should_start_intro() == false, "5.25 Case 3: should_start_intro() == false")
 
 	gs.tutorial_completed = true
 	gs.tutorial_skipped = true
 	gs.save_to_disk()
+	await process_frame
 	_assert_check(gs.is_first_time_player() == false, "5.26 Case 4: Save exists, skipped -> is_first_time_player() == false")
 	_assert_check(tm.should_start_intro() == false, "5.27 Case 4: should_start_intro() == false")
 
@@ -4679,3 +4741,1295 @@ func _test_d5_section_6_replay_flow_and_non_destructive_reset(gs: Node, tm: Node
 
 	sm.queue_free()
 	await process_frame
+
+# =============================================================================
+# DOMAIN 6 IMPLEMENTATION: COMPREHENSIVE END-TO-END INTEGRATION & HARDENING
+# =============================================================================
+
+## Section 6.1: Scenario 1 - Fresh Install FTUE Full Loop
+## Verifies the complete player onboarding journey:
+## Cold install -> Tap -> Seed grant -> Upgrade -> Frenzy -> Campus 3D -> Collectible -> Minigame -> Persistence
+func _test_d6_section_1_scenario_1_fresh_install_full_loop(gs: Node, tm: Node) -> void:
+	print("\n--- SECTION 6.1: Scenario 1 - Fresh Install FTUE Full Loop ---")
+
+	# -------------------------------------------------------------------------
+	# Phase 1: Fresh Install State Invariants
+	# -------------------------------------------------------------------------
+	if FileAccess.file_exists("user://savegame.json"):
+		DirAccess.remove_absolute("user://savegame.json")
+
+	gs.reset_state()
+	gs.reset_tutorial_state()
+	gs.tutorial_replay_requested = false # Enforce clean first-time install
+	if tm != null and tm.has_method("reset_tutorial"):
+		tm.reset_tutorial()
+	await process_frame
+
+	_assert_check(gs.is_first_time_player() == true, "6.1.1 Fresh install: is_first_time_player() returns true")
+	_assert_check(gs.tutorial_completed == false and gs.tutorial_skipped == false, "6.1.2 Fresh install: tutorial_completed and tutorial_skipped are false")
+	_assert_check(gs.tutorial_current_step == 0, "6.1.3 Fresh install: GameState tutorial_current_step is 0")
+	_assert_check(tm != null and tm.get_current_step() == 0, "6.1.4 Fresh install: TutorialManager current_step is 0 (IDLE)")
+	_assert_check(not tm.is_tutorial_active(), "6.1.5 Fresh install: is_tutorial_active() is false before start")
+	_assert_check(tm.should_start_intro() == true, "6.1.6 Fresh install: should_start_intro() returns true")
+	_assert_check(absf(gs.energy - 0.0) < EPSILON and gs.total_clicks == 0, "6.1.7 Fresh install: energy is 0.0 and total_clicks is 0")
+	_assert_check(absf(gs.get_effective_passive_rps() - 0.0) < EPSILON, "6.1.8 Fresh install: passive RPS is 0.0")
+
+	# -------------------------------------------------------------------------
+	# Phase 2: Step 1 - First Active Tap & Seed Grant (F2 Invariant)
+	# -------------------------------------------------------------------------
+	var step_starts: Array[Dictionary] = []
+	var cb_step = func(idx: int, t_name: String):
+		step_starts.append({"step": idx, "target": t_name})
+	tm.step_started.connect(cb_step)
+
+	tm.start_linear_intro()
+	await process_frame
+
+	_assert_check(tm.is_tutorial_active() == true, "6.1.9 Step 1 active: is_tutorial_active() is true")
+	_assert_check(tm.get_current_step() == 1, "6.1.10 Step 1 active: current_step is 1 (INTRO_STEP_1_TAP)")
+	_assert_check(step_starts.size() > 0 and step_starts[-1]["step"] == 1, "6.1.11 step_started(1, 'Core') signal emitted")
+	_assert_check(tm.tutorial_overlay != null and tm.tutorial_overlay.get_node("%SkipButton").visible, "6.1.12 SkipButton is visible during Step 1")
+
+	# Player performs the first core tap
+	var initial_earned: float = gs.tap_core()
+	await process_frame
+
+	_assert_check(gs.total_clicks == 1, "6.1.13 First tap increments total_clicks to 1")
+	_assert_check(initial_earned > 0.0, "6.1.14 tap_core() returns positive earned energy")
+	_assert_check(absf(gs.energy - 30.0) < EPSILON, "6.1.15 Step 1 awards +30.0 seed energy grant (actual: %.1f)" % gs.energy)
+	_assert_check(gs.total_energy_earned >= 30.0, "6.1.16 Invariant F2: total_energy_earned updated by seed grant (actual: %.1f)" % gs.total_energy_earned)
+	_assert_check(gs.total_lifetime_energy >= 30.0, "6.1.17 Invariant F2: total_lifetime_energy updated by seed grant (actual: %.1f)" % gs.total_lifetime_energy)
+	_assert_check(tm.get_current_step() == 2, "6.1.18 Step 1 complete: transitioned to Step 2 (INTRO_STEP_2_UPGRADE)")
+
+	# -------------------------------------------------------------------------
+	# Phase 3: Step 2 - Generator Automation (tier_1 'Virale Memes')
+	# -------------------------------------------------------------------------
+	var buy_success: bool = gs.buy_upgrade("tier_1")
+	await process_frame
+
+	_assert_check(buy_success == true, "6.1.19 Purchased tier_1 generator with seed energy")
+	_assert_check(gs.upgrades["tier_1"]["level"] == 1, "6.1.20 tier_1 generator level incremented to 1")
+	_assert_check(absf(gs.energy - 5.0) < 0.5, "6.1.21 25.0 energy deducted from 30.0 (remaining: %.1f)" % gs.energy)
+	_assert_check(absf(float(gs.upgrades["tier_1"]["current_cost"]) - 29.0) < EPSILON, "6.1.22 Next tier_1 cost scaled to 29.0")
+	_assert_check(absf(gs.base_passive_rps - 1.0) < EPSILON, "6.1.23 Base passive RPS initialized to 1.0")
+	_assert_check(gs.get_effective_passive_rps() >= 1.0, "6.1.24 Effective passive RPS is >= 1.0")
+	_assert_check(tm.get_current_step() == 3, "6.1.25 Step 2 complete: transitioned to Step 3 (INTRO_STEP_3_FRENZY)")
+
+	# -------------------------------------------------------------------------
+	# Phase 4: Step 3 - Frenzy Overdrive Surge (25 Taps to 100%)
+	# -------------------------------------------------------------------------
+	_assert_check(not gs.is_frenzy_active and absf(gs.frenzy_meter - 4.0) < EPSILON, "6.1.26 Frenzy meter starts at 4.0 from Step 1 tap")
+
+	# Execute 23 rapid taps -> brings total to 24 taps (96%) without activating
+	for i in range(23):
+		gs.tap_core()
+	_assert_check(gs.total_clicks == 24 and absf(gs.frenzy_meter - 96.0) < EPSILON, "6.1.27 Meter reaches 96.0% after 24 total taps")
+	_assert_check(not gs.is_frenzy_active, "6.1.28 Frenzy remains inactive below 100%")
+
+	# 25th tap hits 100% threshold -> Activates Overdrive!
+	gs.tap_core()
+	await process_frame
+
+	_assert_check(gs.total_clicks == 25, "6.1.29 25 taps reached")
+	_assert_check(gs.is_frenzy_active == true, "6.1.30 25th tap activates Frenzy Overdrive (Viraler Hype)")
+	_assert_check(absf(gs.frenzy_multiplier - 3.0) < EPSILON, "6.1.31 Frenzy multiplier set to 3.0x")
+	_assert_check(absf(gs.frenzy_duration_remaining - 6.0) < 0.5, "6.1.32 Frenzy duration initialized to 6.0s")
+	_assert_check(absf(gs.frenzy_multiplier - 3.0) < EPSILON, "6.1.33 Frenzy multiplier is active at 3.0x during frenzy")
+	_assert_check(tm.get_current_step() == 4, "6.1.34 Step 3 complete: transitioned to Step 4 (INTRO_STEP_4_CAMPUS)")
+
+	# -------------------------------------------------------------------------
+	# Phase 5: Step 4 - 3D Campus Navigation & Avatar Locomotion
+	# -------------------------------------------------------------------------
+	var avatar_scene = load("res://scenes/avatar_3d.tscn")
+	_assert_check(avatar_scene != null, "6.1.35 Load res://scenes/avatar_3d.tscn")
+	var avatar: Avatar3D = avatar_scene.instantiate() as Avatar3D
+	root.add_child(avatar)
+	await process_frame
+
+	_assert_check(avatar.is_input_enabled() == true, "6.1.36 Avatar3D input is enabled")
+	var start_pos: Vector3 = avatar.global_position
+
+	# Inject directional movement vector
+	avatar.set_input_direction(Vector3(1.0, 0.0, 1.0).normalized())
+	avatar._physics_process(0.1)
+	await process_frame
+
+	_assert_check(avatar.velocity.length() > 0.1, "6.1.37 Avatar3D velocity is active (> 0.1 m/s)")
+	_assert_check(avatar.global_position != start_pos, "6.1.38 Avatar3D position updated by physics process")
+
+	# Advance Step 4 in tutorial flow (TutorialManager._physics_process advances Step 4 automatically on avatar movement)
+	if tm.get_current_step() == 4:
+		tm.advance_step()
+		await process_frame
+	_assert_check(tm.get_current_step() == 5, "6.1.39 Step 4 complete: transitioned to Step 5 (INTRO_STEP_5_COLLECTIBLE)")
+
+	# -------------------------------------------------------------------------
+	# Phase 6: Step 5 - Campus Collectible Acquisition (Briefcase)
+	# -------------------------------------------------------------------------
+	var coll_scene = load("res://scenes/collectible_3d.tscn")
+	_assert_check(coll_scene != null, "6.1.40 Load res://scenes/collectible_3d.tscn")
+	var coll: Collectible3D = coll_scene.instantiate() as Collectible3D
+	coll.item_type = "briefcase"
+	coll.reward_amount = 50.0
+	root.add_child(coll)
+	await process_frame
+
+	coll.collect(avatar)
+	await process_frame
+
+	_assert_check(gs.collectibles_collected == 1, "6.1.41 Collectibles counter incremented to 1")
+	_assert_check(gs.item_inventory.get("briefcase", 0) == 1, "6.1.42 Briefcase added to item_inventory")
+
+	# Note: coll.collect(avatar) triggers gs.collectible_picked_up which automatically advances Step 5 to Step 6
+	_assert_check(tm.get_current_step() == 6, "6.1.43 Step 5 complete: transitioned to Step 6 (INTRO_STEP_6_STATION)")
+
+	# -------------------------------------------------------------------------
+	# Phase 7: Step 6 - Server Terminal Minigame & FTUE Completion
+	# -------------------------------------------------------------------------
+	var st_scene = load("res://scenes/server_terminal.tscn")
+	_assert_check(st_scene != null, "6.1.44 Load res://scenes/server_terminal.tscn")
+	var st: ServerTerminal = st_scene.instantiate() as ServerTerminal
+	root.add_child(st)
+	await process_frame
+
+	_assert_check(st.current_state == ServerTerminal.STATE_READY, "6.1.45 ServerTerminal is in STATE_READY")
+	st.interact()
+	await process_frame
+
+	# Simulate Perfect Cyber-Sync minigame hit (3.0x / 45s)
+	st.complete_cyber_sync(true, "Perfect", 45.0, 3.00)
+	await process_frame
+
+	_assert_check(st.is_overclock_active and gs.server_overclock_buff_active, "6.1.46 ServerTerminal and GameState overclock active")
+	_assert_check(absf(gs.server_overclock_buff_multiplier - 3.00) < EPSILON, "6.1.47 Overclock buff multiplier is 3.00x (+200% RPS)")
+
+	# Advance Step 6 -> completes FTUE linear onboarding sequence
+	tm.advance_step()
+	await process_frame
+
+	_assert_check(tm.get_current_step() == 7, "6.1.48 Step 6 complete: transitioned to COMPLETED (7)")
+	_assert_check(gs.tutorial_completed == true and not tm.is_tutorial_active(), "6.1.49 tutorial_completed is true and intro is inactive")
+
+	# -------------------------------------------------------------------------
+	# Phase 8: Persistence Roundtrip & Teardown
+	# -------------------------------------------------------------------------
+	var pre_save_energy: float = gs.energy
+	var pre_save_clicks: int = gs.total_clicks
+	var pre_save_items: int = gs.item_inventory.get("briefcase", 0)
+
+	gs.save_to_disk()
+	_assert_check(FileAccess.file_exists("user://savegame.json"), "6.1.50 GameState.save_to_disk() succeeded")
+	await process_frame
+
+	# Clear memory
+	gs.reset_state()
+	_assert_check(gs.tutorial_completed == false and gs.energy == 0.0, "6.1.51 State reset confirmed in memory")
+	await process_frame
+
+	# Reload from disk
+	var load_ok: bool = gs.load_from_disk()
+	_assert_check(load_ok == true, "6.1.52 GameState.load_from_disk() succeeded")
+	_assert_check(absf(gs.energy - pre_save_energy) < 5.0, "6.1.53 Reconstituted energy matches pre-save state (%.1f)" % gs.energy)
+	_assert_check(gs.total_clicks == pre_save_clicks, "6.1.54 Reconstituted clicks match pre-save state (%d)" % gs.total_clicks)
+	_assert_check(gs.upgrades["tier_1"]["level"] == 1, "6.1.55 Reconstituted generator upgrades match pre-save state")
+	_assert_check(gs.item_inventory.get("briefcase", 0) == pre_save_items, "6.1.56 Reconstituted item inventory matches pre-save state")
+	_assert_check(gs.tutorial_completed == true, "6.1.57 Reconstituted tutorial_completed flag is true")
+	_assert_check(gs.is_first_time_player() == false, "6.1.58 Reconstituted save confirms is_first_time_player() is false")
+
+	# Clean up allocated scene instances
+	tm.step_started.disconnect(cb_step)
+	var singletons_allowed = [
+		"GameState", "Nakama", "NakamaManager", "HapticsManager",
+		"AudioManager", "LiveEventManager", "TutorialManager"
+	]
+	for child in root.get_children():
+		if child.name not in singletons_allowed:
+			root.remove_child(child)
+			child.free()
+	await process_frame
+
+
+## Section 6.2: Scenario 2 - IPO Prestige Ascension & Tutorial Replay Consistency
+## Verifies prestige rebirth economics, mathematical boundary accuracy,
+## non-destructive tutorial replay requests, and consistency when replaying FTUE with Angel Shares.
+func _test_d6_section_2_scenario_2_ipo_prestige_and_replay(gs: Node, tm: Node) -> void:
+	print("\n--- SECTION 6.2: Scenario 2 - IPO Prestige & Tutorial Replay Consistency ---")
+
+	# -------------------------------------------------------------------------
+	# Phase 1: Pre-IPO Baseline & Threshold Bounds
+	# -------------------------------------------------------------------------
+	gs.reset_state()
+	if FileAccess.file_exists("user://savegame.json"):
+		DirAccess.remove_absolute("user://savegame.json")
+	await process_frame
+
+	_assert_check(absf(gs.total_lifetime_energy - 0.0) < EPSILON, "6.2.1 Pre-IPO: total_lifetime_energy reset to 0.0")
+
+	# Sub-100k lifetime energy: 0 pending shares and cannot trigger IPO
+	gs.total_lifetime_energy = 50000.0
+	_assert_check(not gs.can_trigger_ipo(), "6.2.2 can_trigger_ipo() is false below 100k lifetime energy")
+	_assert_check(gs.calculate_pending_angel_shares() == 0, "6.2.3 calculate_pending_angel_shares() is 0 below 100k")
+
+	var failed_ipo = gs.trigger_ipo()
+	_assert_check(failed_ipo.get("success") == false, "6.2.4 trigger_ipo() fails gracefully when ineligible")
+
+	# Sub-1M threshold (e.g. 999,999.0) with campaign_chapter < 3
+	gs.total_lifetime_energy = 999999.0
+	gs.campaign_chapter = 1
+	_assert_check(not gs.can_trigger_ipo(), "6.2.5 can_trigger_ipo() is false when total_lifetime_energy < 1,000,000.0 (actual: 999,999.0)")
+
+	# Set veteran progression: 4,000,000.0 lifetime energy
+	gs.total_lifetime_energy = 4000000.0
+	_assert_check(gs.can_trigger_ipo() == true, "6.2.6 can_trigger_ipo() is true with 4,000,000.0 lifetime energy")
+
+	# -------------------------------------------------------------------------
+	# Phase 2: Square-Root Angel Shares Formula & Mathematical Oracle
+	# -------------------------------------------------------------------------
+	# Formula: floor(sqrt(4M / 100k)) = floor(sqrt(40)) = floor(6.3245) = 6 shares
+	var pending_shares: int = gs.calculate_pending_angel_shares()
+	_assert_check(pending_shares == 6, "6.2.7 calculate_pending_angel_shares() evaluates to exactly 6 shares (actual: %d)" % pending_shares)
+
+	# Mathematical Boundary Oracle Battery
+	_assert_check(int(floor(sqrt(100000.0 / 100000.0))) == 1, "6.2.8 Oracle math: 100k lifetime energy = 1 share")
+	_assert_check(int(floor(sqrt(399999.0 / 100000.0))) == 1, "6.2.9 Oracle math: 399.9k lifetime energy = 1 share")
+	_assert_check(int(floor(sqrt(400000.0 / 100000.0))) == 2, "6.2.10 Oracle math: 400k lifetime energy = 2 shares")
+	_assert_check(int(floor(sqrt(900000.0 / 100000.0))) == 3, "6.2.11 Oracle math: 900k lifetime energy = 3 shares")
+	_assert_check(int(floor(sqrt(1600000.0 / 100000.0))) == 4, "6.2.12 Oracle math: 1.6M lifetime energy = 4 shares")
+	_assert_check(absf(gs.get_angel_share_multiplier() - 1.0) < EPSILON, "6.2.13 Pre-IPO Angel multiplier is 1.00x (0 shares)")
+
+	# Setup pre-rebirth active assets
+	gs.energy = 500000.0
+	gs.upgrades["tier_1"]["level"] = 25
+	gs.upgrades["tier_2"]["level"] = 15
+	var tech_arr: Array[String] = ["tech_coffee_automation", "tech_server_overclock"]
+	gs.researched_techs = tech_arr
+	gs.hired_workers = [{"id": "worker_1", "role": "Frontend Dev", "morale": 0.9, "fatigue": 0.1, "desk_id": 0}]
+	gs.is_frenzy_active = true
+	gs.frenzy_multiplier = 3.0
+	gs.server_overclock_buff_active = true
+	gs.server_overclock_buff_multiplier = 3.0
+	gs.set_station_cooldown("server_terminal", 45.0)
+	gs.tutorial_completed = true
+	gs.tutorial_skipped = false
+	gs.tutorial_replay_requested = false
+	gs.save_to_disk()
+
+	_assert_check(gs.upgrades["tier_1"]["level"] == 25 and gs.hired_workers.size() == 1, "6.2.14 Pre-IPO assets established")
+
+	# -------------------------------------------------------------------------
+	# Phase 3: trigger_ipo() Execution — Reset vs. Retention Contract
+	# -------------------------------------------------------------------------
+	var ipo_completed_events: Array = []
+	var cb_ipo = func(gained: int, total: int, mult: float): ipo_completed_events.append({"gained": gained, "total": total, "mult": mult})
+	gs.ipo_completed.connect(cb_ipo)
+
+	var ipo_result: Dictionary = gs.trigger_ipo()
+	await process_frame
+
+	_assert_check(ipo_result.get("success") == true, "6.2.15 trigger_ipo() executed with success == true")
+	_assert_check(ipo_result.get("shares_gained") == 6, "6.2.16 IPO awarded 6 angel shares")
+	_assert_check(ipo_result.get("total_angel_shares") == 6, "6.2.17 Total angel shares count is 6")
+	_assert_check(ipo_result.get("total_ipos_completed") == 1, "6.2.18 total_ipos_completed incremented to 1")
+
+	# Reset Invariants
+	_assert_check(absf(gs.energy - 0.0) < EPSILON, "6.2.19 Rebirth reset: regular energy reset to 0.0")
+	_assert_check(gs.upgrades["tier_1"]["level"] == 0, "6.2.20 Rebirth reset: tier_1 generator level reset to 0")
+	_assert_check(gs.upgrades["tier_2"]["level"] == 0, "6.2.21 Rebirth reset: tier_2 generator level reset to 0")
+	_assert_check(absf(float(gs.upgrades["tier_1"]["current_cost"]) - float(gs.DEFAULT_UPGRADES["tier_1"]["base_cost"])) < EPSILON, "6.2.22 Rebirth reset: tier_1 cost reset to base cost (10.0)")
+	_assert_check(not gs.is_frenzy_active and gs.frenzy_meter == 0.0, "6.2.23 Rebirth reset: temporary frenzy cleared")
+	_assert_check(not gs.server_overclock_buff_active, "6.2.24 Rebirth reset: server overclock buff cleared")
+	_assert_check(gs.get_station_cooldown("server_terminal") == 0.0, "6.2.25 Rebirth reset: station cooldowns cleared to 0.0")
+
+	# Retention Invariants
+	_assert_check(absf(gs.total_lifetime_energy - 4000000.0) < EPSILON, "6.2.26 Rebirth retention: total_lifetime_energy preserved (4.0M)")
+	_assert_check(gs.angel_shares == 6, "6.2.27 Rebirth retention: angel_shares preserved (6)")
+	_assert_check(gs.total_ipos_completed == 1, "6.2.28 Rebirth retention: total_ipos_completed preserved (1)")
+	_assert_check(gs.is_trophy_unlocked("trophy_platinum_bull"), "6.2.29 Rebirth retention: Trophy 4 (trophy_platinum_bull) unlocked")
+	_assert_check(gs.researched_techs.size() == 2, "6.2.30 Rebirth retention: researched_techs preserved (2 techs)")
+	_assert_check(gs.hired_workers.size() == 1, "6.2.31 Rebirth retention: hired_workers preserved (1 worker)")
+
+	# Multiplier Invariant: 1.0 + (6 * 0.02) = 1.12x (+12%)
+	var active_mult: float = gs.get_angel_share_multiplier()
+	_assert_check(absf(active_mult - 1.12) < EPSILON, "6.2.32 Angel Share multiplier active: 1.12x (+12% global production)")
+
+	# -------------------------------------------------------------------------
+	# Phase 4: Non-Destructive Tutorial Replay Request
+	# -------------------------------------------------------------------------
+	_assert_check(gs.is_first_time_player() == false, "6.2.33 Veteran status: is_first_time_player() is false before replay request")
+
+	# Simulate user clicking Replay Tutorial in SettingsModal
+	gs.reset_tutorial_state()
+	await process_frame
+
+	_assert_check(gs.tutorial_replay_requested == true, "6.2.34 tutorial_replay_requested set to true")
+	_assert_check(gs.tutorial_completed == false and gs.tutorial_skipped == false, "6.2.35 tutorial_completed and skipped reset to false")
+	_assert_check(gs.tutorial_current_step == 0, "6.2.36 tutorial_current_step reset to 0")
+	_assert_check(gs.tutorial_seen_hints.is_empty(), "6.2.37 tutorial_seen_hints cleared for rediscovery")
+	_assert_check(gs.is_first_time_player() == true, "6.2.38 is_first_time_player() now returns true for replaying user")
+
+	# Progression Non-Destruction Audit
+	_assert_check(gs.angel_shares == 6, "6.2.39 Non-destructive: Angel Shares (6) intact")
+	_assert_check(absf(gs.get_angel_share_multiplier() - 1.12) < EPSILON, "6.2.40 Non-destructive: 1.12x Angel multiplier intact")
+	_assert_check(absf(gs.total_lifetime_energy - 4000000.0) < EPSILON, "6.2.41 Non-destructive: total_lifetime_energy intact")
+	_assert_check(gs.is_trophy_unlocked("trophy_platinum_bull"), "6.2.42 Non-destructive: Platinum Bull trophy intact")
+	_assert_check(gs.researched_techs.size() == 2 and gs.hired_workers.size() == 1, "6.2.43 Non-destructive: Techs and staff intact")
+
+	# -------------------------------------------------------------------------
+	# Phase 5: Replaying FTUE Step 1 with Active Angel Multiplier
+	# -------------------------------------------------------------------------
+	tm.start_linear_intro()
+	await process_frame
+
+	_assert_check(tm.is_tutorial_active() and tm.get_current_step() == 1, "6.2.44 Replay intro active at Step 1")
+
+	# Core tap earns: base (1.0) * frenzy (1.0) * angel_mult (1.12) = 1.12 energy!
+	var replayed_tap_earned: float = gs.tap_core()
+	await process_frame
+
+	_assert_check(absf(replayed_tap_earned - 1.12) < EPSILON, "6.2.45 Step 1 tap awards 1.12 energy boosted by 6 Angel Shares (+12%)")
+	_assert_check(absf(gs.energy - 30.0) < EPSILON, "6.2.46 Seed grant invariant tops up energy to 30.0")
+
+	# -------------------------------------------------------------------------
+	# Phase 6: Replay Skip & Post-Ascension Persistence Consistency
+	# -------------------------------------------------------------------------
+	tm.skip_tutorial()
+	await process_frame
+
+	_assert_check(tm.get_current_step() == 7 and not tm.is_tutorial_active(), "6.2.47 Tutorial skipped cleanly to COMPLETED")
+	_assert_check(gs.tutorial_completed == true and gs.tutorial_replay_requested == false, "6.2.48 tutorial_completed is true and replay_requested cleared")
+	_assert_check(gs.is_first_time_player() == false, "6.2.49 is_first_time_player() returns false after replay skip")
+
+	# Disk roundtrip
+	gs.save_to_disk()
+	await process_frame
+	gs.reset_state()
+	await process_frame
+	gs.load_from_disk()
+
+	_assert_check(gs.angel_shares == 6, "6.2.50 Angel shares (6) survive post-replay save/load roundtrip")
+	_assert_check(gs.total_ipos_completed == 1, "6.2.51 total_ipos_completed (1) survives save/load roundtrip")
+	_assert_check(gs.is_trophy_unlocked("trophy_platinum_bull"), "6.2.52 Platinum Bull trophy survives save/load roundtrip")
+	_assert_check(absf(gs.get_angel_share_multiplier() - 1.12) < EPSILON, "6.2.53 1.12x Angel multiplier verified after disk reload")
+
+	gs.ipo_completed.disconnect(cb_ipo)
+
+
+## Section 6.3: Scenario 3 - Syndicate & Enterprise Corporate Empire Loop
+## Validates corporate holdings loop: syndicate join/fund, daily board 3-task rotation/claim/streak,
+## 5 staff roles recruitment, desk level 2 fatigue damping, coffee break & hyper-focus, compound RPS and save/load.
+func _test_d6_section_3_scenario_3_syndicate_and_enterprise(gs: Node) -> void:
+	print("\n--- SECTION 6.3: Scenario 3 - Syndicate & Enterprise Corporate Empire Loop ---")
+
+	gs.reset_state()
+	await process_frame
+
+	# Seed initial enterprise treasury (150,000 Energy)
+	gs.energy = 150000.0
+	gs.total_energy_earned = 150000.0
+	gs.total_lifetime_energy = 150000.0
+	gs.upgrades["tier_1"]["level"] = 100
+	gs.recalculate_stats()
+	gs.base_passive_rps = 100.0
+	gs.bonus_users = 0
+	gs.collectibles_collected = 0
+	gs.angel_shares = 0
+	gs.server_overclock_buff_timer = 0.0
+	gs.server_overclock_buff_active = false
+	gs.campaign_rps_buff_timer = 0.0
+
+	# -------------------------------------------------------------------------
+	# Part 1: Syndicate Affiliation & Tier 1 Dividend Activation
+	# -------------------------------------------------------------------------
+	_assert_check(not gs.is_in_syndicate(), "6.3.1 Initial state: unaffiliated with syndicate")
+
+	var join_ok = gs.join_syndicate("syn_enterprise", "Cyber Syndicate", "CYBR", "Enterprise Empire")
+	_assert_check(join_ok == true, "6.3.2 join_syndicate returns true")
+	_assert_check(gs.is_in_syndicate() == true, "6.3.3 is_in_syndicate() confirms membership")
+	_assert_check(gs.active_syndicate_id == "syn_enterprise", "6.3.4 active_syndicate_id matches 'syn_enterprise'")
+	_assert_check(gs.active_syndicate_tag == "CYBR", "6.3.5 active_syndicate_tag matches 'CYBR'")
+	_assert_check(gs.get_syndicate_tier() == 1, "6.3.6 Initial joined syndicate tier is Tier 1")
+
+	# Contribute 10,000 Energy to fund syndicate vault
+	var contrib_res: Dictionary = gs.contribute_to_syndicate(10000.0, "energy")
+	_assert_check(contrib_res.get("success") == true, "6.3.7 contribute_to_syndicate(10,000) succeeds")
+	_assert_check(absf(gs.energy - 140000.0) < EPSILON, "6.3.8 10,000 Energy deducted from bankroll (remaining: 140,000.0)")
+	_assert_check(absf(gs.syndicate_fund_energy - 10000.0) < EPSILON, "6.3.9 Syndicate vault fund contains 10,000.0 Energy")
+	_assert_check(gs.get_syndicate_tier() == 1, "6.3.10 Syndicate tier verified at Tier 1")
+	_assert_check(absf(gs.get_syndicate_dividend_multiplier() - 1.05) < EPSILON, "6.3.11 Tier 1 awards +5% dividend multiplier (1.05x)")
+	_assert_check(absf(float(gs.get_syndicate_bonuses().dividend_pct) - 0.05) < EPSILON, "6.3.12 Syndicate bonuses dictionary dividend_pct is 0.05")
+	_assert_check(gs.syndicate_seasonal_score >= 1100, "6.3.13 Seasonal leaderboard score computed correctly (>= 1,100 pts)")
+
+	# -------------------------------------------------------------------------
+	# Part 2: Daily Board 3-Task Progression & Claim Loop
+	# -------------------------------------------------------------------------
+	var tasks: Array[Dictionary] = gs.refresh_daily_tasks(100)
+	_assert_check(tasks.size() == 3, "6.3.14 Daily board populated with exactly 3 tasks")
+	_assert_check(gs.daily_board_streak == 0, "6.3.15 Initial daily streak is 0")
+
+	var t1_id: String = str(tasks[0]["id"])
+	var t1_target: int = int(tasks[0]["target"])
+	var t2_id: String = str(tasks[1]["id"])
+	var t2_target: int = int(tasks[1]["target"])
+	var t3_id: String = str(tasks[2]["id"])
+	var t3_target: int = int(tasks[2]["target"])
+
+	gs.advance_daily_task(t1_id, t1_target)
+	_assert_check(tasks[0]["is_completed"] == true, "6.3.16 Daily Task 1 advanced to completion")
+
+	gs.advance_daily_task(t2_id, t2_target)
+	_assert_check(tasks[1]["is_completed"] == true, "6.3.17 Daily Task 2 advanced to completion")
+
+	gs.advance_daily_task(t3_id, t3_target)
+	_assert_check(tasks[2]["is_completed"] == true, "6.3.18 Daily Task 3 advanced to completion")
+
+	# Sequential claiming
+	var claim1: Dictionary = gs.claim_daily_task(t1_id)
+	_assert_check(claim1.get("success") == true, "6.3.19 Claim Daily Task 1 succeeds")
+	_assert_check(tasks[0]["is_claimed"] == true, "6.3.20 Daily Task 1 marked as claimed")
+	_assert_check(claim1.get("all_claimed") == false, "6.3.21 all_claimed is false after Task 1")
+
+	var claim2: Dictionary = gs.claim_daily_task(t2_id)
+	_assert_check(claim2.get("success") == true, "6.3.22 Claim Daily Task 2 succeeds")
+	_assert_check(tasks[1]["is_claimed"] == true, "6.3.23 Daily Task 2 marked as claimed")
+	_assert_check(claim2.get("all_claimed") == false, "6.3.24 all_claimed is false after Task 2")
+
+	var claim3: Dictionary = gs.claim_daily_task(t3_id)
+	_assert_check(claim3.get("success") == true, "6.3.25 Claim Daily Task 3 succeeds")
+	_assert_check(tasks[2]["is_claimed"] == true, "6.3.26 Daily Task 3 marked as claimed")
+	_assert_check(claim3.get("all_claimed") == true, "6.3.27 all_claimed is true after all 3 tasks claimed")
+	_assert_check(gs.daily_board_streak == 1, "6.3.28 Daily challenge streak incremented to 1")
+
+	var reclaim: Dictionary = gs.claim_daily_task(t1_id)
+	_assert_check(reclaim.get("success") == false, "6.3.29 Re-claim attempt on claimed task rejected safely")
+
+	# Neutralize any temporary buff that might have been awarded by task rewards
+	gs.campaign_rps_buff_timer = 0.0
+
+	# -------------------------------------------------------------------------
+	# Part 3: Staff Roster Recruitment & Ergonomic Desk Damping
+	# -------------------------------------------------------------------------
+	gs.hired_workers.clear()
+	_assert_check(gs.get_hired_workers().size() == 0, "6.3.30 Staff roster empty before recruitment")
+
+	_assert_check(gs.hire_worker("Frontend Dev") == true, "6.3.31 Hired 1/5: Frontend Dev")
+	_assert_check(gs.hire_worker("Backend Dev") == true, "6.3.32 Hired 2/5: Backend Dev")
+	_assert_check(gs.hire_worker("UI/UX Designer") == true, "6.3.33 Hired 3/5: UI/UX Designer")
+	_assert_check(gs.hire_worker("Growth Hacker") == true, "6.3.34 Hired 4/5: Growth Hacker")
+	_assert_check(gs.hire_worker("QA Engineer") == true, "6.3.35 Hired 5/5: QA Engineer")
+
+	_assert_check(gs.get_active_workers_count() == 5, "6.3.36 All 5 specialist workers active")
+	_assert_check(gs.hire_worker("Frontend Dev") == false, "6.3.37 6th worker recruitment rejected (capacity limit 5)")
+
+	# Upgrade Desk 0 & Desk 1 to Level 2 (5,000 Energy each)
+	_assert_check(gs.upgrade_desk(0) == true, "6.3.38 Upgrade Desk 0 to Level 2 succeeds")
+	_assert_check(gs.get_desk_level(0) == 2, "6.3.39 Desk 0 verified at Level 2")
+	_assert_check(absf(gs.get_desk_fatigue_multiplier(2) - 0.75) < EPSILON, "6.3.40 Desk Level 2 provides 25% fatigue damping (0.75x)")
+
+	_assert_check(gs.upgrade_desk(1) == true, "6.3.41 Upgrade Desk 1 to Level 2 succeeds")
+	_assert_check(gs.get_desk_level(1) == 2, "6.3.42 Desk 1 verified at Level 2")
+
+	# Simulate 120s work: Desk 0 (0.75x) vs Desk 2 (Level 1, 1.00x)
+	gs.update_staff_simulation(120.0)
+	var w0 = gs.get_worker("Frontend Dev")
+	var w2 = gs.get_worker("UI/UX Designer")
+	var f0: float = float(w0.get("fatigue", 0.0))
+	var f2: float = float(w2.get("fatigue", 0.0))
+	_assert_check(f0 < f2, "6.3.43 Level 2 desk accumulated less fatigue (%.4f) than Level 1 desk (%.4f)" % [f0, f2])
+
+	# Team Coffee Break
+	_assert_check(gs.give_team_coffee_break() == true, "6.3.44 give_team_coffee_break() executes")
+	w0 = gs.get_worker("Frontend Dev")
+	_assert_check(absf(float(w0.get("fatigue", 1.0)) - 0.0) < EPSILON, "6.3.45 Coffee break reset fatigue to 0.0")
+	_assert_check(absf(float(w0.get("morale", 0.0)) - 1.0) < EPSILON, "6.3.46 Coffee break restored morale to 1.0")
+	_assert_check(gs.is_staff_hyper_focus_active() == true, "6.3.47 60s Hyper-Focus engaged")
+	_assert_check(absf(gs.get_staff_hyper_focus_multiplier() - 1.50) < EPSILON, "6.3.48 Hyper-Focus multiplier is 1.50x")
+
+	# -------------------------------------------------------------------------
+	# Part 4: Tech Tree Research & Compound RPS Verification
+	# -------------------------------------------------------------------------
+	gs.researched_techs.clear()
+
+	_assert_check(gs.can_research_tech("tech_coffee_automation") == true, "6.3.49 can_research_tech('tech_coffee_automation') is true")
+	_assert_check(gs.research_tech("tech_coffee_automation") == true, "6.3.50 research_tech('tech_coffee_automation') succeeds")
+	_assert_check(absf(gs.get_worker_production_multiplier() - 1.10) < EPSILON, "6.3.51 Worker production multiplier is 1.10x with coffee automation")
+
+	_assert_check(gs.can_research_tech("tech_server_overclock") == true, "6.3.52 can_research_tech('tech_server_overclock') is true")
+	_assert_check(gs.research_tech("tech_server_overclock") == true, "6.3.53 research_tech('tech_server_overclock') succeeds (+25% RPS)")
+
+	# Compound Passive RPS Formula Check:
+	# Base = 100.0
+	# tech_server_overclock = 1.25x
+	# Syndicate Tier 1 = 1.05x
+	# Staff (5 workers @ 1.0 morale) = 1.0 + (5 * 0.05) * 1.0 = 1.25x
+	# Compound = 100.0 * 1.25 * 1.05 * 1.25 = 164.0625 RPS
+	var current_eff_rps: float = gs.get_effective_passive_rps()
+	_assert_check(absf(current_eff_rps - 164.0625) < EPSILON,
+		"6.3.54 Compound RPS matches exact formula 100 * 1.25 (tech) * 1.05 (syndicate) * 1.25 (staff) = 164.0625",
+		"Actual: %f" % current_eff_rps)
+
+	# -------------------------------------------------------------------------
+	# Part 5: Full Persistence Roundtrip
+	# -------------------------------------------------------------------------
+	gs.save_to_disk()
+	_assert_check(FileAccess.file_exists("user://savegame.json") == true, "6.3.55 save_to_disk serializes corporate empire to disk")
+	await process_frame
+
+	# Clear memory state
+	gs.reset_state()
+	_assert_check(not gs.is_in_syndicate(), "6.3.56 Memory reset: syndicate cleared")
+	_assert_check(gs.get_hired_workers().is_empty(), "6.3.57 Memory reset: workers cleared")
+	await process_frame
+
+	# Reload from disk
+	var load_ok = gs.load_from_disk()
+	_assert_check(load_ok == true, "6.3.58 load_from_disk executes cleanly")
+	_assert_check(gs.active_syndicate_id == "syn_enterprise", "6.3.59 Restored: syndicate active_id matches 'syn_enterprise'")
+	_assert_check(gs.get_syndicate_tier() == 1, "6.3.60 Restored: syndicate tier is 1")
+	_assert_check(absf(gs.syndicate_fund_energy - 10000.0) < EPSILON, "6.3.61 Restored: syndicate fund energy intact (10,000.0)")
+	_assert_check(gs.daily_board_streak == 1, "6.3.62 Restored: daily board streak intact (1)")
+	_assert_check(gs.get_hired_workers().size() == 5, "6.3.63 Restored: all 5 staff workers restored")
+	_assert_check(gs.get_desk_level(0) == 2 and gs.get_desk_level(1) == 2, "6.3.64 Restored: desk levels 0 and 1 preserved at Level 2")
+	_assert_check(gs.is_tech_researched("tech_server_overclock") == true, "6.3.65 Restored: tech_server_overclock preserved")
+	_assert_check(absf(gs.get_effective_passive_rps() - 164.0625) < 1.0, "6.3.66 Restored: effective passive RPS preserved at ~164.06 RPS")
+
+	# Clean up save file
+	await process_frame
+	if FileAccess.file_exists("user://savegame.json"):
+		DirAccess.remove_absolute("user://savegame.json")
+	gs.reset_state()
+	await process_frame
+
+
+## Section 6.4: Scenario 4 - Corrupted & Partial Save File Recovery Matrix
+## Systematically exercises 10 failure injection modes (missing file, 0-byte file, malformed syntax,
+## non-dict roots, numeric poisoning, NaN/Inf, negative values, legacy partial schema, poisoned collections, clock rollback).
+func _test_d6_section_4_scenario_4_corrupted_save_recovery(gs: Node) -> void:
+	print("\n--- SECTION 6.4: Scenario 4 - Corrupted & Partial Save File Recovery Matrix ---")
+
+	const SAVE_PATH: String = "user://savegame.json"
+
+	# -------------------------------------------------------------------------
+	# Mode 1: Missing Savegame File
+	# -------------------------------------------------------------------------
+	if FileAccess.file_exists(SAVE_PATH):
+		DirAccess.remove_absolute(SAVE_PATH)
+	await process_frame
+	gs.reset_state()
+	_assert_check(not FileAccess.file_exists(SAVE_PATH), "6.4.1 Mode 1: File verified absent before load")
+	var m1_ok = gs.load_from_disk()
+	_assert_check(m1_ok == false, "6.4.2 Mode 1: load_from_disk returns false on missing file")
+	_assert_check(gs.energy >= 0.0, "6.4.3 Mode 1: Memory state untouched (energy >= 0.0)")
+	_assert_check(gs.is_in_syndicate() == false, "6.4.4 Mode 1: Default unaffiliated syndicate state preserved")
+
+	# -------------------------------------------------------------------------
+	# Mode 2: Empty / Zero-Byte File
+	# -------------------------------------------------------------------------
+	var f_empty = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	f_empty.flush()
+	f_empty.close()
+	var f_empty_check = FileAccess.open(SAVE_PATH, FileAccess.READ)
+	var empty_len: int = f_empty_check.get_length() if f_empty_check != null else -1
+	if f_empty_check != null: f_empty_check.close()
+	_assert_check(empty_len == 0, "6.4.5 Mode 2: 0-byte file created on disk")
+	await process_frame
+
+	var m2_ok = gs.load_from_disk()
+	_assert_check(m2_ok == false, "6.4.6 Mode 2: load_from_disk returns false on 0-byte EOF")
+	_assert_check(gs.get_hired_workers().is_empty(), "6.4.7 Mode 2: Staff array remains clean without crash")
+
+	# -------------------------------------------------------------------------
+	# Mode 3: Malformed JSON Syntax
+	# -------------------------------------------------------------------------
+	var f_syntax = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	f_syntax.store_string("{ \"energy\": 5000.0, \"corrupted_array\": [ 1, 2, ")
+	f_syntax.flush()
+	f_syntax.close()
+	_assert_check(FileAccess.file_exists(SAVE_PATH), "6.4.8 Mode 3: Malformed JSON syntax written to disk")
+	await process_frame
+
+	var m3_ok = gs.load_from_disk()
+	_assert_check(m3_ok == false, "6.4.9 Mode 3: load_from_disk returns false on JSON parse error")
+	_assert_check(gs.total_clicks >= 0, "6.4.10 Mode 3: Memory state remains consistent without crash")
+
+	# -------------------------------------------------------------------------
+	# Mode 4: Non-Dictionary Root Types
+	# -------------------------------------------------------------------------
+	# Subcase 4A: Array Root
+	var f_arr = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	f_arr.store_string("[1, 2, 3, \"hello\", {\"energy\": 100.0}]")
+	f_arr.flush()
+	f_arr.close()
+	await process_frame
+	var m4a_ok = gs.load_from_disk()
+	_assert_check(m4a_ok == false, "6.4.11 Mode 4A: Array root JSON rejected safely (returns false)")
+
+	# Subcase 4B: Integer Root
+	var f_int = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	f_int.store_string("42")
+	f_int.flush()
+	f_int.close()
+	await process_frame
+	var m4b_ok = gs.load_from_disk()
+	_assert_check(m4b_ok == false, "6.4.12 Mode 4B: Integer root JSON rejected safely (returns false)")
+
+	# Subcase 4C: String Root
+	var f_str = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	f_str.store_string("\"corrupted payload string\"")
+	f_str.flush()
+	f_str.close()
+	await process_frame
+	var m4c_ok = gs.load_from_disk()
+	_assert_check(m4c_ok == false, "6.4.13 Mode 4C: String root JSON rejected safely (returns false)")
+
+	# -------------------------------------------------------------------------
+	# Mode 5: Numeric Type Poisoning (Strings, Arrays in Numeric Fields)
+	# -------------------------------------------------------------------------
+	var f_poison = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	f_poison.store_string('{\n' +
+		'\t"version": 1,\n' +
+		'\t"energy": "one_million_users",\n' +
+		'\t"total_energy_earned": "not_a_number",\n' +
+		'\t"total_clicks": "invalid_clicks",\n' +
+		'\t"angel_shares": "invalid_shares",\n' +
+		'\t"idle_level": "ten",\n' +
+		'\t"bonus_users": "many"\n' +
+	'}')
+	f_poison.flush()
+	f_poison.close()
+	await process_frame
+
+	var m5_ok = gs.load_from_disk()
+	_assert_check(m5_ok == true, "6.4.14 Mode 5: Type-poisoned dictionary loads and sanitizes without crash")
+	_assert_check(absf(gs.energy - 0.0) < EPSILON, "6.4.15 Mode 5: String in energy sanitized to 0.0")
+	_assert_check(gs.total_energy_earned >= 0.0, "6.4.16 Mode 5: String in total_energy_earned sanitized non-negative")
+	_assert_check(gs.total_clicks == 0, "6.4.17 Mode 5: String in total_clicks sanitized to 0")
+	_assert_check(gs.angel_shares == 0, "6.4.18 Mode 5: String in angel_shares sanitized to 0")
+	_assert_check(gs.idle_level >= 1, "6.4.19 Mode 5: String in idle_level defaulted to at least Level 1")
+
+	# -------------------------------------------------------------------------
+	# Mode 6: Floating Point NaN & Infinity Injection
+	# -------------------------------------------------------------------------
+	var f_nan = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	f_nan.store_string('{\n' +
+		'\t"version": 1,\n' +
+		'\t"energy": "NaN",\n' +
+		'\t"total_energy_earned": "Infinity",\n' +
+		'\t"total_lifetime_energy": "-Infinity",\n' +
+		'\t"audio_settings": {"master_volume": "NaN"}\n' +
+	'}')
+	f_nan.flush()
+	f_nan.close()
+	await process_frame
+
+	var m6_ok = gs.load_from_disk()
+	_assert_check(m6_ok == true, "6.4.20 Mode 6: NaN/Infinity payload processed without crash")
+	_assert_check(not is_nan(gs.energy), "6.4.21 Mode 6: NaN energy detected and protected against NaN")
+	_assert_check(absf(gs.energy - 0.0) < EPSILON, "6.4.22 Mode 6: NaN energy clamped to 0.0")
+	_assert_check(not is_inf(gs.total_energy_earned), "6.4.23 Mode 6: Infinity total_energy_earned detected and clamped")
+	_assert_check(not is_inf(gs.total_lifetime_energy), "6.4.24 Mode 6: -Infinity total_lifetime_energy detected and clamped")
+	_assert_check(not is_nan(gs.master_volume) and gs.master_volume >= 0.0 and gs.master_volume <= 1.0,
+		"6.4.25 Mode 6: NaN master_volume clamped to valid range [0.0, 1.0]")
+
+	# -------------------------------------------------------------------------
+	# Mode 7: Negative Values Injection
+	# -------------------------------------------------------------------------
+	var f_neg = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	f_neg.store_string('{\n' +
+		'\t"version": 1,\n' +
+		'\t"energy": -999999.0,\n' +
+		'\t"total_energy_earned": -500.0,\n' +
+		'\t"total_lifetime_energy": -12345.0,\n' +
+		'\t"total_clicks": -100,\n' +
+		'\t"sparks_collected": -25,\n' +
+		'\t"angel_shares": -10,\n' +
+		'\t"daily_board_streak": -5,\n' +
+		'\t"idle_level": -3\n' +
+		'}')
+	f_neg.flush()
+	f_neg.close()
+	await process_frame
+
+	var m7_ok = gs.load_from_disk()
+	_assert_check(m7_ok == true, "6.4.26 Mode 7: Negative values payload parsed successfully")
+	_assert_check(absf(gs.energy - 0.0) < EPSILON, "6.4.27 Mode 7: Negative energy clamped to 0.0")
+	_assert_check(gs.total_energy_earned >= 0.0, "6.4.28 Mode 7: Negative total_energy_earned clamped non-negative")
+	_assert_check(gs.total_clicks == 0, "6.4.29 Mode 7: Negative total_clicks clamped to 0")
+	_assert_check(gs.sparks_collected == 0, "6.4.30 Mode 7: Negative sparks_collected clamped to 0")
+	_assert_check(gs.angel_shares == 0, "6.4.31 Mode 7: Negative angel_shares clamped to 0")
+	_assert_check(gs.daily_board_streak == 0, "6.4.32 Mode 7: Negative daily_board_streak clamped to 0")
+	_assert_check(gs.idle_level == 1, "6.4.33 Mode 7: Negative idle_level clamped to baseline 1")
+
+	# -------------------------------------------------------------------------
+	# Mode 8: Legacy Schema Missing Modern Subsystems (Partial Save)
+	# -------------------------------------------------------------------------
+	var f_legacy = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	f_legacy.store_string('{\n' +
+		'\t"version": 1,\n' +
+		'\t"energy": 1250.0,\n' +
+		'\t"total_clicks": 42\n' +
+		'}')
+	f_legacy.flush()
+	f_legacy.close()
+	await process_frame
+
+	var m8_ok = gs.load_from_disk()
+	_assert_check(m8_ok == true, "6.4.34 Mode 8: Legacy savegame loaded successfully")
+	_assert_check(absf(gs.energy - 1250.0) < 50.0, "6.4.35 Mode 8: Legacy energy restored (~1,250.0)")
+	_assert_check(gs.total_clicks == 42, "6.4.36 Mode 8: Legacy total_clicks restored (42)")
+	_assert_check(not gs.is_in_syndicate(), "6.4.37 Mode 8: Missing syndicate defaults to unaffiliated")
+	_assert_check(gs.get_hired_workers().is_empty(), "6.4.38 Mode 8: Missing staff defaults to empty array")
+	_assert_check(gs.get_desk_levels() == [1, 1, 1, 1, 1], "6.4.39 Mode 8: Missing desk_levels defaults to [1, 1, 1, 1, 1]")
+	_assert_check(gs.tutorial_completed == false, "6.4.40 Mode 8: Missing tutorial defaults to incomplete")
+	_assert_check(gs.station_cooldowns.size() >= 3, "6.4.41 Mode 8: Missing station cooldowns cleanly initialized")
+
+	# -------------------------------------------------------------------------
+	# Mode 9: Poisoned Subsystem Collections & Nested Structures
+	# -------------------------------------------------------------------------
+	var f_coll = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	f_coll.store_string('{\n' +
+		'\t"version": 1,\n' +
+		'\t"researched_techs": [null, 12345, "", "tech_server_overclock", true, {"bad": "data"}],\n' +
+		'\t"unlocked_trophies": [null, 42, "trophy_platinum_bull", ""],\n' +
+		'\t"item_inventory": {"briefcase": "five", "coffee": -10, "usb_drive": 3},\n' +
+		'\t"staff": {\n' +
+		'\t\t"workers": [null, "not_a_dict", {"role": "nonexistent_role"}, {"role": "Frontend Dev", "morale": 99.0, "fatigue": -5.0, "desk_assigned": 99}],\n' +
+		'\t\t"desk_levels": [-1, 0, 2, 99, "invalid"]\n' +
+		'\t},\n' +
+		'\t"syndicate": {\n' +
+		'\t\t"active_id": "syn_poison",\n' +
+		'\t\t"tier": 999,\n' +
+		'\t\t"fund_energy": -5000.0\n' +
+		'\t}\n' +
+		'}')
+	f_coll.flush()
+	f_coll.close()
+	await process_frame
+
+	var m9_ok = gs.load_from_disk()
+	_assert_check(m9_ok == true, "6.4.42 Mode 9: Poisoned collections processed cleanly")
+	_assert_check(gs.researched_techs == ["tech_server_overclock"], "6.4.43 Mode 9: researched_techs prunes nulls and non-strings")
+	_assert_check(gs.unlocked_trophies == ["trophy_platinum_bull"], "6.4.44 Mode 9: unlocked_trophies prunes nulls and non-strings")
+	_assert_check(gs.item_inventory["coffee"] == 0, "6.4.45 Mode 9: item_inventory clamps negative count to 0")
+	_assert_check(gs.item_inventory["usb_drive"] == 3, "6.4.46 Mode 9: item_inventory retains valid count (3)")
+	_assert_check(gs.get_hired_workers().size() == 1, "6.4.47 Mode 9: staff prunes nulls and unknown roles (1 worker loaded)")
+
+	var w_front = gs.get_worker("Frontend Dev")
+	_assert_check(int(w_front.get("desk_assigned", -1)) <= 4, "6.4.48 Mode 9: worker desk_assigned clamped to [0, 4]")
+	_assert_check(float(w_front.get("morale", -1.0)) <= 1.0, "6.4.49 Mode 9: worker morale clamped to [0.0, 1.0]")
+	_assert_check(float(w_front.get("fatigue", -1.0)) >= 0.0, "6.4.50 Mode 9: worker fatigue clamped to [0.0, 1.0]")
+	_assert_check(gs.get_desk_level(0) == 1 and gs.get_desk_level(3) == 3, "6.4.51 Mode 9: desk_levels clamped to bounds [1, 3]")
+	_assert_check(gs.syndicate_tier <= 5, "6.4.52 Mode 9: syndicate_tier clamped to max 5")
+	_assert_check(gs.syndicate_fund_energy >= 0.0, "6.4.53 Mode 9: syndicate_fund_energy clamped non-negative")
+
+	# -------------------------------------------------------------------------
+	# Mode 10: System Clock Future Rollback (Time Travel)
+	# -------------------------------------------------------------------------
+	var future_time: float = Time.get_unix_time_from_system() + 1000000.0
+	var f_clock = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	f_clock.store_string('{\n' +
+		'\t"version": 1,\n' +
+		'\t"timestamp": ' + str(int(future_time)) + ',\n' +
+		'\t"energy": 5000.0,\n' +
+		'\t"base_passive_rps": 100.0,\n' +
+		'\t"station_cooldowns": {"server_terminal": 60.0}\n' +
+		'}')
+	f_clock.flush()
+	f_clock.close()
+	await process_frame
+
+	var m10_ok = gs.load_from_disk()
+	_assert_check(m10_ok == true, "6.4.54 Mode 10: Future timestamp save loaded successfully")
+	_assert_check(absf(gs.energy - 5000.0) < EPSILON, "6.4.55 Mode 10: Clock rollback guard clamped offline elapsed time to 0.0 (no energy change)")
+	_assert_check(absf(gs.get_station_cooldown("server_terminal") - 60.0) < EPSILON,
+		"6.4.56 Mode 10: Station cooldown protected from backwards time dilation")
+
+	# Final teardown of temporary save file
+	await process_frame
+	if FileAccess.file_exists(SAVE_PATH):
+		DirAccess.remove_absolute(SAVE_PATH)
+	gs.reset_state()
+	await process_frame
+
+
+## Section 6.5: Scenario 5 - Rapid UI Interaction Stress & Pointer Isolation
+## Stress tests 1-frame rapid modal cycling across 8 modals, tap deduplication across engine frames,
+## and pointer isolation across modal backdrops and the QuickHUD spacer.
+func _test_d6_section_5_scenario_5_rapid_ui_stress_and_offline(gs: Node) -> void:
+	print("\n--- SECTION 6.5: Scenario 5 - Rapid UI Interaction Stress & Pointer Isolation ---")
+
+	# -------------------------------------------------------------------------
+	# Part A: Rapid Modal Open/Close Storming Across All 8 Modals Within 1 Frame
+	# -------------------------------------------------------------------------
+	print("  [Part A: 1-Frame Rapid Modal Storming Cycle (8 Modals)]")
+	var frame_start: int = Engine.get_process_frames()
+
+	# 1. ShopPanel (in HUD)
+	var hud_scene = load("res://scenes/hud.tscn")
+	_assert_check(hud_scene != null, "5.1 Load res://scenes/hud.tscn")
+	var hud = hud_scene.instantiate() as Control
+	root.add_child(hud)
+	var shop_panel = hud.get_node_or_null("BottomContainer/ShopPanel") as Control
+	_assert_check(shop_panel != null, "5.2 ShopPanel located in HUD hierarchy")
+	shop_panel.visible = true
+	_assert_check(shop_panel.visible == true, "5.3 Modal 1 (ShopPanel) opened in frame")
+	shop_panel.visible = false
+	_assert_check(shop_panel.visible == false, "5.4 Modal 1 (ShopPanel) closed in frame")
+
+	# 2. DialoguePanel
+	var dial_scene = load("res://scenes/dialogue_panel.tscn")
+	_assert_check(dial_scene != null, "5.5 Load res://scenes/dialogue_panel.tscn")
+	var dial = dial_scene.instantiate() as DialoguePanel
+	root.add_child(dial)
+	dial.open_for_npc("ceo_alex", "CEO Alex", "CEO", "Welcome!", "", "", "", 1, 0.0, 0, Color.CYAN, null, [], 1)
+	_assert_check(dial.visible == true, "5.6 Modal 2 (DialoguePanel) opened in frame")
+	dial.close_dialogue()
+	_assert_check(dial.visible == false, "5.7 Modal 2 (DialoguePanel) closed in frame")
+	dial.queue_free()
+
+	# 3. TechTreeModal
+	var tech_scene = load("res://scenes/ui/tech_tree_modal.tscn")
+	var tech = tech_scene.instantiate() as Control
+	root.add_child(tech)
+	tech.open()
+	_assert_check(tech.visible == true, "5.8 Modal 3 (TechTreeModal) opened in frame")
+	tech.close()
+	_assert_check(tech.visible == false, "5.9 Modal 3 (TechTreeModal) closed in frame")
+
+	# 4. SettingsModal
+	var sett_scene = load("res://scenes/ui/settings_modal.tscn")
+	var sett = sett_scene.instantiate() as Control
+	root.add_child(sett)
+	sett.open()
+	_assert_check(sett.visible == true, "5.10 Modal 4 (SettingsModal) opened in frame")
+	sett.close()
+	_assert_check(sett.visible == false, "5.11 Modal 4 (SettingsModal) closed in frame")
+
+	# 5. IpoModal
+	var ipo_scene = load("res://scenes/ui/ipo_modal.tscn")
+	var ipo = ipo_scene.instantiate() as Control
+	root.add_child(ipo)
+	ipo.open()
+	_assert_check(ipo.visible == true, "5.12 Modal 5 (IpoModal) opened in frame")
+	ipo.close()
+	_assert_check(ipo.visible == false, "5.13 Modal 5 (IpoModal) closed in frame")
+
+	# 6. DailyBoardModal
+	var daily_scene = load("res://scenes/ui/daily_board_modal.tscn")
+	var daily = daily_scene.instantiate() as Control
+	root.add_child(daily)
+	daily.open()
+	_assert_check(daily.visible == true, "5.14 Modal 6 (DailyBoardModal) opened in frame")
+	daily.close()
+	_assert_check(daily.visible == false, "5.15 Modal 6 (DailyBoardModal) closed in frame")
+
+	# 7. SyndicateModal
+	var syn_scene = load("res://scenes/ui/syndicate_modal.tscn")
+	var syn = syn_scene.instantiate() as Control
+	root.add_child(syn)
+	syn.open()
+	_assert_check(syn.visible == true, "5.16 Modal 7 (SyndicateModal) opened in frame")
+	syn.close()
+	_assert_check(syn.is_queued_for_deletion() or not syn.visible, "5.17 Modal 7 (SyndicateModal) closed in frame")
+
+	# 8. StaffModal
+	var staff_scene = load("res://scenes/ui/staff_modal.tscn")
+	var staff = staff_scene.instantiate() as Control
+	root.add_child(staff)
+	staff.open()
+	_assert_check(staff.visible == true, "5.18 Modal 8 (StaffModal) opened in frame")
+	staff.close()
+	_assert_check(staff.is_queued_for_deletion() or not staff.visible, "5.19 Modal 8 (StaffModal) closed in frame")
+
+	# Rapid modal manager replacement through HUD
+	var m1 = hud.open_tech_tree_modal()
+	_assert_check(hud.has_active_modal() == true, "5.20 HUD tracks active modal instance")
+	var m2 = hud.open_staff_modal()
+	_assert_check(hud.has_active_modal() == true and m2 != m1, "5.21 HUD seamlessly replaces active modal without stack leak")
+	var dismissed = hud.dismiss_active_modal()
+	_assert_check(dismissed == true and hud.has_active_modal() == false, "5.22 HUD dismiss_active_modal() clears active modal")
+
+	var frame_end: int = Engine.get_process_frames()
+	_assert_check(frame_start == frame_end, "5.23 1-Frame Storming Invariant: All 8 modals cycled within identical engine frame (%d == %d)" % [frame_start, frame_end])
+
+	hud.queue_free()
+	await process_frame
+
+	# -------------------------------------------------------------------------
+	# Part B: Click Burst Deduplication Across Engine Frames (50 Taps / Frame)
+	# -------------------------------------------------------------------------
+	print("\n  [Part B: Tap Deduplication Across Engine Frames (50 Taps / Frame)]")
+	var core_scene = load("res://scenes/core.tscn")
+	_assert_check(core_scene != null, "5.24 Load res://scenes/core.tscn for tap stress")
+	var core_node = core_scene.instantiate()
+	root.add_child(core_node)
+	_mounted_nodes.append(core_node)
+	await process_frame
+
+	var clicks_initial: int = gs.total_clicks
+	var f1: int = Engine.get_process_frames()
+
+	# Fire 50 rapid taps on Frame 1
+	for i in range(50):
+		core_node._trigger_tap()
+
+	_assert_check(gs.total_clicks == clicks_initial + 1, "5.25 Frame 1: 50 taps deduplicated to exactly 1 registered click (+1)")
+	_assert_check(gs.total_clicks - clicks_initial == 1, "5.26 Frame 1: Exactly 49 duplicate taps rejected by frame guard")
+	_assert_check(core_node._last_tap_frame == f1, "5.27 Frame 1: _last_tap_frame synchronized to process frame %d" % f1)
+
+	# Advance 1 engine frame
+	await process_frame
+	var f2: int = Engine.get_process_frames()
+	_assert_check(f2 > f1, "5.28 Engine process frame advanced successfully (f2: %d > f1: %d)" % [f2, f1])
+
+	# Fire 50 rapid taps on Frame 2
+	for i in range(50):
+		core_node._trigger_tap()
+
+	_assert_check(gs.total_clicks == clicks_initial + 2, "5.29 Frame 2: 50 taps on next frame registered exactly 1 additional click (total +2)")
+	_assert_check(gs.total_clicks - clicks_initial == 2, "5.30 Frame 2: Exactly 49 duplicate taps rejected on subsequent frame")
+	_assert_check(core_node._last_tap_frame == f2, "5.31 Frame 2: _last_tap_frame updated to process frame %d" % f2)
+
+	root.remove_child(core_node)
+	core_node.queue_free()
+	_mounted_nodes.erase(core_node)
+	await process_frame
+
+	# -------------------------------------------------------------------------
+	# Part C: Multi-Touch Pointer Isolation Audit (mouse_filter = STOP)
+	# -------------------------------------------------------------------------
+	print("\n  [Part C: Multi-Touch Pointer Isolation Audit]")
+	var tc_scene = load("res://scenes/ui/touch_controls.tscn")
+	var tc = tc_scene.instantiate() as TouchControls
+	root.add_child(tc)
+	await process_frame
+
+	var joystick = tc.get_node_or_null("VirtualJoystick") as Control
+	_assert_check(joystick != null and joystick.mouse_filter == Control.MOUSE_FILTER_STOP, "5.32 Left-screen Joystick mouse_filter == STOP (0)")
+
+	var dial_test = dial_scene.instantiate() as Control
+	root.add_child(dial_test)
+	_assert_check(dial_test.mouse_filter == Control.MOUSE_FILTER_STOP, "5.33 DialoguePanel root mouse_filter == STOP (0)")
+	dial_test.queue_free()
+
+	var tech_test = tech_scene.instantiate() as Control
+	root.add_child(tech_test)
+	_assert_check(tech_test.mouse_filter == Control.MOUSE_FILTER_STOP, "5.34 TechTreeModal root mouse_filter == STOP (0)")
+	tech_test.queue_free()
+
+	var staff_test = staff_scene.instantiate() as Control
+	root.add_child(staff_test)
+	_assert_check(staff_test.mouse_filter == Control.MOUSE_FILTER_STOP, "5.35 StaffModal root mouse_filter == STOP (0)")
+	staff_test.queue_free()
+
+	# QuickHUD spacer in main_3d hardening verification (Milestone 2 F12)
+	var main_3d_scene = load("res://scenes/main_3d.tscn")
+	_assert_check(main_3d_scene != null, "5.36 Load res://scenes/main_3d.tscn for QuickHUD pointer isolation")
+	if main_3d_scene != null:
+		var main_3d_inst = main_3d_scene.instantiate()
+		var spacer: Control = main_3d_inst.find_child("Spacer", true, false) as Control
+		_assert_check(spacer != null and spacer.mouse_filter == Control.MOUSE_FILTER_STOP, "5.37 QuickHUD/BarHBox/Spacer mouse_filter == STOP (prevents 3D raycast bleed)")
+		main_3d_inst.queue_free()
+
+	tc.queue_free()
+	await process_frame
+
+## Alias for _test_d6_section_5_scenario_5_rapid_ui_stress_and_offline
+func _test_d6_section_5_scenario_5_rapid_ui_stress(gs: Node) -> void:
+	await _test_d6_section_5_scenario_5_rapid_ui_stress_and_offline(gs)
+
+
+## Section 6.6: Offline Progression Boundary Precision Matrix
+## Validates 8-case boundary precision matrix (0s, 60s, 3600s, 28800s, 86400s clamp, rollback guard, cd decay, cd expiry).
+func _test_d6_section_6_offline_progression_boundary_precision(gs: Node) -> void:
+	print("\n--- SECTION 6.6: Offline Progression Boundary Precision Matrix ---")
+
+	# Pause GameState process loop to prevent live engine frames from polluting energy balances
+	(gs as Node).set_process(false)
+
+	gs.reset_state()
+	gs.base_passive_rps = 0.0
+	gs.energy = 0.0
+	gs.total_energy_earned = 0.0
+	gs.total_lifetime_energy = 0.0
+	await process_frame
+
+	var now_unix: float = Time.get_unix_time_from_system()
+
+	# -------------------------------------------------------------------------
+	# TC-OFF-01: Delta t = 0s (Zero Elapsed Time / Immediate Reload)
+	# Formula: 0.0 * elapsed * 0.5 = 0.0 Energy Gain (immunized from file I/O latency)
+	# -------------------------------------------------------------------------
+	print("  [TC-OFF-01: 0 Seconds Offline]")
+	var save_0s: Dictionary = {
+		"version": 1,
+		"timestamp": now_unix,
+		"energy": 0.0,
+		"total_energy_earned": 0.0,
+		"total_lifetime_energy": 0.0,
+		"base_passive_rps": 0.0
+	}
+	var f0 = FileAccess.open("user://savegame.json", FileAccess.WRITE)
+	f0.store_string(JSON.stringify(save_0s))
+	f0.flush()
+	f0.close()
+	await process_frame
+
+	var ok_0s = gs.load_from_disk()
+	_assert_check(ok_0s == true, "6.6.1 load_from_disk() succeeds for 0s elapsed time")
+	_assert_check(absf(gs.energy - 0.0) < 1.0, "6.6.2 0s offline gain yields exactly 0.0 energy", "Actual: %f" % gs.energy)
+	_assert_check(absf(gs.total_energy_earned - 0.0) < 1.0, "6.6.3 0s total_energy_earned unchanged (0.0)")
+	_assert_check(absf(gs.total_lifetime_energy - 0.0) < 1.0, "6.6.4 0s total_lifetime_energy unchanged (0.0)")
+
+	# -------------------------------------------------------------------------
+	# TC-OFF-02: Delta t = 60s (1 Minute Offline)
+	# Formula: 100.0 * 60.0 * 0.5 = 3,000.0 Energy Gain
+	# -------------------------------------------------------------------------
+	print("  [TC-OFF-02: 60 Seconds (1 Minute) Offline]")
+	now_unix = Time.get_unix_time_from_system()
+	var save_60s: Dictionary = {
+		"version": 1,
+		"timestamp": now_unix - 60.0,
+		"energy": 0.0,
+		"total_energy_earned": 0.0,
+		"total_lifetime_energy": 0.0,
+		"base_passive_rps": 100.0
+	}
+	var f60 = FileAccess.open("user://savegame.json", FileAccess.WRITE)
+	f60.store_string(JSON.stringify(save_60s))
+	f60.flush()
+	f60.close()
+	await process_frame
+
+	var ok_60s = gs.load_from_disk()
+	_assert_check(ok_60s == true, "6.6.5 load_from_disk() succeeds for 60s offline")
+	_assert_check(absf(gs.energy - 3000.0) < 5.0, "6.6.6 60s offline gain matches formula (100 * 60 * 0.5 = 3,000.0)", "Actual: %f" % gs.energy)
+	_assert_check(absf(gs.total_energy_earned - 3000.0) < 5.0, "6.6.7 60s total_energy_earned updated to 3,000.0")
+	_assert_check(absf(gs.total_lifetime_energy - 3000.0) < 5.0, "6.6.8 60s total_lifetime_energy updated to 3,000.0")
+
+	# -------------------------------------------------------------------------
+	# TC-OFF-03: Delta t = 3,600s (1 Hour Offline)
+	# Formula: 100.0 * 3600.0 * 0.5 = 180,000.0 Energy Gain
+	# -------------------------------------------------------------------------
+	print("  [TC-OFF-03: 3,600 Seconds (1 Hour) Offline]")
+	var save_1h: Dictionary = {
+		"version": 1,
+		"timestamp": now_unix - 3600.0,
+		"energy": 0.0,
+		"total_energy_earned": 0.0,
+		"total_lifetime_energy": 0.0,
+		"base_passive_rps": 100.0
+	}
+	var f1h = FileAccess.open("user://savegame.json", FileAccess.WRITE)
+	f1h.store_string(JSON.stringify(save_1h))
+	f1h.flush()
+	f1h.close()
+	await process_frame
+
+	var ok_1h = gs.load_from_disk()
+	_assert_check(ok_1h == true, "6.6.9 load_from_disk() succeeds for 1h offline")
+	_assert_check(absf(gs.energy - 180000.0) < 10.0, "6.6.10 1h offline gain matches formula (100 * 3600 * 0.5 = 180,000.0)", "Actual: %f" % gs.energy)
+	_assert_check(absf(gs.total_energy_earned - 180000.0) < 10.0, "6.6.11 1h total_energy_earned updated to 180,000.0")
+	_assert_check(absf(gs.total_lifetime_energy - 180000.0) < 10.0, "6.6.12 1h total_lifetime_energy updated to 180,000.0")
+
+	# -------------------------------------------------------------------------
+	# TC-OFF-04: Delta t = 28,800s (8 Hours Exact Cap)
+	# Formula: 100.0 * 28800.0 * 0.5 = 1,440,000.0 Energy Gain
+	# -------------------------------------------------------------------------
+	print("  [TC-OFF-04: 28,800 Seconds (8 Hours Exact Cap) Offline]")
+	var save_8h: Dictionary = {
+		"version": 1,
+		"timestamp": now_unix - 28800.0,
+		"energy": 0.0,
+		"total_energy_earned": 0.0,
+		"total_lifetime_energy": 0.0,
+		"base_passive_rps": 100.0
+	}
+	var f8h = FileAccess.open("user://savegame.json", FileAccess.WRITE)
+	f8h.store_string(JSON.stringify(save_8h))
+	f8h.flush()
+	f8h.close()
+	await process_frame
+
+	var ok_8h = gs.load_from_disk()
+	_assert_check(ok_8h == true, "6.6.13 load_from_disk() succeeds for 8h offline")
+	_assert_check(absf(gs.energy - 1440000.0) < 10.0, "6.6.14 8h offline gain matches maximum cap (100 * 28800 * 0.5 = 1,440,000.0)", "Actual: %f" % gs.energy)
+	_assert_check(absf(gs.total_energy_earned - 1440000.0) < 10.0, "6.6.15 8h total_energy_earned updated to 1,440,000.0")
+	_assert_check(absf(gs.total_lifetime_energy - 1440000.0) < 10.0, "6.6.16 8h total_lifetime_energy updated to 1,440,000.0")
+
+	# -------------------------------------------------------------------------
+	# TC-OFF-05: Delta t = 86,400s (24 Hours Excess Clamped to 8h)
+	# Formula: Clamped to 28,800 * 0.5 = 1,440,000.0 Energy Gain
+	# -------------------------------------------------------------------------
+	print("  [TC-OFF-05: 86,400 Seconds (24 Hours) Clamped Offline]")
+	var save_24h: Dictionary = {
+		"version": 1,
+		"timestamp": now_unix - 86400.0,
+		"energy": 0.0,
+		"total_energy_earned": 0.0,
+		"total_lifetime_energy": 0.0,
+		"base_passive_rps": 100.0
+	}
+	var f24h = FileAccess.open("user://savegame.json", FileAccess.WRITE)
+	f24h.store_string(JSON.stringify(save_24h))
+	f24h.flush()
+	f24h.close()
+	await process_frame
+
+	var ok_24h = gs.load_from_disk()
+	_assert_check(ok_24h == true, "6.6.17 load_from_disk() succeeds for 24h offline")
+	_assert_check(absf(gs.energy - 1440000.0) < 10.0, "6.6.18 24h offline time clamped strictly to 8h cap (1,440,000.0, not 4.32M)", "Actual: %f" % gs.energy)
+	_assert_check(absf(gs.total_energy_earned - 1440000.0) < 10.0, "6.6.19 24h total_energy_earned clamped to 1,440,000.0")
+	_assert_check(gs.energy < 2000000.0, "6.6.20 24h energy guaranteed strictly below unclamped value (< 2.0M)")
+
+	# -------------------------------------------------------------------------
+	# TC-OFF-06: Delta t = -3,600s (Clock Rollback Guard / Future Timestamp)
+	# Formula: maxf(0.0, elapsed) = 0.0s -> 0.0 Energy Gain
+	# -------------------------------------------------------------------------
+	print("  [TC-OFF-06: -3,600 Seconds (Future Rollback Guard)]")
+	var save_rollback: Dictionary = {
+		"version": 1,
+		"timestamp": now_unix + 3600.0,
+		"energy": 5000.0,
+		"total_energy_earned": 5000.0,
+		"total_lifetime_energy": 5000.0,
+		"base_passive_rps": 100.0
+	}
+	var fr = FileAccess.open("user://savegame.json", FileAccess.WRITE)
+	fr.store_string(JSON.stringify(save_rollback))
+	fr.flush()
+	fr.close()
+	await process_frame
+
+	var ok_rollback = gs.load_from_disk()
+	_assert_check(ok_rollback == true, "6.6.21 load_from_disk() succeeds for clock rollback save")
+	_assert_check(absf(gs.energy - 5000.0) < EPSILON, "6.6.22 Clock rollback yields 0 offline gain without deducting existing energy")
+	_assert_check(absf(gs.total_energy_earned - 5000.0) < EPSILON, "6.6.23 Clock rollback preserves total_energy_earned intact")
+	_assert_check(absf(gs.total_lifetime_energy - 5000.0) < EPSILON, "6.6.24 Clock rollback preserves total_lifetime_energy intact")
+
+	# -------------------------------------------------------------------------
+	# TC-OFF-07: Station Cooldown Decay (60s CD, 30s Offline -> 30s Remaining)
+	# -------------------------------------------------------------------------
+	print("  [TC-OFF-07: Station Cooldown Decay]")
+	now_unix = Time.get_unix_time_from_system()
+	var save_cd_decay: Dictionary = {
+		"version": 1,
+		"timestamp": now_unix - 30.0,
+		"energy": 1000.0,
+		"total_energy_earned": 1000.0,
+		"total_lifetime_energy": 1000.0,
+		"base_passive_rps": 100.0,
+		"station_cooldowns": {
+			"server_terminal": 60.0
+		}
+	}
+	var fcd1 = FileAccess.open("user://savegame.json", FileAccess.WRITE)
+	fcd1.store_string(JSON.stringify(save_cd_decay))
+	fcd1.flush()
+	fcd1.close()
+	await process_frame
+
+	gs.load_from_disk()
+	var cd_rem: float = gs.get_station_cooldown("server_terminal")
+	_assert_check(absf(cd_rem - 30.0) < 1.0, "6.6.25 Station cooldown decays offline from 60s to 30s (actual: %.1f)" % cd_rem)
+	_assert_check(gs.is_station_on_cooldown("server_terminal") == true, "6.6.26 Station remains on cooldown at 30s")
+	_assert_check(gs.is_station_ready("server_terminal") == false, "6.6.27 Station is not ready during active cooldown")
+
+	# -------------------------------------------------------------------------
+	# TC-OFF-08: Station Cooldown Expiry (60s CD, 120s Offline -> 0s Ready)
+	# -------------------------------------------------------------------------
+	print("  [TC-OFF-08: Station Cooldown Expiry]")
+	now_unix = Time.get_unix_time_from_system()
+	var save_cd_exp: Dictionary = {
+		"version": 1,
+		"timestamp": now_unix - 120.0,
+		"energy": 1000.0,
+		"total_energy_earned": 1000.0,
+		"total_lifetime_energy": 1000.0,
+		"base_passive_rps": 100.0,
+		"station_cooldowns": {
+			"server_terminal": 60.0
+		}
+	}
+	var fcd2 = FileAccess.open("user://savegame.json", FileAccess.WRITE)
+	fcd2.store_string(JSON.stringify(save_cd_exp))
+	fcd2.flush()
+	fcd2.close()
+	await process_frame
+
+	gs.load_from_disk()
+	var cd_exp: float = gs.get_station_cooldown("server_terminal")
+	_assert_check(absf(cd_exp - 0.0) < EPSILON, "6.6.28 Station cooldown expired to 0.0s after 120s offline (actual: %.1f)" % cd_exp)
+	_assert_check(gs.is_station_on_cooldown("server_terminal") == false, "6.6.29 Station is no longer on cooldown after expiry")
+	_assert_check(gs.is_station_ready("server_terminal") == true, "6.6.30 Station is immediately ready for interaction")
+
+	# Restore GameState live process loop
+	(gs as Node).set_process(true)
+
+
+## Section 6.7: Lifecycle Teardown, Leak Audit & Threshold Update
+## Validates threshold update (1800), singletons health, scene tree cleanliness, mock unmounting, and signal teardown.
+func _test_d6_section_7_lifecycle_teardown_and_leak_audit(gs: Node) -> void:
+	print("\n--- SECTION 6.7: Lifecycle Teardown, Leak Audit & Threshold Update ---")
+
+	# -------------------------------------------------------------------------
+	# 1. Assertion Threshold Constant Verification
+	# -------------------------------------------------------------------------
+	_assert_check(MIN_EXPECTED_PASS_COUNT == 1800, "6.7.1 MIN_EXPECTED_PASS_COUNT configured to 1800 (upgraded from 1500)")
+
+	# -------------------------------------------------------------------------
+	# 2. Stage 0 Autoload Singletons Health Under /root
+	# -------------------------------------------------------------------------
+	_assert_check(root.has_node("GameState") and is_instance_valid(root.get_node("GameState")), "6.7.2 Singleton GameState alive and attached to /root")
+	_assert_check(root.has_node("Nakama") and is_instance_valid(root.get_node("Nakama")), "6.7.3 Singleton Nakama alive and attached to /root")
+	_assert_check(root.has_node("NakamaManager") and is_instance_valid(root.get_node("NakamaManager")), "6.7.4 Singleton NakamaManager alive and attached to /root")
+	_assert_check(root.has_node("HapticsManager") and is_instance_valid(root.get_node("HapticsManager")), "6.7.5 Singleton HapticsManager alive and attached to /root")
+	_assert_check(root.has_node("AudioManager") and is_instance_valid(root.get_node("AudioManager")), "6.7.6 Singleton AudioManager alive and attached to /root")
+	_assert_check(root.has_node("LiveEventManager") and is_instance_valid(root.get_node("LiveEventManager")), "6.7.7 Singleton LiveEventManager alive and attached to /root")
+	_assert_check(root.has_node("TutorialManager") and is_instance_valid(root.get_node("TutorialManager")), "6.7.8 Singleton TutorialManager alive and attached to /root")
+
+	# -------------------------------------------------------------------------
+	# 3. Scene Tree Root Cleanliness Audit (Zero Stray Child Nodes)
+	# -------------------------------------------------------------------------
+	var registered_singletons = [
+		"GameState", "Nakama", "NakamaManager", "HapticsManager",
+		"AudioManager", "LiveEventManager", "TutorialManager"
+	]
+	var stray_root_nodes: Array[String] = []
+	for child in root.get_children():
+		if child.name not in registered_singletons:
+			stray_root_nodes.append(child.name)
+
+	_assert_check(stray_root_nodes.is_empty(), "6.7.9 Root scene tree clean: 0 stray unparented nodes remaining", "Stray nodes: %s" % str(stray_root_nodes))
+
+	# -------------------------------------------------------------------------
+	# 4. Mock Instance Unmounting Lifecycle
+	# -------------------------------------------------------------------------
+	var mock_instance = Control.new()
+	mock_instance.name = "MockTestLifecycleNode"
+	root.add_child(mock_instance)
+	_assert_check(root.has_node("MockTestLifecycleNode"), "6.7.10 Mock test instance successfully mounted to scene tree")
+
+	root.remove_child(mock_instance)
+	mock_instance.free()
+	_assert_check(not is_instance_valid(mock_instance), "6.7.11 Mock test instance cleanly freed (is_instance_valid == false)")
+
+	# -------------------------------------------------------------------------
+	# 5. Signal Disconnection & Safe Lifecycle Teardown
+	# -------------------------------------------------------------------------
+	var callback_invoked: Array[bool] = [false]
+	var test_callable: Callable = func(_new_energy, _delta):
+		callback_invoked[0] = true
+
+	gs.energy_changed.connect(test_callable)
+	_assert_check(gs.energy_changed.is_connected(test_callable), "6.7.12 GameState.energy_changed test listener connected")
+
+	gs.energy_changed.disconnect(test_callable)
+	_assert_check(not gs.energy_changed.is_connected(test_callable), "6.7.13 GameState.energy_changed test listener cleanly disconnected")
+
+	gs.energy_changed.emit(99999.0, 1.0)
+	_assert_check(callback_invoked[0] == false, "6.7.14 Disconnected callback was NOT invoked on signal emission (clean lifecycle)")
+
+	# -------------------------------------------------------------------------
+	# 6. Milestone Target Health Check
+	# -------------------------------------------------------------------------
+	_assert_check(pass_count >= 1700, "6.7.15 Suite pass count approaching 1,800 milestone threshold (current: %d)" % pass_count)

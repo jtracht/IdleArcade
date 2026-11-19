@@ -1054,14 +1054,14 @@ func set_station_cooldown(station_id: String, duration: float) -> void:
 		return
 	var safe_duration: float = maxf(0.0, duration)
 	var prev_cd: float = float(station_cooldowns.get(station_id, 0.0))
-	if prev_cd <= 0.0 and (station_id == "coffee_machine_3d" or station_id == "barista_station"):
-		prev_cd = float(station_cooldowns.get("coffee_machine", 0.0))
+	if prev_cd <= 0.0 and station_id in ["coffee_machine", "coffee_machine_3d", "barista_station"]:
+		prev_cd = maxf(float(station_cooldowns.get("coffee_machine", 0.0)), maxf(float(station_cooldowns.get("coffee_machine_3d", 0.0)), float(station_cooldowns.get("barista_station", 0.0))))
 
 	station_cooldowns[station_id] = safe_duration
-	if station_id == "coffee_machine_3d" or station_id == "barista_station":
+	if station_id in ["coffee_machine", "coffee_machine_3d", "barista_station"]:
 		station_cooldowns["coffee_machine"] = safe_duration
-	elif station_id == "coffee_machine":
 		station_cooldowns["coffee_machine_3d"] = safe_duration
+		station_cooldowns["barista_station"] = safe_duration
 
 	if safe_duration > 0.0:
 		# Emit started and persist to disk only on fresh initiation or explicit timer expansion
@@ -1075,12 +1075,11 @@ func set_station_cooldown(station_id: String, duration: float) -> void:
 
 ## Returns remaining cooldown duration in seconds for a station (0.0 if ready).
 func get_station_cooldown(station_id: String) -> float:
-	if not station_cooldowns.has(station_id):
-		if station_id == "barista_station" and station_cooldowns.has("coffee_machine"):
-			return float(station_cooldowns.get("coffee_machine", 0.0))
-		if station_id == "coffee_machine_3d" and station_cooldowns.has("coffee_machine"):
-			return float(station_cooldowns.get("coffee_machine", 0.0))
-		return 0.0
+	if station_id in ["coffee_machine", "coffee_machine_3d", "barista_station"]:
+		var cd1: float = float(station_cooldowns.get("coffee_machine", 0.0))
+		var cd2: float = float(station_cooldowns.get("coffee_machine_3d", 0.0))
+		var cd3: float = float(station_cooldowns.get("barista_station", 0.0))
+		return maxf(0.0, maxf(cd1, maxf(cd2, cd3)))
 	var val = station_cooldowns.get(station_id, 0.0)
 	if val is float or val is int:
 		return maxf(0.0, float(val))
@@ -1568,22 +1567,12 @@ func load_from_disk() -> bool:
 	if not is_nan(explicit_rps) and not is_inf(explicit_rps) and explicit_rps > base_passive_rps:
 		base_passive_rps = explicit_rps
 		
-	# Offline catch-up calculation: 50% efficiency, capped at 8 hours (28800s), clock guard
+	# Elapsed offline time calculation for station cooldown decay and offline catch-up
 	var now_unix: float = Time.get_unix_time_from_system()
 	var saved_timestamp: float = float(data.get("timestamp", now_unix))
 	var elapsed: float = now_unix - saved_timestamp
 	if is_nan(elapsed) or is_inf(elapsed) or elapsed < 0.0:
 		elapsed = 0.0
-	var effective_elapsed: float = minf(elapsed, 28800.0)
-	var effective_rps: float = get_effective_passive_rps()
-	var offline_gain: float = effective_rps * effective_elapsed * 0.5
-	if is_nan(offline_gain) or is_inf(offline_gain) or offline_gain < 0.0:
-		offline_gain = 0.0
-	
-	if offline_gain > 0.0:
-		energy += offline_gain
-		total_energy_earned += offline_gain
-		total_lifetime_energy += offline_gain
 
 	# Phase 16 3D Campus Station Cooldowns Deserialization & Offline Decay
 	station_cooldowns = {
@@ -1816,6 +1805,20 @@ func load_from_disk() -> bool:
 					tutorial_seen_hints[clean_id] = (s_val == "true" or s_val == "1" or s_val == "seen")
 				else:
 					tutorial_seen_hints[clean_id] = false
+
+	# Offline catch-up calculation: 50% efficiency, capped at 8 hours (28800s), clock guard
+	# Executed after Syndicate Tier and Staff Morale/Workers are fully deserialized
+	var effective_elapsed: float = minf(elapsed, 28800.0)
+	var effective_rps: float = get_effective_passive_rps()
+	var offline_gain: float = effective_rps * effective_elapsed * 0.5
+	if is_nan(offline_gain) or is_inf(offline_gain) or offline_gain < 0.0:
+		offline_gain = 0.0
+
+	if offline_gain > 0.0:
+		energy += offline_gain
+		total_energy_earned += offline_gain
+		total_lifetime_energy += offline_gain
+
 	energy_changed.emit(energy, offline_gain)
 	rps_changed.emit(get_effective_passive_rps())
 	frenzy_updated.emit(frenzy_multiplier, 0.0)
@@ -2236,6 +2239,11 @@ func _rotate_daily_tasks(current_day: int) -> void:
 			pass
 		elif current_day > daily_board_last_login_day + 1:
 			# Missed one or more days: reset streak to 0
+			daily_board_streak = 0
+			daily_streak = 0
+			daily_streak_updated.emit(daily_board_streak)
+		elif current_day < daily_board_last_login_day:
+			# Clock rollback detected: reset streak to prevent repeat claims
 			daily_board_streak = 0
 			daily_streak = 0
 			daily_streak_updated.emit(daily_board_streak)
@@ -2896,8 +2904,11 @@ func update_staff_simulation(delta: float) -> void:
 				
 		total_morale += current_morale
 		
+	if hired_workers.is_empty():
+		return
+		
 	if any_morale_change:
-		var avg_morale: float = total_morale / float(hired_workers.size())
+		var avg_morale: float = total_morale / maxf(1.0, float(hired_workers.size()))
 		staff_morale_updated.emit(avg_morale)
 		rps_changed.emit(get_effective_passive_rps())
 		staff_bonus_updated.emit(get_staff_rps_multiplier(), get_active_workers_count(), avg_morale)

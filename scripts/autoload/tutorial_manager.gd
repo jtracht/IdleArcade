@@ -525,18 +525,30 @@ func _on_dialogue_advanced() -> void:
 	if current_step == State.INTRO_STEP_1_TAP:
 		var gs = get_node_or_null("/root/GameState")
 		if gs != null and "energy" in gs:
-			gs.energy = maxf(gs.energy, 30.0)
+			var delta: float = maxf(0.0, 30.0 - float(gs.energy))
+			if delta > 0.0:
+				gs.energy = maxf(gs.energy, 30.0)
+				if "total_energy_earned" in gs:
+					gs.total_energy_earned += delta
+				if "total_lifetime_energy" in gs:
+					gs.total_lifetime_energy += delta
 			if gs.has_signal("energy_changed"):
-				gs.energy_changed.emit(gs.energy, 30.0)
+				gs.energy_changed.emit(gs.energy, delta)
 	advance_step()
 
 func _on_step_1_tapped(_count: int) -> void:
 	if is_intro_active and current_step == State.INTRO_STEP_1_TAP:
 		var gs = get_node_or_null("/root/GameState")
 		if gs != null and "energy" in gs:
-			gs.energy = maxf(gs.energy, 30.0)
+			var delta: float = maxf(0.0, 30.0 - float(gs.energy))
+			if delta > 0.0:
+				gs.energy = maxf(gs.energy, 30.0)
+				if "total_energy_earned" in gs:
+					gs.total_energy_earned += delta
+				if "total_lifetime_energy" in gs:
+					gs.total_lifetime_energy += delta
 			if gs.has_signal("energy_changed"):
-				gs.energy_changed.emit(gs.energy, 30.0)
+				gs.energy_changed.emit(gs.energy, delta)
 		advance_step()
 
 func _on_step_2_upgraded(upgrade_id: String, _level: int, _cost: float) -> void:

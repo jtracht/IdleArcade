@@ -90,7 +90,7 @@ mouse_filter = 2
 
 [node name="CloseButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
 text = "✕"
 
@@ -124,6 +124,7 @@ layout_mode = 2
 
 [node name="OpenCheckBox" type="CheckBox" parent="CenterContainer/ModalCard/CardVBox/NoGuildView/CreateOptionsHBox"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
 button_pressed = true
 text = "Public Network (Direct Join)"
@@ -135,7 +136,7 @@ mouse_filter = 2
 
 [node name="CreateButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/NoGuildView/CreateOptionsHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(160, 38)
+custom_minimum_size = Vector2(160, 56)
 layout_mode = 2
 text = "➕ Create Network"
 
@@ -160,7 +161,7 @@ placeholder_text = "Search networks by name..."
 
 [node name="SearchButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/NoGuildView/SearchHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(100, 36)
+custom_minimum_size = Vector2(100, 56)
 layout_mode = 2
 text = "🔍 Search"
 
@@ -227,7 +228,7 @@ mouse_filter = 2
 
 [node name="RefreshMembersButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/InGuildView/MembersHeaderHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(130, 34)
+custom_minimum_size = Vector2(130, 56)
 layout_mode = 2
 text = "🔄 Refresh Roster"
 
@@ -247,7 +248,7 @@ layout_mode = 2
 
 [node name="LeaveButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/InGuildView/GuildActionsHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(140, 38)
+custom_minimum_size = Vector2(140, 56)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.35, 0.35, 1)
 text = "🚪 Leave Network"

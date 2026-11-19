@@ -35,7 +35,7 @@ var _was_in_sweet_spot: bool = false
 @onready var extraction_bar: ProgressBar = get_node_or_null("%ExtractionProgressBar")
 @onready var extraction_label: Label = get_node_or_null("%ExtractionLabel")
 @onready var status_label: Label = get_node_or_null("%StatusLabel")
-@onready var pump_button: Button = get_node_or_null("%PumpButton") if has_node("%PumpButton") else get_node_or_null("%HoldButton")
+@onready var pump_button: Button = get_node_or_null("%PumpButton")
 @onready var hold_button: Button = pump_button
 @onready var close_button: Button = get_node_or_null("%CloseButton")
 

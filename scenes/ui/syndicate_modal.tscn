@@ -162,7 +162,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="ModalCard" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(680, 920)
+custom_minimum_size = Vector2(640, 800)
 layout_mode = 2
 mouse_filter = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_modal_card")
@@ -301,10 +301,11 @@ text = "Syndicate holdings grant shared venture dividends, autonomous drone spee
 autowrap_mode = 3
 
 [node name="PerkScroll" type="ScrollContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab"]
-custom_minimum_size = Vector2(0, 480)
+custom_minimum_size = Vector2(0, 360)
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 0
+horizontal_scroll_mode = 0
 
 [node name="PerksVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/OverviewTab/PerkScroll"]
 layout_mode = 2
@@ -491,10 +492,11 @@ theme_override_font_sizes/font_size = 14
 text = "ACTIVE PARTNERS & CONTRIBUTORS"
 
 [node name="RosterScroll" type="ScrollContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab"]
-custom_minimum_size = Vector2(0, 200)
+custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 0
+horizontal_scroll_mode = 0
 
 [node name="MemberListVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RosterTab/RosterScroll"]
 unique_name_in_owner = true
@@ -649,10 +651,11 @@ theme_override_font_sizes/font_size = 13
 text = "TOP 10 GLOBAL SYNDICATES"
 
 [node name="LeaderboardScroll" type="ScrollContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/WarsTab"]
-custom_minimum_size = Vector2(0, 360)
+custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 0
+horizontal_scroll_mode = 0
 
 [node name="LeaderboardVBox" type="VBoxContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/WarsTab/LeaderboardScroll"]
 unique_name_in_owner = true

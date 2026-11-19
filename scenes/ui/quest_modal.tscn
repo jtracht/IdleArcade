@@ -101,7 +101,7 @@ mouse_filter = 2
 
 [node name="CloseButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
 text = "✕"
 
@@ -125,7 +125,7 @@ mouse_filter = 2
 
 [node name="RefreshQuestsButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/SubHeaderHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(100, 34)
+custom_minimum_size = Vector2(100, 56)
 layout_mode = 2
 text = "🔄 Refresh"
 
@@ -226,7 +226,7 @@ horizontal_alignment = 2
 
 [node name="ClaimButton_Tap" type="Button" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Tap/CardVBox_Tap"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 38)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 disabled = true
 text = "In Progress (0/50)"
@@ -287,7 +287,7 @@ horizontal_alignment = 2
 
 [node name="ClaimButton_Upgrade" type="Button" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Upgrade/CardVBox_Upgrade"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 38)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 disabled = true
 text = "In Progress (0/3)"
@@ -348,7 +348,7 @@ horizontal_alignment = 2
 
 [node name="ClaimButton_Spark" type="Button" parent="CenterContainer/ModalCard/CardVBox/QuestsScroll/QuestsListVBox/QuestCard_Spark/CardVBox_Spark"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 38)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 disabled = true
 text = "In Progress (0/3)"

@@ -90,7 +90,7 @@ mouse_filter = 2
 
 [node name="CloseButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
 text = "✕"
 
@@ -242,14 +242,14 @@ theme_override_constants/separation = 10
 
 [node name="LoginButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/AuthButtonsHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 42)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Login (Email)"
 
 [node name="RegisterButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/AuthButtonsHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 42)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Register Account"
@@ -263,19 +263,19 @@ theme_override_constants/separation = 8
 
 [node name="DeviceLoginButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/AltActionsVBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 text = "⚡ Quick Login (Device-ID)"
 
 [node name="GoogleButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/AltActionsVBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 text = "🌐 Sign in with Google [OAuth Stub]"
 
 [node name="LogoutButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/AltActionsVBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.35, 0.35, 1)
 text = "🚪 Logout Session"

@@ -76,6 +76,15 @@ func _update_team_headcount() -> void:
 			
 	desired_count = clampi(desired_count, 1, WORKER_DEFS.size())
 	
+	# Despawn excess workers when headcount decreases (e.g. IPO prestige reset)
+	while _workers.size() > desired_count:
+		var worker_to_free = _workers.pop_back()
+		if is_instance_valid(worker_to_free):
+			if worker_to_free.get_parent() == self:
+				remove_child(worker_to_free)
+			worker_to_free.queue_free()
+			
+	# Spawn additional workers when headcount increases
 	for i in range(_workers.size(), desired_count):
 		_spawn_worker(i)
 

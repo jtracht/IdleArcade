@@ -101,7 +101,7 @@ mouse_filter = 2
 
 [node name="CloseButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/HeaderHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
 text = "✕"
 
@@ -114,21 +114,21 @@ theme_override_constants/separation = 8
 
 [node name="GlobalTab" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 38)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "🌍 Global"
 
 [node name="LocalTab" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 38)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "📍 Country (DE)"
 
 [node name="GuildTab" type="Button" parent="CenterContainer/ModalCard/CardVBox/TabHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 38)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "🏢 Network"
@@ -151,13 +151,13 @@ text = "My Lifetime Users: 0 👥"
 
 [node name="SubmitScoreButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/PlayerStatusPanel/PlayerStatusHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(130, 36)
+custom_minimum_size = Vector2(130, 56)
 layout_mode = 2
 text = "⚡ Submit Score"
 
 [node name="RefreshButton" type="Button" parent="CenterContainer/ModalCard/CardVBox/PlayerStatusPanel/PlayerStatusHBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(90, 36)
+custom_minimum_size = Vector2(90, 56)
 layout_mode = 2
 text = "🔄 Refresh"
 

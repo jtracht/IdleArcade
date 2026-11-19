@@ -396,17 +396,24 @@ func _activate_server_overclock_glow() -> void:
 		tween.tween_property(server_overclock_glow, "light_energy", 1.8, 1.2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 func _update_overclock_glow_modulation(delta: float) -> void:
-	if server_overclock_glow == null or server_overclock_glow.light_energy <= 0.01:
+	if server_overclock_glow == null:
+		server_overclock_glow = find_child("ServerOverclockGlow", true, false)
+	if server_overclock_glow == null:
+		return
+	if server_overclock_glow.light_energy <= 0.01:
 		return
 	var gs = get_node_or_null("/root/GameState")
 	if gs != null and gs.has_method("is_tech_researched") and gs.is_tech_researched("tech_server_overclock"):
 		_overclock_time += delta
-		server_overclock_glow.light_energy = 1.8 + sin(_overclock_time * 3.0) * 0.25
+		if server_overclock_glow != null:
+			server_overclock_glow.light_energy = 1.8 + sin(_overclock_time * 3.0) * 0.25
 
 func is_server_overclock_glow_active() -> bool:
 	if server_overclock_glow == null:
 		server_overclock_glow = find_child("ServerOverclockGlow", true, false)
-	return server_overclock_glow != null and server_overclock_glow.light_energy > 0.1
+	if server_overclock_glow == null:
+		return false
+	return server_overclock_glow.light_energy > 0.1
 
 func _on_tech_researched(tech_id: String) -> void:
 	if tech_id == "tech_server_overclock":

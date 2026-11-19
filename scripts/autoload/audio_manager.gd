@@ -76,6 +76,65 @@ func _ready() -> void:
 	_bind_game_signals()
 	print("[AudioManager] Procedural Audio Engine initialized successfully (22,050 Hz PCM).")
 
+func _exit_tree() -> void:
+	# Disconnect GameState signal bindings if connected
+	var gs = get_node_or_null("/root/GameState")
+	if gs != null:
+		if gs.has_signal("audio_settings_changed") and gs.audio_settings_changed.is_connected(_on_game_state_audio_changed):
+			gs.audio_settings_changed.disconnect(_on_game_state_audio_changed)
+		if gs.has_signal("upgrade_purchased") and gs.upgrade_purchased.is_connected(_on_game_state_upgrade_purchased):
+			gs.upgrade_purchased.disconnect(_on_game_state_upgrade_purchased)
+		if gs.has_signal("level_up") and gs.level_up.is_connected(_on_game_state_level_up):
+			gs.level_up.disconnect(_on_game_state_level_up)
+		if gs.has_signal("campus_quest_completed") and gs.campus_quest_completed.is_connected(_on_game_state_quest_completed):
+			gs.campus_quest_completed.disconnect(_on_game_state_quest_completed)
+
+	# Stop all active audio players, disconnect stream resources, and free player instances
+	for player in _sfx_pool:
+		if is_instance_valid(player):
+			player.stop()
+			player.stream = null
+			player.queue_free()
+	_sfx_pool.clear()
+
+	if is_instance_valid(_bgm_player):
+		_bgm_player.stop()
+		_bgm_player.stream = null
+		_bgm_player.queue_free()
+		_bgm_player = null
+
+	if is_instance_valid(_drone_player):
+		_drone_player.stop()
+		_drone_player.stream = null
+		_drone_player.queue_free()
+		_drone_player = null
+	
+	# Release pre-synthesized PCM wave resources from memory
+	_wav_click = null
+	_wav_pickup_briefcase = null
+	_wav_pickup_coffee = null
+	_wav_pickup_usb = null
+	_wav_pickup_default = null
+	_wav_footstep = null
+	_wav_gate_unlock = null
+	_wav_research = null
+	_wav_drone_hum = null
+	_wav_overdrive = null
+	_wav_ambient_bgm = null
+	_wav_confetti = null
+	_wav_bell = null
+	_wav_victory_jingle = null
+	_wav_steam_hiss = null
+	_wav_qte_correct = null
+	_wav_qte_wrong = null
+	_wav_hit_perfect = null
+	_wav_hit_good = null
+	_wav_hit_miss = null
+
+	# Clear telemetry history
+	sfx_history.clear()
+	sfx_events.clear()
+
 # ------------------------------------------------------------------------------
 # Audio Bus Configuration & Volume Control
 # ------------------------------------------------------------------------------

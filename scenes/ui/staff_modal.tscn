@@ -134,7 +134,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="ModalCard" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(680, 920)
+custom_minimum_size = Vector2(640, 800)
 layout_mode = 2
 mouse_filter = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_modal_card")
@@ -266,7 +266,7 @@ text = "Autonomous campus specialists boost passive RPS based on their morale le
 
 [node name="WorkersScroll" type="ScrollContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/RecruitingTab"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(56, 420)
+custom_minimum_size = Vector2(56, 320)
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 0
@@ -322,7 +322,7 @@ text = "Ergonomic desk upgrades reduce specialist fatigue rate by 25% (Lvl 2) to
 
 [node name="DesksScroll" type="ScrollContainer" parent="CenterContainer/ModalCard/CardVBox/TabContentContainer/DeskUpgradesTab"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(56, 420)
+custom_minimum_size = Vector2(56, 320)
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 0

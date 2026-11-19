@@ -395,15 +395,17 @@ text = "+0/s"
 [node name="Spacer" type="Control" parent="QuickHUDLayer/QuickHUD/BarHBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 2
+mouse_filter = 0
 
 [node name="ToggleOverlayButton" type="Button" parent="QuickHUDLayer/QuickHUD/BarHBox"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 text = "💻 Laptop [Tab]"
 
 [node name="ExitTo2DButton" type="Button" parent="QuickHUDLayer/QuickHUD/BarHBox"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 text = "🕹️ 2D View"
 
@@ -434,13 +436,14 @@ layout_mode = 1
 
 [node name="CloseOverlayButton" type="Button" parent="HUDOverlayLayer/OverlayContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 offset_left = -120.0
 offset_top = 10.0
 offset_right = -10.0
-offset_bottom = 45.0
+offset_bottom = 66.0
 grow_horizontal = 0
 text = "✖ Close [Esc]"
 

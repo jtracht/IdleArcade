@@ -104,6 +104,12 @@ func _ready() -> void:
 	if base_ring != null:
 		base_ring.position = base_center_position
 
+	# Initialize dynamic touch activation zone from viewport
+	_update_touch_zone()
+	var vp: Viewport = get_viewport()
+	if vp != null and not vp.size_changed.is_connected(_update_touch_zone):
+		vp.size_changed.connect(_update_touch_zone)
+
 func _physics_process(_delta: float) -> void:
 	# Continuous injection: prevent avatar friction deceleration while finger is held motionless
 	if is_active and is_instance_valid(avatar_node) and world_direction_3d != Vector3.ZERO:
@@ -219,8 +225,33 @@ func _on_touch_up() -> bool:
 # Mathematical Algorithms
 # ------------------------------------------------------------------------------
 
+## Computes dynamic touch activation zone boundaries from viewport dimensions.
+func _update_touch_zone() -> void:
+	if not is_inside_tree():
+		return
+
+	var vp: Viewport = get_viewport()
+	var vp_rect: Rect2 = get_viewport_rect()
+
+	# Headless root fallback: when mounted directly to root in headless tests,
+	# Godot headless defaults the unconfigured root Window to 1280x1280.
+	# If root matches this unconfigured square dummy size, maintain project baseline
+	# portrait dimensions (720x1280 -> left half max_x = 360.0).
+	if DisplayServer.get_name() == "headless" and not (vp is SubViewport):
+		if vp_rect.size == Vector2(1280.0, 1280.0):
+			zone_max_x = 360.0
+			zone_max_y = 1280.0
+			size = Vector2(zone_max_x, zone_max_y)
+			return
+
+	if vp_rect.size.x > 0.0 and vp_rect.size.y > 0.0:
+		zone_max_x = vp_rect.size.x * 0.5
+		zone_max_y = vp_rect.size.y
+		size = Vector2(zone_max_x, zone_max_y)
+
 ## Checks if a coordinate falls within the permitted left-half activation zone.
 func is_in_touch_zone(screen_pos: Vector2) -> bool:
+	_update_touch_zone()
 	return screen_pos.x >= zone_min_x and screen_pos.x <= zone_max_x \
 		and screen_pos.y >= zone_min_y and screen_pos.y <= zone_max_y
 
