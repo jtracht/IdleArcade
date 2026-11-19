@@ -41,7 +41,7 @@ jobs:
           if [ -d "IdleArcade" ]; then
             TARGET_DIR="IdleArcade"
           fi
-          godot --headless --path "$TARGET_DIR" --editor --quit || true
+          godot --headless --path "$TARGET_DIR" --import
 
       - name: Run Python CI/CD & E2E Verification
         run: |
